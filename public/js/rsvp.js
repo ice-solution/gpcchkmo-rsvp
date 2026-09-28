@@ -1,8 +1,8 @@
 (() => {
-  const STEP_LABELS = ['隊伍', '隊長', '隊友', '競賽', '意向', '條款'];
+  const STEP_LABELS = ['簡介', '隊伍', '隊長', '隊友', '競賽', '意向', '條款'];
   let meta = null;
   let step = 0;
-  const total = 6;
+  const total = 7;
 
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => [...document.querySelectorAll(sel)];
@@ -30,9 +30,9 @@
   function radioCards(container, name, options, required = true) {
     container.innerHTML = options
       .map(
-        (opt, i) => `
+        (opt) => `
       <label class="choice-card">
-        <input type="radio" name="${name}" value="${opt.value}" ${required && i === 0 ? '' : ''} ${required ? 'required' : ''} />
+        <input type="radio" name="${name}" value="${opt.value}" ${required ? 'required' : ''} />
         <span>${escapeHtml(opt.label)}</span>
       </label>`
       )
@@ -68,6 +68,7 @@
     $('#btn-prev').disabled = step === 0;
     $('#btn-next').classList.toggle('hidden', step === total - 1);
     $('#btn-submit').classList.toggle('hidden', step !== total - 1);
+    $('#btn-next').textContent = step === 0 ? '開始填寫報名表' : '下一步';
     $$('.step-panel').forEach((panel) => {
       panel.classList.toggle('hidden', Number(panel.dataset.step) !== step);
     });
@@ -131,11 +132,16 @@
   function validateStep(n) {
     const errors = [];
     if (n === 0) {
+      if (!$('#introAck').checked) {
+        errors.push('請先閱讀簡介及賽事資訊，並勾選確認後才可開始填寫報名表');
+      }
+    }
+    if (n === 1) {
       if (!$('#captainClub').value.trim()) errors.push('請填寫隊長所屬球會／機構');
       if (!radioValue('registrationType')) errors.push('請選擇報名類型');
       if (!$('#captainEmail').value.trim()) errors.push('請填寫隊長電郵');
     }
-    if (n === 1) {
+    if (n === 2) {
       ['captainChineseName', 'captainEnglishName', 'captainDob', 'captainWhatsapp', 'captainEmergencyName', 'captainEmergencyPhone'].forEach(
         (id) => {
           if (!$(`#${id}`).value.trim()) errors.push('請完整填寫隊長資料');
@@ -143,7 +149,7 @@
       );
       if (!radioValue('captainGender')) errors.push('請選擇隊長性別');
     }
-    if (n === 2) {
+    if (n === 3) {
       ['teammateChineseName', 'teammateEnglishName', 'teammateDob', 'teammateWhatsapp', 'teammateEmail', 'teammateEmergencyName', 'teammateEmergencyPhone'].forEach(
         (id) => {
           if (!$(`#${id}`).value.trim()) errors.push('請完整填寫隊友資料');
@@ -151,19 +157,19 @@
       );
       if (!radioValue('teammateGender')) errors.push('請選擇隊友性別');
     }
-    if (n === 3) {
+    if (n === 4) {
       if (!radioValue('ageGroup')) errors.push('請選擇年齡組別');
       if (!radioValue('eventCategory')) errors.push('請選擇競賽項目');
       if (!$('#preferredVenueId').value) errors.push('請選擇首選海選地區／球館');
       if (!checkedValues('availability').length) errors.push('請至少選擇一個可參賽時段');
     }
-    if (n === 4) {
+    if (n === 5) {
       if (!radioValue('carnivalIntent')) errors.push('請選擇嘉年華出席意向');
       if (!radioValue('skillLevel')) errors.push('請選擇技術程度');
       if (!checkedValues('interests').length) errors.push('請至少選擇一項感興趣內容');
       if (!radioValue('hearAbout')) errors.push('請選擇得知渠道');
     }
-    if (n === 5) {
+    if (n === 6) {
       ['agreeRules', 'agreeRanking', 'agreeTruth', 'agreePics'].forEach((id) => {
         if (!$(`#${id}`).checked) errors.push('請勾選所有必填聲明');
       });
@@ -175,6 +181,7 @@
     const venueSelect = $('#preferredVenueId');
     const venueOption = venueSelect.selectedOptions[0];
     return {
+      introAcknowledged: $('#introAck').checked,
       captainClub: $('#captainClub').value.trim(),
       registrationType: radioValue('registrationType'),
       captainEmail: $('#captainEmail').value.trim(),
@@ -275,23 +282,23 @@
         return;
       }
       showAlert([]);
-      if (step === 2) await refreshEligibility();
-      step += 1;
       if (step === 3) await refreshEligibility();
+      step += 1;
+      if (step === 4) await refreshEligibility();
       renderStepper();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
     ['captainDob', 'teammateDob'].forEach((id) => {
       $(`#${id}`).addEventListener('change', () => {
-        if (step >= 3) refreshEligibility();
+        if (step >= 4) refreshEligibility();
       });
     });
     document.addEventListener('change', (e) => {
       if (
         e.target &&
         (e.target.name === 'captainGender' || e.target.name === 'teammateGender') &&
-        step >= 3
+        step >= 4
       ) {
         refreshEligibility();
       }
@@ -299,9 +306,15 @@
 
     $('#rsvp-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const errors = validateStep(5);
+      const errors = validateStep(6);
       if (errors.length) {
         showAlert(errors);
+        return;
+      }
+      if (!$('#introAck').checked) {
+        showAlert(['請先於簡介頁勾選確認']);
+        step = 0;
+        renderStepper();
         return;
       }
       const btn = $('#btn-submit');

@@ -26,8 +26,53 @@
   <form id="rsvp-form" class="space-y-4" novalidate>
     <div id="form-alert" class="hidden rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-700 ring-1 ring-red-200"></div>
 
-    <!-- Step 0 -->
+    <!-- Step 0: Intro -->
     <section class="step-panel rounded-3xl bg-white p-5 shadow-panel ring-1 ring-slate-200 sm:p-7" data-step="0">
+      <h2 class="font-display text-lg font-bold text-brand-deep">一、表格簡介</h2>
+      <div class="mt-4 space-y-3 text-sm leading-relaxed text-slate-700">
+        <p>歡迎報名參加 2026「凱瑞麟盃」粵港澳大灣區匹克球城市挑戰賽（GPCC）香港站海選賽。本賽事獲廣東省粵港澳合作促進會指導，並獲中國網球協會官方支持，是橫跨大灣區八個城市並設總決賽的「體育＋文旅＋娛樂」三融合匹克球盛事。</p>
+        <p>GPCC 不只是一項競賽，更是屬於所有匹克球愛好者的城市嘉年華。海選優勝隊伍將晉級香港站城市決賽；香港站優勝隊伍可按大會正式安排代表香港參與大灣區賽事交流，為香港增光。</p>
+      </div>
+
+      <h2 class="mt-8 font-display text-lg font-bold text-brand-deep">二、賽事資訊一覽</h2>
+      <div class="mt-4 overflow-hidden rounded-2xl ring-1 ring-slate-200">
+        <table class="w-full text-left text-sm">
+          <tbody class="divide-y divide-slate-100">
+            <tr class="bg-slate-50"><th class="w-36 px-4 py-3 font-semibold text-brand-deep sm:w-44">海選日期</th><td class="px-4 py-3 text-slate-700">2026 年 10 月初至 11 月 10 日</td></tr>
+            <tr><th class="px-4 py-3 font-semibold text-brand-deep">海選地點</th><td class="px-4 py-3 text-slate-700">大會指定的合作球會、球館及場地；個別隊伍的日期、時間及場地以確認電郵為準</td></tr>
+            <tr class="bg-slate-50"><th class="px-4 py-3 font-semibold text-brand-deep">香港站城市決賽及嘉年華</th><td class="px-4 py-3 text-slate-700">2026 年 11 月 14–15 日</td></tr>
+            <tr><th class="px-4 py-3 font-semibold text-brand-deep">城市決賽地點</th><td class="px-4 py-3 text-slate-700">屯門市廣場</td></tr>
+            <tr class="bg-slate-50"><th class="px-4 py-3 font-semibold text-brand-deep">年齡組別</th><td class="px-4 py-3 text-slate-700">常青組（50–65 歲）、壯年組（36–49 歲）、公開組（18–65 歲）</td></tr>
+            <tr><th class="px-4 py-3 font-semibold text-brand-deep">競賽項目</th><td class="px-4 py-3 text-slate-700">男子雙打、女子雙打、混合雙打</td></tr>
+            <tr class="bg-slate-50"><th class="px-4 py-3 font-semibold text-brand-deep">海選報名費</th><td class="px-4 py-3 text-slate-700">HKD $680／隊（兩名球員，含海選參賽資格）；另加 HKD $200 即可獲大會專屬選手包（兩人份）。付款頁顯示總額為 HKD $<%= feeBase %>／隊（含選手包安排，以付款頁為準）。</td></tr>
+            <tr><th class="px-4 py-3 font-semibold text-brand-deep">每人報名上限</th><td class="px-4 py-3 text-slate-700">最多兩個競賽項目；每個項目須以獨立報名另行提交</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="mt-8 text-base font-bold text-brand-deep">2.1 參賽前請注意</h3>
+      <ul class="mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-slate-700">
+        <li>填寫本表即表示隊長及隊友確認所提交資料真實、完整且可供核實。</li>
+        <li>大會會核對參賽資格；若發現虛假資料、身份不符、冒名頂替或超出報名上限，大會有權即時取消該球員或隊伍的參賽、晉級及獲獎資格（DQ），已繳款項將按正式退賽及退款條款處理。</li>
+        <li><strong>兼報規則：</strong>每位球員最多可報名兩個競賽項目。每份 RSVP 只可登記一個項目；如欲兼報第二項，請完成本次報名後，以「第二個兼報項目」另行提交。請勿在同一 RSVP 重複提交多個項目。超過兩項的報名將不獲接納。</li>
+        <li>報名前請完整閱讀：《香港站正式競賽規程》、退賽及退款條款。</li>
+      </ul>
+
+      <h3 class="mt-6 text-base font-bold text-brand-deep">2.2 晉級及同分排名重點提示</h3>
+      <ul class="mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-slate-700">
+        <li>晉級並非只以勝負決定。</li>
+        <li>小組循環賽先按勝負場數排序；如有兩隊或以上勝負場數相同，大會將以該小組賽事的總得失分決定最終名次。</li>
+        <li>得分與失分均會影響晉級資格，參賽者不可只以對賽勝負推算排名。若按總得失分後仍未能分出名次，將依《香港站正式競賽規程》處理。</li>
+      </ul>
+
+      <label class="choice-card mt-8">
+        <input type="checkbox" id="introAck" required />
+        <span>我已閱讀並明白以上<strong>表格簡介</strong>及<strong>賽事資訊一覽</strong>（含參賽注意及晉級／同分排名提示），同意繼續填寫報名表格。*</span>
+      </label>
+    </section>
+
+    <!-- Step 1 -->
+    <section class="step-panel hidden rounded-3xl bg-white p-5 shadow-panel ring-1 ring-slate-200 sm:p-7" data-step="1">
       <h2 class="font-display text-lg font-bold text-brand-deep">第 0 區：報名類型與隊伍資料</h2>
       <div class="mt-5 grid gap-4">
         <div>
@@ -52,7 +97,7 @@
     </section>
 
     <!-- Step 1 -->
-    <section class="step-panel hidden rounded-3xl bg-white p-5 shadow-panel ring-1 ring-slate-200 sm:p-7" data-step="1">
+    <section class="step-panel hidden rounded-3xl bg-white p-5 shadow-panel ring-1 ring-slate-200 sm:p-7" data-step="2">
       <h2 class="font-display text-lg font-bold text-brand-deep">第 1 區：隊長／第一球員資料</h2>
       <div class="mt-5 grid gap-4 sm:grid-cols-2">
         <div>
@@ -90,7 +135,7 @@
     </section>
 
     <!-- Step 2 -->
-    <section class="step-panel hidden rounded-3xl bg-white p-5 shadow-panel ring-1 ring-slate-200 sm:p-7" data-step="2">
+    <section class="step-panel hidden rounded-3xl bg-white p-5 shadow-panel ring-1 ring-slate-200 sm:p-7" data-step="3">
       <h2 class="font-display text-lg font-bold text-brand-deep">第 2 區：隊友／第二球員資料</h2>
       <div class="mt-5 grid gap-4 sm:grid-cols-2">
         <div>
@@ -136,7 +181,7 @@
     </section>
 
     <!-- Step 3 -->
-    <section class="step-panel hidden rounded-3xl bg-white p-5 shadow-panel ring-1 ring-slate-200 sm:p-7" data-step="3">
+    <section class="step-panel hidden rounded-3xl bg-white p-5 shadow-panel ring-1 ring-slate-200 sm:p-7" data-step="4">
       <h2 class="font-display text-lg font-bold text-brand-deep">第 3 區：競賽資料</h2>
       <p class="mt-2 text-xs text-slate-500">年齡組別與競賽項目會按兩位球員出生日期及性別自動篩選可選項。</p>
       <div class="mt-5 grid gap-4">
@@ -162,7 +207,7 @@
     </section>
 
     <!-- Step 4 -->
-    <section class="step-panel hidden rounded-3xl bg-white p-5 shadow-panel ring-1 ring-slate-200 sm:p-7" data-step="4">
+    <section class="step-panel hidden rounded-3xl bg-white p-5 shadow-panel ring-1 ring-slate-200 sm:p-7" data-step="5">
       <h2 class="font-display text-lg font-bold text-brand-deep">第 4 區：嘉年華意向及市場研究</h2>
       <p class="mt-2 text-xs text-slate-500">本區用作了解參加者興趣；直接行銷同意將於下一區獨立處理。</p>
       <div class="mt-5 grid gap-4">
@@ -194,7 +239,7 @@
     </section>
 
     <!-- Step 5 -->
-    <section class="step-panel hidden rounded-3xl bg-white p-5 shadow-panel ring-1 ring-slate-200 sm:p-7" data-step="5">
+    <section class="step-panel hidden rounded-3xl bg-white p-5 shadow-panel ring-1 ring-slate-200 sm:p-7" data-step="6">
       <h2 class="font-display text-lg font-bold text-brand-deep">第 5 區：聲明、私隱及條款確認</h2>
       <div class="mt-5 space-y-3 text-sm text-slate-700">
         <label class="choice-card">
@@ -235,8 +280,8 @@
 
     <div class="flex flex-wrap items-center justify-between gap-3 rounded-3xl bg-white px-5 py-4 shadow-panel ring-1 ring-slate-200">
       <button type="button" id="btn-prev" class="btn-secondary" disabled>上一步</button>
-      <p class="text-xs text-slate-500" id="step-caption">步驟 1 / 6</p>
-      <button type="button" id="btn-next" class="btn-primary">下一步</button>
+      <p class="text-xs text-slate-500" id="step-caption">步驟 1 / 7</p>
+      <button type="button" id="btn-next" class="btn-primary">開始填寫報名表</button>
       <button type="submit" id="btn-submit" class="btn-primary hidden">提交報名申請</button>
     </div>
   </form>

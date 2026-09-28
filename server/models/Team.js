@@ -78,6 +78,8 @@ const teamSchema = new mongoose.Schema(
     availability: [{ type: String }],
     research: { type: researchSchema, required: true },
     agreements: { type: agreementsSchema, required: true },
+    introAcknowledged: { type: Boolean, required: true, default: false },
+    introAcknowledgedAt: { type: Date, default: null },
 
     status: {
       type: String,

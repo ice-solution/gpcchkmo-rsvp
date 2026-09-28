@@ -94,6 +94,10 @@ function validatePayload(body) {
     if (agreements[key] !== true) errors.push('請確認所有必填聲明及條款');
   });
 
+  if (body.introAcknowledged !== true) {
+    errors.push('請先閱讀並確認表格簡介及賽事資訊');
+  }
+
   return errors;
 }
 
@@ -170,14 +174,16 @@ async function createRsvp(body) {
         ? body.research.contactPrefs
         : [],
     },
-    agreements: {
-      rules: true,
-      ranking: true,
-      truthfulness: true,
-      pics: true,
-      marketing: body.agreements.marketing === true,
-    },
-    status: TEAM_STATUS.SUBMITTED_PENDING_PAYMENT,
+          agreements: {
+            rules: true,
+            ranking: true,
+            truthfulness: true,
+            pics: true,
+            marketing: body.agreements.marketing === true,
+          },
+          introAcknowledged: true,
+          introAcknowledgedAt: new Date(),
+          status: TEAM_STATUS.SUBMITTED_PENDING_PAYMENT,
     payment: {
       status: PAYMENT_STATUS.UNPAID,
       baseAmountHkd: paymentSummary.baseAmountHkd,
