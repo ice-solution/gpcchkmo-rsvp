@@ -1,0 +1,27 @@
+<%- include('partials/head') %>
+<main class="mx-auto max-w-xl px-4 py-12">
+  <div class="overflow-hidden rounded-3xl bg-white shadow-panel ring-1 ring-slate-200">
+    <div class="bg-gradient-to-r from-brand-deep to-brand-blue px-6 py-5 text-white">
+      <p class="text-xs font-semibold uppercase tracking-[0.2em] text-brand-lime">GPCC Hong Kong</p>
+      <h1 class="mt-2 font-display text-2xl font-800 font-bold">已收到報名申請</h1>
+    </div>
+    <div class="space-y-4 px-6 py-6 text-sm leading-relaxed text-slate-700">
+      <p class="rounded-2xl bg-amber-50 px-4 py-3 text-amber-900 ring-1 ring-amber-200">
+        此階段<strong>尚未等同報名成功</strong>。系統不會在此刻發放隊伍編號或 QR Code。
+      </p>
+      <% if (applicationId) { %>
+      <p>申請參考編號：<span class="font-mono font-semibold text-brand-deep"><%= applicationId %></span></p>
+      <% } %>
+      <ul class="list-disc space-y-2 pl-5">
+        <li>海選報名費：HKD $880／隊（兩名球員）</li>
+        <li>請留意隊長電郵以接收付款指示及核實結果</li>
+        <li>付款成功不等於報名成功；待資格及重複報名核實後才發正式確認</li>
+      </ul>
+      <div class="flex flex-wrap gap-3 pt-2">
+        <a href="/rsvp" class="btn-secondary">返回報名表</a>
+        <a href="https://gpcchkmo.org/" class="btn-primary" target="_blank" rel="noopener">官方網站</a>
+      </div>
+    </div>
+  </div>
+</main>
+<%- include('partials/foot') %>

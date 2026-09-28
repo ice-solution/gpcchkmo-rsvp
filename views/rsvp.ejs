@@ -1,0 +1,245 @@
+<%- include('partials/head') %>
+<main class="mx-auto max-w-3xl px-4 py-8 sm:py-12">
+  <header class="mb-8 overflow-hidden rounded-3xl bg-white shadow-panel ring-1 ring-slate-200">
+    <div class="relative bg-gradient-to-br from-brand-deep via-brand-blue to-sky-600 px-6 py-8 text-white sm:px-8">
+      <div class="absolute inset-y-0 right-0 w-1/2 bg-[radial-gradient(circle_at_70%_30%,rgba(200,255,0,0.35),transparent_60%)]"></div>
+      <div class="relative flex flex-col gap-4 sm:flex-row sm:items-center">
+        <img
+          src="https://media.base44.com/images/public/6a2d14e7beef6e30c1fd3c0d/3ec7236ec_logo.png"
+          alt="GPCC Logo"
+          class="h-16 w-16 rounded-2xl bg-white/10 object-contain p-1 ring-1 ring-white/20"
+        />
+        <div>
+          <p class="text-xs font-bold uppercase tracking-[0.22em] text-brand-lime">Greater Bay Area Pickleball City Challenge</p>
+          <h1 class="mt-1 font-display text-2xl font-bold leading-tight sm:text-3xl">
+            2026「凱瑞麟盃」香港站海選賽官方報名
+          </h1>
+          <p class="mt-2 max-w-xl text-sm text-sky-100">
+            填寫本表即表示隊長及隊友確認資料真實完整。每份 RSVP 只可登記一個競賽項目；海選報名費 HKD $<%= feeBase %>／隊。
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="border-t border-slate-100 px-4 py-4 sm:px-6" id="stepper" aria-label="報名步驟"></div>
+  </header>
+
+  <form id="rsvp-form" class="space-y-4" novalidate>
+    <div id="form-alert" class="hidden rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-700 ring-1 ring-red-200"></div>
+
+    <!-- Step 0 -->
+    <section class="step-panel rounded-3xl bg-white p-5 shadow-panel ring-1 ring-slate-200 sm:p-7" data-step="0">
+      <h2 class="font-display text-lg font-bold text-brand-deep">第 0 區：報名類型與隊伍資料</h2>
+      <div class="mt-5 grid gap-4">
+        <div>
+          <label class="field-label" for="captainClub">隊長所屬匹克球球會／機構 *</label>
+          <input class="field-input" id="captainClub" name="captainClub" required maxlength="120" />
+        </div>
+        <fieldset>
+          <legend class="field-label">本次報名類型 *</legend>
+          <div class="grid gap-2" id="registrationTypeOptions"></div>
+        </fieldset>
+        <div>
+          <label class="field-label" for="captainEmail">隊長主要電郵地址 *</label>
+          <input class="field-input" id="captainEmail" name="captainEmail" type="email" required autocomplete="email" />
+          <p class="mt-1 text-xs text-slate-500">用於接收報名確認、付款狀態、賽程、QR Code 及緊急通知。</p>
+        </div>
+        <div>
+          <label class="field-label" for="displayName">隊伍／組合顯示名稱（選填）</label>
+          <input class="field-input" id="displayName" name="displayName" maxlength="80" />
+          <p class="mt-1 text-xs text-slate-500">如無特別隊名，大會將以兩位球員姓名作賽程顯示。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Step 1 -->
+    <section class="step-panel hidden rounded-3xl bg-white p-5 shadow-panel ring-1 ring-slate-200 sm:p-7" data-step="1">
+      <h2 class="font-display text-lg font-bold text-brand-deep">第 1 區：隊長／第一球員資料</h2>
+      <div class="mt-5 grid gap-4 sm:grid-cols-2">
+        <div>
+          <label class="field-label" for="captainChineseName">隊長中文姓名 *</label>
+          <input class="field-input" id="captainChineseName" required />
+        </div>
+        <div>
+          <label class="field-label" for="captainEnglishName">隊長英文姓名 *</label>
+          <input class="field-input" id="captainEnglishName" required />
+        </div>
+        <fieldset class="sm:col-span-2">
+          <legend class="field-label">隊長性別 *</legend>
+          <div class="flex flex-wrap gap-3">
+            <label class="choice-card"><input type="radio" name="captainGender" value="male" required /><span>男</span></label>
+            <label class="choice-card"><input type="radio" name="captainGender" value="female" /><span>女</span></label>
+          </div>
+        </fieldset>
+        <div>
+          <label class="field-label" for="captainDob">隊長出生日期 *</label>
+          <input class="field-input" id="captainDob" type="date" required />
+        </div>
+        <div>
+          <label class="field-label" for="captainWhatsapp">隊長 WhatsApp 流動電話 *</label>
+          <input class="field-input" id="captainWhatsapp" type="tel" required placeholder="+852..." />
+        </div>
+        <div>
+          <label class="field-label" for="captainEmergencyName">緊急聯絡人姓名 *</label>
+          <input class="field-input" id="captainEmergencyName" required />
+        </div>
+        <div>
+          <label class="field-label" for="captainEmergencyPhone">緊急聯絡人電話 *</label>
+          <input class="field-input" id="captainEmergencyPhone" type="tel" required />
+        </div>
+      </div>
+    </section>
+
+    <!-- Step 2 -->
+    <section class="step-panel hidden rounded-3xl bg-white p-5 shadow-panel ring-1 ring-slate-200 sm:p-7" data-step="2">
+      <h2 class="font-display text-lg font-bold text-brand-deep">第 2 區：隊友／第二球員資料</h2>
+      <div class="mt-5 grid gap-4 sm:grid-cols-2">
+        <div>
+          <label class="field-label" for="teammateChineseName">隊友中文姓名 *</label>
+          <input class="field-input" id="teammateChineseName" required />
+        </div>
+        <div>
+          <label class="field-label" for="teammateEnglishName">隊友英文姓名 *</label>
+          <input class="field-input" id="teammateEnglishName" required />
+        </div>
+        <fieldset class="sm:col-span-2">
+          <legend class="field-label">隊友性別 *</legend>
+          <div class="flex flex-wrap gap-3">
+            <label class="choice-card"><input type="radio" name="teammateGender" value="male" required /><span>男</span></label>
+            <label class="choice-card"><input type="radio" name="teammateGender" value="female" /><span>女</span></label>
+          </div>
+        </fieldset>
+        <div>
+          <label class="field-label" for="teammateDob">隊友出生日期 *</label>
+          <input class="field-input" id="teammateDob" type="date" required />
+        </div>
+        <div>
+          <label class="field-label" for="teammateWhatsapp">隊友 WhatsApp 流動電話 *</label>
+          <input class="field-input" id="teammateWhatsapp" type="tel" required />
+        </div>
+        <div>
+          <label class="field-label" for="teammateEmail">隊友電郵地址 *</label>
+          <input class="field-input" id="teammateEmail" type="email" required />
+        </div>
+        <div>
+          <label class="field-label" for="teammateClub">隊友所屬球會／機構（選填）</label>
+          <input class="field-input" id="teammateClub" />
+        </div>
+        <div>
+          <label class="field-label" for="teammateEmergencyName">緊急聯絡人姓名 *</label>
+          <input class="field-input" id="teammateEmergencyName" required />
+        </div>
+        <div>
+          <label class="field-label" for="teammateEmergencyPhone">緊急聯絡人電話 *</label>
+          <input class="field-input" id="teammateEmergencyPhone" type="tel" required />
+        </div>
+      </div>
+    </section>
+
+    <!-- Step 3 -->
+    <section class="step-panel hidden rounded-3xl bg-white p-5 shadow-panel ring-1 ring-slate-200 sm:p-7" data-step="3">
+      <h2 class="font-display text-lg font-bold text-brand-deep">第 3 區：競賽資料</h2>
+      <p class="mt-2 text-xs text-slate-500">年齡組別與競賽項目會按兩位球員出生日期及性別自動篩選可選項。</p>
+      <div class="mt-5 grid gap-4">
+        <fieldset>
+          <legend class="field-label">參賽年齡組別 *</legend>
+          <div class="grid gap-2" id="ageGroupOptions"></div>
+          <p id="ageGroupHint" class="field-error hidden"></p>
+        </fieldset>
+        <fieldset>
+          <legend class="field-label">競賽項目 *</legend>
+          <div class="grid gap-2" id="eventCategoryOptions"></div>
+          <p id="eventCategoryHint" class="field-error hidden"></p>
+        </fieldset>
+        <div>
+          <label class="field-label" for="preferredVenueId">首選海選地區／合作球會／球館 *</label>
+          <select class="field-input" id="preferredVenueId" required></select>
+        </div>
+        <fieldset>
+          <legend class="field-label">可參賽時段（可複選）*</legend>
+          <div class="grid gap-2 sm:grid-cols-2" id="availabilityOptions"></div>
+        </fieldset>
+      </div>
+    </section>
+
+    <!-- Step 4 -->
+    <section class="step-panel hidden rounded-3xl bg-white p-5 shadow-panel ring-1 ring-slate-200 sm:p-7" data-step="4">
+      <h2 class="font-display text-lg font-bold text-brand-deep">第 4 區：嘉年華意向及市場研究</h2>
+      <p class="mt-2 text-xs text-slate-500">本區用作了解參加者興趣；直接行銷同意將於下一區獨立處理。</p>
+      <div class="mt-5 grid gap-4">
+        <fieldset>
+          <legend class="field-label">屯門市廣場匹克球嘉年華出席意向 *</legend>
+          <div class="grid gap-2" id="carnivalIntentOptions"></div>
+        </fieldset>
+        <div>
+          <label class="field-label" for="spectatorCount">預計同行觀眾人數（選填）</label>
+          <select class="field-input" id="spectatorCount"></select>
+        </div>
+        <fieldset>
+          <legend class="field-label">匹克球經驗／技術程度 *</legend>
+          <div class="grid gap-2" id="skillLevelOptions"></div>
+        </fieldset>
+        <fieldset>
+          <legend class="field-label">您最感興趣的 GPCC 活動或內容（可複選）*</legend>
+          <div class="grid gap-2 sm:grid-cols-2" id="interestOptions"></div>
+        </fieldset>
+        <fieldset>
+          <legend class="field-label">您從何得知 GPCC？ *</legend>
+          <div class="grid gap-2" id="hearAboutOptions"></div>
+        </fieldset>
+        <fieldset>
+          <legend class="field-label">日後聯絡偏好（可複選，選填）</legend>
+          <div class="grid gap-2 sm:grid-cols-2" id="contactPrefOptions"></div>
+        </fieldset>
+      </div>
+    </section>
+
+    <!-- Step 5 -->
+    <section class="step-panel hidden rounded-3xl bg-white p-5 shadow-panel ring-1 ring-slate-200 sm:p-7" data-step="5">
+      <h2 class="font-display text-lg font-bold text-brand-deep">第 5 區：聲明、私隱及條款確認</h2>
+      <div class="mt-5 space-y-3 text-sm text-slate-700">
+        <label class="choice-card">
+          <input type="checkbox" id="agreeRules" required />
+          <span>競賽規程確認：我代表本人及隊友確認已閱讀並同意《香港站正式競賽規程》及退賽／退款條款，並明白本 RSVP 每次只可申報一個競賽項目。*</span>
+        </label>
+        <label class="choice-card">
+          <input type="checkbox" id="agreeRanking" required />
+          <span>排名規則確認：我明白小組賽排名並非只以勝負決定；如勝負場數相同，總得失分會影響最終排名及晉級資格。*</span>
+        </label>
+        <label class="choice-card">
+          <input type="checkbox" id="agreeTruth" required />
+          <span>資料真實及報名上限聲明：我確認資料真實完整；每名球員最多報名兩個競賽項目。若有不實或超出上限，接受大會 DQ 及按正式條款處理已繳款項。*</span>
+        </label>
+        <label class="choice-card">
+          <input type="checkbox" id="agreePics" required />
+          <span>個人資料收集聲明確認：我已閱讀下列《個人資料收集聲明》，並同意大會為賽事管理、付款核實、賽務溝通、QR Code 發放及活動安排而處理本人及隊友資料。*</span>
+        </label>
+        <div class="rounded-2xl bg-slate-50 px-4 py-3 text-xs leading-relaxed text-slate-600 ring-1 ring-slate-200">
+          <p class="font-semibold text-slate-800">個人資料收集聲明（摘要）</p>
+          <p class="mt-2">粵港澳大灣區匹克球城市挑戰賽港澳組委會及承辦單位及秘書處 MEMO PLUS PR（統稱「大會」）會收集您及隊友在本 RSVP 提供的姓名、出生日期、性別、聯絡資料、所屬球會／機構、緊急聯絡資料、參賽安排、付款及交易參考資料，以及您自願提供的興趣及推廣偏好資料。必填資料用於處理報名、核實資格、編排賽程、聯絡隊伍、核實付款、發放選手包及現場報到 QR Code。興趣及直接行銷同意屬選填；拒絕同意不會影響參賽資格。</p>
+        </div>
+        <label class="choice-card">
+          <input type="checkbox" id="agreeMarketing" />
+          <span>直接行銷同意（選填）：我同意組委會／MEMO PLUS PR 按《個人資料收集聲明》透過所選聯絡方式發送 GPCC 及相關活動推廣資訊。我明白可隨時撤回同意。</span>
+        </label>
+
+        <div class="rounded-2xl border border-brand-blue/20 bg-sky-50 px-4 py-4">
+          <p class="font-semibold text-brand-deep">付款摘要（提交後進入待付款）</p>
+          <ul class="mt-2 list-disc space-y-1 pl-5 text-sm">
+            <li>基本海選報名費：HKD $<%= feeBase %>／隊（兩名球員）</li>
+            <li>信用卡／網上支付手續費由參加者承擔，將於付款授權前清楚列示</li>
+            <li>提交後會發出「已收到報名，待付款／待核實」回條；<strong>不會</strong>稱為報名成功，亦不會附 QR Code</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <div class="flex flex-wrap items-center justify-between gap-3 rounded-3xl bg-white px-5 py-4 shadow-panel ring-1 ring-slate-200">
+      <button type="button" id="btn-prev" class="btn-secondary" disabled>上一步</button>
+      <p class="text-xs text-slate-500" id="step-caption">步驟 1 / 6</p>
+      <button type="button" id="btn-next" class="btn-primary">下一步</button>
+      <button type="submit" id="btn-submit" class="btn-primary hidden">提交報名申請</button>
+    </div>
+  </form>
+</main>
+<script src="/js/rsvp.js" defer></script>
+<%- include('partials/foot') %>

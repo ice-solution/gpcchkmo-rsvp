@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brand-lime: #c8ff00;
+  --brand-blue: #1361ae;
+  --brand-blue-deep: #004080;
+}
+
+@layer base {
+  body {
+    @apply font-body text-slate-800 antialiased;
+    background:
+      radial-gradient(1200px 600px at 10% -10%, rgba(200, 255, 0, 0.18), transparent 55%),
+      radial-gradient(900px 500px at 100% 0%, rgba(19, 97, 174, 0.16), transparent 50%),
+      linear-gradient(180deg, #f8fafc 0%, #eef3f9 100%);
+    min-height: 100vh;
+  }
+}
+
+@layer components {
+  .field-label {
+    @apply mb-1.5 block text-sm font-semibold text-slate-700;
+  }
+
+  .field-input {
+    @apply w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20;
+  }
+
+  .field-error {
+    @apply mt-1 text-xs text-red-600;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-xl bg-brand-deep px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-blue disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .step-dot {
+    @apply flex h-8 w-8 items-center justify-center rounded-full border text-xs font-bold transition;
+  }
+
+  .step-dot-active {
+    @apply border-brand-deep bg-brand-lime text-brand-deep;
+  }
+
+  .step-dot-done {
+    @apply border-brand-blue bg-brand-blue text-white;
+  }
+
+  .step-dot-idle {
+    @apply border-slate-300 bg-white text-slate-400;
+  }
+
+  .choice-card {
+    @apply flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm transition hover:border-brand-blue/50;
+  }
+
+  .choice-card:has(input:checked) {
+    @apply border-brand-blue bg-sky-50 ring-1 ring-brand-blue/30;
+  }
+}
