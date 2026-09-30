@@ -13,6 +13,7 @@ const {
   EVENT_CATEGORIES,
   GENDERS,
   FEE,
+  CAPTAIN_CLUBS,
 } = require('../constants/enums');
 const {
   validateAgeGroupSelection,
@@ -39,6 +40,9 @@ function validatePayload(body) {
   };
 
   push(requireString(body.captainClub, '隊長所屬球會／機構'));
+  if (body.captainClub && !CAPTAIN_CLUBS.includes(String(body.captainClub).trim())) {
+    errors.push('隊長所屬球會／機構選項無效');
+  }
   if (!Object.values(REGISTRATION_TYPES).includes(body.registrationType)) {
     errors.push('報名類型無效');
   }

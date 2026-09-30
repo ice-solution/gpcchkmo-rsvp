@@ -137,7 +137,7 @@
       }
     }
     if (n === 1) {
-      if (!$('#captainClub').value.trim()) errors.push('請填寫隊長所屬球會／機構');
+      if (!$('#captainClub').value.trim()) errors.push('請選擇隊長所屬球會／機構');
       if (!radioValue('registrationType')) errors.push('請選擇報名類型');
       if (!$('#captainEmail').value.trim()) errors.push('請填寫隊長電郵');
     }
@@ -238,6 +238,13 @@
     const json = await res.json();
     if (!json.ok) throw new Error('無法載入表單設定');
     meta = json.data;
+
+    const captainClubSelect = $('#captainClub');
+    captainClubSelect.innerHTML =
+      '<option value="">請選擇</option>' +
+      (meta.captainClubs || [])
+        .map((c) => `<option value="${escapeHtml(c.value)}">${escapeHtml(c.label)}</option>`)
+        .join('');
 
     radioCards($('#registrationTypeOptions'), 'registrationType', meta.registrationTypes);
     checkCards($('#availabilityOptions'), 'availability', meta.availabilitySlots);

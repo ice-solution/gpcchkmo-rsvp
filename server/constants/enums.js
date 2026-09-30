@@ -5,6 +5,16 @@ const REGISTRATION_TYPES = {
   SECOND_ADDITIONAL: 'second_additional',
 };
 
+/** 隊長所屬匹克球球會／機構（固定選項） */
+const CAPTAIN_CLUBS = [
+  'Pick&Match',
+  'Bay Pickle',
+  'PickleVibe',
+  'Pickle.Ready',
+  'My Pickle World',
+  'Table meets Pickle',
+];
+
 const GENDERS = {
   MALE: 'male',
   FEMALE: 'female',
@@ -165,6 +175,7 @@ const EVENT_YEAR = 2026;
 
 module.exports = {
   REGISTRATION_TYPES,
+  CAPTAIN_CLUBS,
   GENDERS,
   AGE_GROUPS,
   AGE_GROUP_LABELS,

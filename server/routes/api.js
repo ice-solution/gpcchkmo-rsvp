@@ -17,6 +17,7 @@ const {
   HEAR_ABOUT,
   CONTACT_PREFS,
   REGISTRATION_TYPES,
+  CAPTAIN_CLUBS,
   FEE,
 } = require('../constants/enums');
 const { buildPaymentSummary } = require('../services/paymentService');
@@ -42,6 +43,7 @@ router.get('/meta', async (_req, res, next) => {
       data: {
         fee: buildPaymentSummary(),
         maxEventsPerPlayer: FEE.MAX_EVENTS_PER_PLAYER,
+        captainClubs: CAPTAIN_CLUBS.map((label) => ({ value: label, label })),
         registrationTypes: [
           {
             value: REGISTRATION_TYPES.FIRST_OR_ONLY,
