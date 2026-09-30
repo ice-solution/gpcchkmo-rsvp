@@ -155,7 +155,7 @@ const PLAYER_ROLES = {
 };
 
 const FEE = {
-  BASE_HKD: 880,
+  BASE_HKD: 680,
   CURRENCY: 'HKD',
   MAX_EVENTS_PER_PLAYER: 2,
 };

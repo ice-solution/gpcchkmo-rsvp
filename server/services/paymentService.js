@@ -1,5 +1,8 @@
 /**
- * Phase 2 stub: Stripe Checkout + FPS/bank transfer.
+ * Shared payment helpers (fee summary + non-Wonder stubs).
+ * Wonder live integration lives ONLY under:
+ *   server/services/wonder/gpcchkmoWonder*
+ *   /api/gpcchkmo/wonder/*
  */
 
 const { FEE, PAYMENT_STATUS } = require('../constants/enums');
@@ -10,23 +13,26 @@ function buildPaymentSummary({ feeAmountHkd = null } = {}) {
   return {
     baseAmountHkd: base,
     feeAmountHkd: fee,
-    totalAmountHkd: fee == null ? null : base + fee,
+    totalAmountHkd: fee == null ? base : base + fee,
     currency: FEE.CURRENCY,
+    providerHint: 'wonder_gpcchkmo',
     feeDisclaimer:
       '所有信用卡及經付款網關處理的交易均會產生手續費。該費用由參加者承擔，並會在您確認付款授權前，以獨立項目清楚列示。',
   };
 }
 
 async function createStripeCheckoutSession(/* team */) {
-  throw new Error('Phase 2: Stripe Checkout not configured');
+  throw new Error(
+    'Stripe Checkout not configured for GPCC RSVP (use Wonder: /api/gpcchkmo/wonder/checkout)'
+  );
 }
 
 async function handleStripeWebhook(/* rawBody, signature */) {
-  throw new Error('Phase 2: Stripe webhook not configured');
+  throw new Error('Stripe webhook not configured for GPCC RSVP');
 }
 
 async function createManualPaymentReference(team) {
-  const ref = `GPCC-${String(team._id).slice(-8).toUpperCase()}`;
+  const ref = `GPCC-FPS-${String(team._id).slice(-8).toUpperCase()}`;
   return {
     method: 'fps',
     paymentReference: ref,

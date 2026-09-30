@@ -9,9 +9,12 @@ const mongoose = require('mongoose');
 const apiRouter = require('./routes/api');
 const phaseStubsRouter = require('./routes/phaseStubs');
 const adminRouter = require('./routes/admin');
+const gpcchkmoWonderRouter = require('./routes/gpcchkmoWonder');
 const ClubVenue = require('./models/ClubVenue');
 const { ensureDefaultAdmin } = require('./services/adminSeed');
 const { attachAdminLocals } = require('./middleware/adminAuth');
+const { isWonderConfigured, PROVIDER_ID } = require('./services/wonder/gpcchkmoWonderCheckout');
+const { FEE } = require('./constants/enums');
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3480;
@@ -45,18 +48,45 @@ app.get('/', (_req, res) => res.redirect('/rsvp'));
 app.get('/rsvp', (_req, res) => {
   res.render('rsvp', {
     title: '海選報名 RSVP｜GPCC 香港站',
-    feeBase: 880,
+    feeBase: FEE.BASE_HKD,
   });
 });
-app.get('/rsvp/success', (req, res) => {
+app.get('/rsvp/success', async (req, res) => {
+  const applicationId = req.query.id || '';
+  let paymentState = req.query.payment || '';
+  let wonderConfigured = false;
+  let teamPaymentStatus = '';
+  let teamStatus = '';
+  try {
+    wonderConfigured = isWonderConfigured();
+    if (applicationId) {
+      const Team = require('./models/Team');
+      const team = await Team.findById(applicationId).lean();
+      if (team) {
+        teamPaymentStatus = team.payment?.status || '';
+        teamStatus = team.status || '';
+        if (teamPaymentStatus === 'paid') paymentState = paymentState || 'paid';
+      }
+    }
+  } catch (err) {
+    console.error(err);
+  }
   res.render('success', {
     title: '已收到報名申請｜GPCC 香港站',
-    applicationId: req.query.id || '',
+    applicationId,
+    paymentState,
+    wonderConfigured,
+    teamPaymentStatus,
+    teamStatus,
+    paymentProvider: PROVIDER_ID,
+    feeBase: FEE.BASE_HKD,
   });
 });
 
 app.use('/api', apiRouter);
 app.use('/api', phaseStubsRouter);
+/** Isolated Wonder webhook/checkout — do not mount under picklevibes-style /payments/wonder */
+app.use('/api/gpcchkmo/wonder', gpcchkmoWonderRouter);
 app.use('/admin', adminRouter);
 
 app.use((err, req, res, _next) => {
@@ -88,6 +118,9 @@ async function start() {
   app.listen(PORT, () => {
     console.log(`GPCC RSVP listening on http://localhost:${PORT}/rsvp`);
     console.log(`Admin panel: http://localhost:${PORT}/admin`);
+    console.log(
+      `Wonder (${PROVIDER_ID}): ${isWonderConfigured() ? 'configured' : 'NOT configured'} → /api/gpcchkmo/wonder`
+    );
   });
 }
 

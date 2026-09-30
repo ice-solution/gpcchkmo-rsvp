@@ -106,6 +106,23 @@
     </form>
 
     <div class="rounded-2xl bg-white p-5 shadow-panel ring-1 ring-slate-200">
+      <h2 class="font-semibold text-brand-deep">Wonder 付款紀錄（gpcchkmo 獨立）</h2>
+      <ul class="mt-3 space-y-2 text-xs text-slate-600">
+        <% if (!wonderPayments || !wonderPayments.length) { %>
+        <li class="text-slate-400">尚未發起 Wonder 付款</li>
+        <% } %>
+        <% (wonderPayments || []).forEach(function(p){ %>
+        <li class="rounded-lg bg-slate-50 px-3 py-2">
+          <div class="font-mono text-[11px] text-brand-blue"><%= p.referenceNumber %></div>
+          <div>狀態：<%= labels.paymentStatus[p.status] || p.status %> · HKD <%= p.amountHkd %></div>
+          <div>provider：<%= p.provider %> · <%= formatDateTime(p.createdAt) %></div>
+          <% if (p.paidAt) { %><div>付款時間：<%= formatDateTime(p.paidAt) %></div><% } %>
+        </li>
+        <% }) %>
+      </ul>
+    </div>
+
+    <div class="rounded-2xl bg-white p-5 shadow-panel ring-1 ring-slate-200">
       <h2 class="font-semibold text-brand-deep">操作紀錄</h2>
       <ul class="mt-3 max-h-72 space-y-2 overflow-y-auto text-xs text-slate-600">
         <% if (!audits.length) { %><li class="text-slate-400">暫無紀錄</li><% } %>

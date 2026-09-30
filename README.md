@@ -26,12 +26,26 @@ Admin: http://localhost:3480/admin （預設 `admin` / `admin_password`，請改
 - Persist `Team` + `Player` with status `submitted_pending_payment`
 - Success page: **已收到申請／待付款待核實**（無 QR、無隊伍編號）
 - **Admin panel**: login, list/filter, detail + status update, team code, CSV export
+- **Wonder payment (isolated)**: `GPCCHKMO_WONDER_*` env, `gpcchkmo_` reference prefix, webhook `/api/gpcchkmo/wonder/webhook`, collection `gpcchkmo_wonder_payments`
+
+## Wonder payment (separated from picklevibes)
+
+| Item | GPCC RSVP | PickleVibes |
+|------|-----------|-------------|
+| Env keys | `GPCCHKMO_WONDER_APP_ID` / `GPCCHKMO_WONDER_PRIVATE_KEY` | `WONDER_APP_ID` / `WONDER_PRIVATE_KEY` |
+| Provider id | `wonder_gpcchkmo` | (picklevibes internal) |
+| Reference | `gpcchkmo_<paymentId>` | ObjectId / `paylink_*` |
+| Webhook | `/api/gpcchkmo/wonder/webhook` | `/api/payments/wonder/webhook` |
+| DB collection | `gpcchkmo_wonder_payments` | picklevibes collections |
+
+You may paste the **same Wonder merchant credentials** into `GPCCHKMO_WONDER_*`, but never reuse the picklevibes env variable names in this project.
 
 ## Later phases (stubs ready)
 
 | Module | Path |
 |--------|------|
-| Stripe / FPS payment | `server/services/paymentService.js` |
+| Wonder (live) | `server/services/wonder/` + `/api/gpcchkmo/wonder/*` |
+| Stripe / FPS stubs | `server/services/paymentService.js` |
 | Email stages | `server/services/emailService.js` |
 | Pack / check-in QR | `server/services/qrService.js` |
 | Audit log | `server/models/AuditLog.js` |

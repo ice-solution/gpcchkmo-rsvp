@@ -334,7 +334,8 @@
           return;
         }
         const id = json.data.applicationId;
-        window.location.href = `/rsvp/success?id=${encodeURIComponent(id)}`;
+        // Go to success page first; user can pay via isolated Wonder checkout
+        window.location.href = `/rsvp/success?id=${encodeURIComponent(id)}&pay=1`;
       } catch (err) {
         console.error(err);
         showAlert(['網絡錯誤，請稍後再試']);

@@ -188,11 +188,18 @@ router.get('/teams/:id', requireAdmin, async (req, res, next) => {
       .limit(30)
       .lean();
 
+    const GpcchkmoWonderPayment = require('../models/GpcchkmoWonderPayment');
+    const wonderPayments = await GpcchkmoWonderPayment.find({ teamId: team._id })
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .lean();
+
     res.render('admin/team-detail', {
       title: `報名詳情｜${team.teamCode || team._id}`,
       team,
       players,
       audits,
+      wonderPayments,
       labels: labels(),
       enums: {
         TEAM_STATUS,

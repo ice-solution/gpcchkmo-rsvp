@@ -3,25 +3,87 @@
   <div class="overflow-hidden rounded-3xl bg-white shadow-panel ring-1 ring-slate-200">
     <div class="bg-gradient-to-r from-brand-deep to-brand-blue px-6 py-5 text-white">
       <p class="text-xs font-semibold uppercase tracking-[0.2em] text-brand-lime">GPCC Hong Kong</p>
-      <h1 class="mt-2 font-display text-2xl font-800 font-bold">已收到報名申請</h1>
+      <h1 class="mt-2 font-display text-2xl font-bold">
+        <% if (teamPaymentStatus === 'paid' || paymentState === 'paid') { %>
+          已收到付款｜待資格核實
+        <% } else { %>
+          已收到報名申請
+        <% } %>
+      </h1>
     </div>
     <div class="space-y-4 px-6 py-6 text-sm leading-relaxed text-slate-700">
-      <p class="rounded-2xl bg-amber-50 px-4 py-3 text-amber-900 ring-1 ring-amber-200">
-        此階段<strong>尚未等同報名成功</strong>。系統不會在此刻發放隊伍編號或 QR Code。
+      <% if (teamPaymentStatus === 'paid' || paymentState === 'paid') { %>
+      <p class="rounded-2xl bg-emerald-50 px-4 py-3 text-emerald-900 ring-1 ring-emerald-200">
+        付款已收到。此階段<strong>仍未等同報名成功</strong>；待大會核實資格後才會發正式確認、隊伍編號及 QR Code。
       </p>
+      <% } else { %>
+      <p class="rounded-2xl bg-amber-50 px-4 py-3 text-amber-900 ring-1 ring-amber-200">
+        此階段<strong>尚未等同報名成功</strong>。請先完成網上付款；系統不會在此刻發放隊伍編號或 QR Code。
+      </p>
+      <% } %>
+
       <% if (applicationId) { %>
       <p>申請參考編號：<span class="font-mono font-semibold text-brand-deep"><%= applicationId %></span></p>
       <% } %>
+
       <ul class="list-disc space-y-2 pl-5">
-        <li>海選報名費：HKD $880／隊（兩名球員）</li>
-        <li>請留意隊長電郵以接收付款指示及核實結果</li>
+        <li>海選報名費：HKD $<%= feeBase %>／隊（兩名球員）</li>
+        <li>付款網關：Wonder（GPCC 獨立設定 <code class="text-xs"><%= paymentProvider %></code>）</li>
+        <li>信用卡／網上支付手續費由參加者承擔，將於付款頁清楚列示</li>
         <li>付款成功不等於報名成功；待資格及重複報名核實後才發正式確認</li>
       </ul>
+
+      <div id="pay-error" class="hidden rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700 ring-1 ring-red-200"></div>
+
       <div class="flex flex-wrap gap-3 pt-2">
+        <% if (applicationId && wonderConfigured && teamPaymentStatus !== 'paid') { %>
+        <button type="button" id="btn-pay-wonder" class="btn-primary" data-team-id="<%= applicationId %>" data-auto-pay="<%= (typeof paymentState !== 'undefined' && paymentState === 'return') ? '0' : (typeof query !== 'undefined' ? '' : '') %>">
+          立即以 Wonder 付款 HKD $<%= feeBase %>
+        </button>
+        <% } else if (applicationId && !wonderConfigured && teamPaymentStatus !== 'paid') { %>
+        <p class="w-full rounded-xl bg-slate-50 px-3 py-2 text-xs text-slate-600 ring-1 ring-slate-200">
+          Wonder 尚未設定（需要 <code>GPCCHKMO_WONDER_*</code> 環境變數）。請聯絡大會完成付款設定。
+        </p>
+        <% } %>
         <a href="/rsvp" class="btn-secondary">返回報名表</a>
-        <a href="https://gpcchkmo.org/" class="btn-primary" target="_blank" rel="noopener">官方網站</a>
+        <a href="https://gpcchkmo.org/" class="btn-secondary" target="_blank" rel="noopener">官方網站</a>
       </div>
     </div>
   </div>
 </main>
+<script>
+(function () {
+  var btn = document.getElementById('btn-pay-wonder');
+  if (!btn) return;
+  var err = document.getElementById('pay-error');
+  var params = new URLSearchParams(window.location.search);
+  async function startPay() {
+    btn.disabled = true;
+    btn.textContent = '建立付款連結中…';
+    err.classList.add('hidden');
+    try {
+      var res = await fetch('/api/gpcchkmo/wonder/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teamId: btn.getAttribute('data-team-id') }),
+      });
+      var json = await res.json();
+      if (!json.ok || !json.data || !json.data.paymentUrl) {
+        throw new Error((json.errors && json.errors[0]) || '無法建立付款');
+      }
+      window.location.href = json.data.paymentUrl;
+    } catch (e) {
+      err.textContent = e.message || '付款連結建立失敗';
+      err.classList.remove('hidden');
+      btn.disabled = false;
+      btn.textContent = '立即以 Wonder 付款 HKD $<%= feeBase %>';
+    }
+  }
+  btn.addEventListener('click', startPay);
+  // After RSVP submit (?pay=1), auto open Wonder checkout once
+  if (params.get('pay') === '1' && params.get('payment') !== 'return') {
+    startPay();
+  }
+})();
+</script>
 <%- include('partials/foot') %>
