@@ -1,0 +1,118 @@
+<%- include('partials/head') %>
+<div class="mb-6 flex flex-wrap items-end justify-between gap-3">
+  <div>
+    <h1 class="font-display text-2xl font-bold text-brand-deep">報名列表</h1>
+    <p class="mt-1 text-sm text-slate-500">共 <%= pagination.total %> 筆申請</p>
+  </div>
+  <a
+    class="btn-primary"
+    href="/admin/export.csv?status=<%= encodeURIComponent(filters.status) %>&payment=<%= encodeURIComponent(filters.payment) %>&qualification=<%= encodeURIComponent(filters.qualification) %>&q=<%= encodeURIComponent(filters.q) %>"
+  >匯出 CSV</a>
+</div>
+
+<% if (flash) { %>
+<div class="mb-4 rounded-xl bg-emerald-50 px-4 py-2 text-sm text-emerald-800 ring-1 ring-emerald-200"><%= flash %></div>
+<% } %>
+
+<div class="mb-4 flex flex-wrap gap-2">
+  <% Object.keys(counts).forEach(function(key) { %>
+    <a href="/admin?status=<%= key %>" class="rounded-full px-3 py-1 text-xs font-semibold ring-1 <%= filters.status===key ? 'bg-brand-lime text-brand-deep ring-brand-deep' : 'bg-white text-slate-600 ring-slate-200' %>">
+      <%= labels.teamStatus[key] || key %> (<%= counts[key] %>)
+    </a>
+  <% }) %>
+  <a href="/admin" class="rounded-full px-3 py-1 text-xs font-semibold text-slate-500 ring-1 ring-slate-200">全部</a>
+</div>
+
+<form method="get" action="/admin" class="mb-5 grid gap-3 rounded-2xl bg-white p-4 shadow-panel ring-1 ring-slate-200 md:grid-cols-6">
+  <div class="md:col-span-2">
+    <label class="field-label">搜尋</label>
+    <input class="field-input" name="q" value="<%= filters.q %>" placeholder="電郵／球會／隊名／隊伍編號" />
+  </div>
+  <div>
+    <label class="field-label">報名狀態</label>
+    <select class="field-input" name="status">
+      <option value="">全部</option>
+      <% Object.keys(labels.teamStatus).forEach(function(k){ %>
+      <option value="<%= k %>" <%= filters.status===k?'selected':'' %>><%= labels.teamStatus[k] %></option>
+      <% }) %>
+    </select>
+  </div>
+  <div>
+    <label class="field-label">付款</label>
+    <select class="field-input" name="payment">
+      <option value="">全部</option>
+      <% Object.keys(labels.paymentStatus).forEach(function(k){ %>
+      <option value="<%= k %>" <%= filters.payment===k?'selected':'' %>><%= labels.paymentStatus[k] %></option>
+      <% }) %>
+    </select>
+  </div>
+  <div>
+    <label class="field-label">資格</label>
+    <select class="field-input" name="qualification">
+      <option value="">全部</option>
+      <% Object.keys(labels.qualificationStatus).forEach(function(k){ %>
+      <option value="<%= k %>" <%= filters.qualification===k?'selected':'' %>><%= labels.qualificationStatus[k] %></option>
+      <% }) %>
+    </select>
+  </div>
+  <div class="flex items-end gap-2">
+    <button type="submit" class="btn-primary w-full">篩選</button>
+  </div>
+</form>
+
+<div class="overflow-hidden rounded-2xl bg-white shadow-panel ring-1 ring-slate-200">
+  <div class="overflow-x-auto">
+    <table class="min-w-full text-left text-sm">
+      <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+        <tr>
+          <th class="px-4 py-3">提交時間</th>
+          <th class="px-4 py-3">隊伍／隊長</th>
+          <th class="px-4 py-3">組別／項目</th>
+          <th class="px-4 py-3">狀態</th>
+          <th class="px-4 py-3">付款</th>
+          <th class="px-4 py-3"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        <% if (!rows.length) { %>
+        <tr><td colspan="6" class="px-4 py-8 text-center text-slate-500">暫無資料</td></tr>
+        <% } %>
+        <% rows.forEach(function(row){ var team=row.team; var captain=row.captain; var teammate=row.teammate; %>
+        <tr class="hover:bg-sky-50/40">
+          <td class="whitespace-nowrap px-4 py-3 text-xs text-slate-500"><%= formatDateTime(team.submittedAt) %></td>
+          <td class="px-4 py-3">
+            <div class="font-semibold text-slate-800"><%= team.displayName || ((captain&&captain.chineseName)||'') + (teammate?' / '+(teammate.chineseName||''):'') || '—' %></div>
+            <div class="text-xs text-slate-500"><%= captain ? captain.chineseName : '—' %> · <%= team.captainEmail %></div>
+            <div class="text-xs text-slate-400"><%= team.captainClub %></div>
+            <% if (team.teamCode) { %><div class="mt-0.5 font-mono text-xs text-brand-blue"><%= team.teamCode %></div><% } %>
+          </td>
+          <td class="px-4 py-3 text-xs">
+            <div><%= labels.ageGroup[team.ageGroup] || team.ageGroup %></div>
+            <div class="text-slate-500"><%= labels.eventCategory[team.eventCategory] || team.eventCategory %></div>
+          </td>
+          <td class="px-4 py-3">
+            <span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700"><%= labels.teamStatus[team.status] || team.status %></span>
+          </td>
+          <td class="px-4 py-3 text-xs text-slate-600"><%= labels.paymentStatus[team.payment && team.payment.status] || '—' %></td>
+          <td class="px-4 py-3 text-right">
+            <a class="text-sm font-semibold text-brand-blue hover:underline" href="/admin/teams/<%= team._id %>">詳情</a>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<% if (pagination.pages > 1) { %>
+<nav class="mt-4 flex items-center justify-center gap-2 text-sm">
+  <% if (pagination.page > 1) { %>
+  <a class="btn-secondary !py-1.5" href="/admin?page=<%= pagination.page-1 %>&status=<%= filters.status %>&payment=<%= filters.payment %>&qualification=<%= filters.qualification %>&q=<%= encodeURIComponent(filters.q) %>">上一頁</a>
+  <% } %>
+  <span class="text-slate-500"><%= pagination.page %> / <%= pagination.pages %></span>
+  <% if (pagination.page < pagination.pages) { %>
+  <a class="btn-secondary !py-1.5" href="/admin?page=<%= pagination.page+1 %>&status=<%= filters.status %>&payment=<%= filters.payment %>&qualification=<%= filters.qualification %>&q=<%= encodeURIComponent(filters.q) %>">下一頁</a>
+  <% } %>
+</nav>
+<% } %>
+<%- include('partials/foot') %>

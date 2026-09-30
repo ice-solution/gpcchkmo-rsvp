@@ -1,0 +1,25 @@
+<%- include('partials/head') %>
+<div class="mx-auto flex min-h-[80vh] max-w-md flex-col justify-center">
+  <div class="overflow-hidden rounded-3xl bg-white shadow-panel ring-1 ring-slate-200">
+    <div class="bg-gradient-to-r from-brand-deep to-brand-blue px-6 py-5 text-white">
+      <p class="text-xs font-bold uppercase tracking-[0.2em] text-brand-lime">GPCC Admin</p>
+      <h1 class="mt-1 font-display text-2xl font-bold">後台登入</h1>
+    </div>
+    <form method="post" action="/admin/login" class="space-y-4 px-6 py-6">
+      <% if (error) { %>
+      <div class="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700 ring-1 ring-red-200"><%= error %></div>
+      <% } %>
+      <input type="hidden" name="next" value="<%= next %>" />
+      <div>
+        <label class="field-label" for="username">帳號</label>
+        <input class="field-input" id="username" name="username" required autocomplete="username" />
+      </div>
+      <div>
+        <label class="field-label" for="password">密碼</label>
+        <input class="field-input" id="password" name="password" type="password" required autocomplete="current-password" />
+      </div>
+      <button type="submit" class="btn-primary w-full">登入</button>
+    </form>
+  </div>
+</div>
+<%- include('partials/foot') %>

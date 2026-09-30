@@ -1,0 +1,122 @@
+<%- include('partials/head') %>
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+  <div>
+    <a href="/admin" class="text-sm text-brand-blue hover:underline">← 返回列表</a>
+    <h1 class="mt-1 font-display text-2xl font-bold text-brand-deep">報名詳情</h1>
+    <p class="mt-1 font-mono text-xs text-slate-500"><%= team._id %></p>
+  </div>
+  <% if (team.teamCode) { %>
+  <div class="rounded-xl bg-brand-lime/40 px-4 py-2 font-mono text-sm font-bold text-brand-deep"><%= team.teamCode %></div>
+  <% } %>
+</div>
+
+<% if (flash) { %>
+<div class="mb-4 rounded-xl bg-emerald-50 px-4 py-2 text-sm text-emerald-800 ring-1 ring-emerald-200"><%= flash %></div>
+<% } %>
+
+<div class="grid gap-5 lg:grid-cols-3">
+  <section class="space-y-4 lg:col-span-2">
+    <div class="rounded-2xl bg-white p-5 shadow-panel ring-1 ring-slate-200">
+      <h2 class="font-semibold text-brand-deep">隊伍資料</h2>
+      <dl class="mt-3 grid gap-2 text-sm sm:grid-cols-2">
+        <div><dt class="text-xs text-slate-500">顯示名稱</dt><dd><%= team.displayName || '—' %></dd></div>
+        <div><dt class="text-xs text-slate-500">報名類型</dt><dd><%= labels.registrationType[team.registrationType] || team.registrationType %></dd></div>
+        <div><dt class="text-xs text-slate-500">隊長球會</dt><dd><%= team.captainClub %></dd></div>
+        <div><dt class="text-xs text-slate-500">隊長電郵</dt><dd><%= team.captainEmail %></dd></div>
+        <div><dt class="text-xs text-slate-500">年齡組別</dt><dd><%= labels.ageGroup[team.ageGroup] %></dd></div>
+        <div><dt class="text-xs text-slate-500">競賽項目</dt><dd><%= labels.eventCategory[team.eventCategory] %></dd></div>
+        <div class="sm:col-span-2"><dt class="text-xs text-slate-500">首選場地</dt><dd><%= team.preferredVenueLabel %></dd></div>
+        <div class="sm:col-span-2"><dt class="text-xs text-slate-500">可參賽時段</dt><dd><%= (team.availability||[]).join('、') || '—' %></dd></div>
+        <div><dt class="text-xs text-slate-500">提交時間</dt><dd><%= formatDateTime(team.submittedAt) %></dd></div>
+        <div><dt class="text-xs text-slate-500">確認時間</dt><dd><%= formatDateTime(team.confirmedAt) || '—' %></dd></div>
+      </dl>
+    </div>
+
+    <% players.forEach(function(p){ %>
+    <div class="rounded-2xl bg-white p-5 shadow-panel ring-1 ring-slate-200">
+      <h2 class="font-semibold text-brand-deep"><%= p.role === PLAYER_ROLES.CAPTAIN ? '隊長' : '隊友' %></h2>
+      <dl class="mt-3 grid gap-2 text-sm sm:grid-cols-2">
+        <div><dt class="text-xs text-slate-500">中文姓名</dt><dd><%= p.chineseName %></dd></div>
+        <div><dt class="text-xs text-slate-500">英文姓名</dt><dd><%= p.englishName %></dd></div>
+        <div><dt class="text-xs text-slate-500">性別</dt><dd><%= p.gender === 'male' ? '男' : '女' %></dd></div>
+        <div><dt class="text-xs text-slate-500">出生日期</dt><dd><%= formatDate(p.dateOfBirth) %></dd></div>
+        <div><dt class="text-xs text-slate-500">WhatsApp</dt><dd><%= p.whatsapp %></dd></div>
+        <div><dt class="text-xs text-slate-500">電郵</dt><dd><%= p.email %></dd></div>
+        <div><dt class="text-xs text-slate-500">球會</dt><dd><%= p.club || '—' %></dd></div>
+        <div><dt class="text-xs text-slate-500">緊急聯絡</dt><dd><%= p.emergencyContact.name %>／<%= p.emergencyContact.phone %></dd></div>
+      </dl>
+    </div>
+    <% }) %>
+
+    <div class="rounded-2xl bg-white p-5 shadow-panel ring-1 ring-slate-200">
+      <h2 class="font-semibold text-brand-deep">市場研究／條款</h2>
+      <dl class="mt-3 grid gap-2 text-sm sm:grid-cols-2">
+        <div><dt class="text-xs text-slate-500">嘉年華意向</dt><dd><%= team.research.carnivalIntent %></dd></div>
+        <div><dt class="text-xs text-slate-500">技術程度</dt><dd><%= team.research.skillLevel %></dd></div>
+        <div><dt class="text-xs text-slate-500">得知渠道</dt><dd><%= team.research.hearAbout %></dd></div>
+        <div><dt class="text-xs text-slate-500">行銷同意</dt><dd><%= team.agreements.marketing ? '是' : '否' %></dd></div>
+        <div class="sm:col-span-2"><dt class="text-xs text-slate-500">興趣</dt><dd><%= (team.research.interests||[]).join('、') %></dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <aside class="space-y-4">
+    <form method="post" action="/admin/teams/<%= team._id %>/update" class="rounded-2xl bg-white p-5 shadow-panel ring-1 ring-slate-200">
+      <h2 class="font-semibold text-brand-deep">更新狀態</h2>
+      <div class="mt-4 space-y-3">
+        <div>
+          <label class="field-label">報名狀態</label>
+          <select class="field-input" name="status">
+            <% Object.keys(labels.teamStatus).forEach(function(k){ %>
+            <option value="<%= k %>" <%= team.status===k?'selected':'' %>><%= labels.teamStatus[k] %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div>
+          <label class="field-label">付款狀態</label>
+          <select class="field-input" name="paymentStatus">
+            <% Object.keys(labels.paymentStatus).forEach(function(k){ %>
+            <option value="<%= k %>" <%= (team.payment&&team.payment.status)===k?'selected':'' %>><%= labels.paymentStatus[k] %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div>
+          <label class="field-label">資格審核</label>
+          <select class="field-input" name="qualificationStatus">
+            <% Object.keys(labels.qualificationStatus).forEach(function(k){ %>
+            <option value="<%= k %>" <%= team.qualificationStatus===k?'selected':'' %>><%= labels.qualificationStatus[k] %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div>
+          <label class="field-label">隊伍編號</label>
+          <input class="field-input" name="teamCode" value="<%= team.teamCode || '' %>" placeholder="GPCC-HK-0001" />
+          <% if (!team.teamCode) { %>
+          <label class="mt-2 flex items-center gap-2 text-xs text-slate-600">
+            <input type="checkbox" name="assignTeamCode" value="1" /> 自動分配下一編號
+          </label>
+          <% } %>
+        </div>
+        <div>
+          <label class="field-label">內部備註</label>
+          <textarea class="field-input" name="notes" rows="4"><%= team.notes || '' %></textarea>
+        </div>
+        <button type="submit" class="btn-primary w-full">儲存更新</button>
+      </div>
+    </form>
+
+    <div class="rounded-2xl bg-white p-5 shadow-panel ring-1 ring-slate-200">
+      <h2 class="font-semibold text-brand-deep">操作紀錄</h2>
+      <ul class="mt-3 max-h-72 space-y-2 overflow-y-auto text-xs text-slate-600">
+        <% if (!audits.length) { %><li class="text-slate-400">暫無紀錄</li><% } %>
+        <% audits.forEach(function(a){ %>
+        <li class="rounded-lg bg-slate-50 px-3 py-2">
+          <div class="font-medium text-slate-800"><%= a.action %></div>
+          <div><%= a.actor %> · <%= formatDateTime(a.createdAt) %></div>
+        </li>
+        <% }) %>
+      </ul>
+    </div>
+  </aside>
+</div>
+<%- include('partials/foot') %>

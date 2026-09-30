@@ -15,15 +15,17 @@ npm run seed
 npm start
 ```
 
-Open http://localhost:3480/rsvp
+Open http://localhost:3480/rsvp  
+Admin: http://localhost:3480/admin （預設 `admin` / `admin_password`，請改 `.env`）
 
 ## Phase 1 scope
 
-- 6-step public application form (PDF sections 0–5)
+- 6-step public application form (PDF sections 0–5) + intro gate
 - Age-group / doubles-event eligibility filtering
 - Max 2 active events per player (email / WhatsApp)
 - Persist `Team` + `Player` with status `submitted_pending_payment`
 - Success page: **已收到申請／待付款待核實**（無 QR、無隊伍編號）
+- **Admin panel**: login, list/filter, detail + status update, team code, CSV export
 
 ## Later phases (stubs ready)
 
