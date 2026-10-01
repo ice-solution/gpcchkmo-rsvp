@@ -138,6 +138,9 @@
     }
     if (n === 1) {
       if (!$('#captainClub').value.trim()) errors.push('請選擇隊長所屬球會／機構');
+      if ($('#captainClub').value === '__other__' && !$('#captainClubOther').value.trim()) {
+        errors.push('請填寫其他球會／機構名稱');
+      }
       if (!radioValue('registrationType')) errors.push('請選擇報名類型');
       if (!$('#captainEmail').value.trim()) errors.push('請填寫隊長電郵');
     }
@@ -180,9 +183,11 @@
   function buildPayload() {
     const venueSelect = $('#preferredVenueId');
     const venueOption = venueSelect.selectedOptions[0];
+    const clubSelect = $('#captainClub').value.trim();
     return {
       introAcknowledged: $('#introAck').checked,
-      captainClub: $('#captainClub').value.trim(),
+      captainClub: clubSelect,
+      captainClubOther: clubSelect === '__other__' ? $('#captainClubOther').value.trim() : '',
       registrationType: radioValue('registrationType'),
       captainEmail: $('#captainEmail').value.trim(),
       displayName: $('#displayName').value.trim(),
@@ -245,6 +250,17 @@
       (meta.captainClubs || [])
         .map((c) => `<option value="${escapeHtml(c.value)}">${escapeHtml(c.label)}</option>`)
         .join('');
+
+    function syncCaptainClubOther() {
+      const isOther = captainClubSelect.value === '__other__';
+      const wrap = $('#captainClubOtherWrap');
+      const otherInput = $('#captainClubOther');
+      wrap.classList.toggle('hidden', !isOther);
+      otherInput.required = isOther;
+      if (!isOther) otherInput.value = '';
+    }
+    captainClubSelect.addEventListener('change', syncCaptainClubOther);
+    syncCaptainClubOther();
 
     radioCards($('#registrationTypeOptions'), 'registrationType', meta.registrationTypes);
     checkCards($('#availabilityOptions'), 'availability', meta.availabilitySlots);

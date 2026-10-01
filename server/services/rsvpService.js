@@ -14,6 +14,7 @@ const {
   GENDERS,
   FEE,
   CAPTAIN_CLUBS,
+  CAPTAIN_CLUB_OTHER_VALUE,
 } = require('../constants/enums');
 const {
   validateAgeGroupSelection,
@@ -40,9 +41,19 @@ function validatePayload(body) {
   };
 
   push(requireString(body.captainClub, '隊長所屬球會／機構'));
-  if (body.captainClub && !CAPTAIN_CLUBS.includes(String(body.captainClub).trim())) {
+  let resolvedCaptainClub = String(body.captainClub || '').trim();
+  if (resolvedCaptainClub === CAPTAIN_CLUB_OTHER_VALUE || resolvedCaptainClub === '其他') {
+    const other = String(body.captainClubOther || '').trim();
+    if (!other) {
+      errors.push('請填寫「其他」球會／機構名稱');
+    } else {
+      resolvedCaptainClub = other;
+    }
+  } else if (resolvedCaptainClub && !CAPTAIN_CLUBS.includes(resolvedCaptainClub)) {
     errors.push('隊長所屬球會／機構選項無效');
   }
+  // Stash resolved value for createRsvp persistence
+  body.captainClub = resolvedCaptainClub;
   if (!Object.values(REGISTRATION_TYPES).includes(body.registrationType)) {
     errors.push('報名類型無效');
   }

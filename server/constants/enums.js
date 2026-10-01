@@ -15,6 +15,8 @@ const CAPTAIN_CLUBS = [
   'Table meets Pickle',
 ];
 
+const CAPTAIN_CLUB_OTHER_VALUE = '__other__';
+
 const GENDERS = {
   MALE: 'male',
   FEMALE: 'female',
@@ -176,6 +178,7 @@ const EVENT_YEAR = 2026;
 module.exports = {
   REGISTRATION_TYPES,
   CAPTAIN_CLUBS,
+  CAPTAIN_CLUB_OTHER_VALUE,
   GENDERS,
   AGE_GROUPS,
   AGE_GROUP_LABELS,
