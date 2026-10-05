@@ -6,8 +6,6 @@
       <h1 class="mt-2 font-display text-2xl font-bold">
         <% if (teamPaymentStatus === 'paid' || paymentState === 'paid') { %>
           已收到付款｜待資格核實
-        <% } else if (!paymentGatewayEnabled) { %>
-          已收到報名申請｜人工待付
         <% } else { %>
           已收到報名申請
         <% } %>
@@ -20,7 +18,7 @@
       </p>
       <% } else if (!paymentGatewayEnabled) { %>
       <p class="rounded-2xl bg-amber-50 px-4 py-3 text-amber-900 ring-1 ring-amber-200">
-        申請狀態為<strong>人工待付</strong>。此階段<strong>尚未等同報名成功</strong>；請確認已完成轉賬並保留付款憑證。
+        已收到您的報名申請<% if (teamStatusLabel) { %>（<%= teamStatusLabel %>）<% } %>。請按下方按鈕前往轉賬付款頁，完成轉數快／銀行轉賬並上載憑證。
       </p>
       <% } else { %>
       <p class="rounded-2xl bg-amber-50 px-4 py-3 text-amber-900 ring-1 ring-amber-200">
@@ -35,28 +33,42 @@
       <p>轉賬備註／參考：<span class="font-mono font-semibold text-brand-deep"><%= paymentReference %></span></p>
       <% } %>
 
-      <% if (!paymentGatewayEnabled && teamPaymentStatus !== 'paid') { %>
-      <div class="rounded-2xl bg-sky-50 px-4 py-4 ring-1 ring-brand-blue/20">
-        <img src="/images/fps_logo.jpg" alt="轉數快 FPS" class="mb-3 h-12 w-auto object-contain" />
-        <p>請於提交表格前完成轉賬，並拍照/截圖保存付款憑證。</p>
-        <p class="mt-2">基本費用：HKD $<%= feeBase %> / 隊</p>
-        <% if (wantPlayerPack) { %>
-        <p>選手包加購：HKD $<%= packFee %>（兩人份）</p>
-        <% } %>
-        <p>應繳總額：<strong>HKD $<%= feeTotal %></strong></p>
-        <p class="mt-2">轉數快 (FPS) 識別碼 / FPS #：<strong>133515288</strong>（大會指定收款戶口：Moves Sports Limited）</p>
-        <p>WhatsApp：<a class="font-semibold text-brand-blue underline" href="https://wa.me/85297232341" target="_blank" rel="noopener">97232341</a></p>
-        <p class="mt-2">銀行: OCBC Bank (Hong Kong)<br />戶口號碼: 802030689001<br />銀行代碼: 035</p>
-        <img src="/images/fps.jpg" alt="轉數快收款 QR Code" class="mx-auto mt-4 w-full max-w-[200px] rounded-xl bg-white p-2 ring-1 ring-slate-200" />
+      <% if (team) { %>
+      <div class="rounded-2xl bg-slate-50 px-4 py-4 ring-1 ring-slate-200">
+        <p class="font-semibold text-brand-deep">申請詳情</p>
+        <dl class="mt-3 grid gap-2 sm:grid-cols-2">
+          <div><dt class="text-xs text-slate-500">申請狀態</dt><dd><%= teamStatusLabel || '—' %></dd></div>
+          <div><dt class="text-xs text-slate-500">付款狀態</dt><dd><%= paymentStatusLabel || '—' %></dd></div>
+          <div><dt class="text-xs text-slate-500">隊伍名稱</dt><dd><%= team.displayName || '—' %></dd></div>
+          <div><dt class="text-xs text-slate-500">隊長球會</dt><dd><%= team.captainClub || '—' %></dd></div>
+          <div class="sm:col-span-2"><dt class="text-xs text-slate-500">隊長電郵</dt><dd><%= team.captainEmail || '—' %></dd></div>
+          <div><dt class="text-xs text-slate-500">年齡組別</dt><dd><%= labels.ageGroup[team.ageGroup] || team.ageGroup %></dd></div>
+          <div><dt class="text-xs text-slate-500">競賽項目</dt><dd><%= labels.eventCategory[team.eventCategory] || team.eventCategory %></dd></div>
+          <div class="sm:col-span-2"><dt class="text-xs text-slate-500">首選場地</dt><dd><%= team.preferredVenueLabel || '—' %></dd></div>
+          <div class="sm:col-span-2"><dt class="text-xs text-slate-500">選手包</dt><dd><%= wantPlayerPack ? '是（HKD $' + packFee + '／兩人份）' : '否' %></dd></div>
+        </dl>
       </div>
-      <% if (proofUrl || proofLink) { %>
-      <p>已收到付款憑證：
-        <% if (proofUrl) { %><a class="text-brand-blue underline" href="<%= proofUrl %>" target="_blank" rel="noopener">查看上載檔案</a><% } %>
-        <% if (proofUrl && proofLink) { %> · <% } %>
-        <% if (proofLink) { %><a class="text-brand-blue underline" href="<%= proofLink %>" target="_blank" rel="noopener">憑證連結</a><% } %>
-      </p>
       <% } %>
-      <% } else { %>
+
+      <% if (captain) { %>
+      <div class="rounded-2xl bg-slate-50 px-4 py-4 ring-1 ring-slate-200">
+        <p class="font-semibold text-brand-deep">隊長</p>
+        <p class="mt-2"><%= captain.chineseName %>／<%= captain.englishName %>（<%= captain.gender === 'male' ? '男' : '女' %>）</p>
+        <p>出生日期：<%= formatDate(captain.dateOfBirth) %></p>
+        <p>WhatsApp：<%= captain.whatsapp %></p>
+      </div>
+      <% } %>
+
+      <% if (teammate) { %>
+      <div class="rounded-2xl bg-slate-50 px-4 py-4 ring-1 ring-slate-200">
+        <p class="font-semibold text-brand-deep">隊友</p>
+        <p class="mt-2"><%= teammate.chineseName %>／<%= teammate.englishName %>（<%= teammate.gender === 'male' ? '男' : '女' %>）</p>
+        <p>出生日期：<%= formatDate(teammate.dateOfBirth) %></p>
+        <p>WhatsApp：<%= teammate.whatsapp %></p>
+        <p>電郵：<%= teammate.email %></p>
+      </div>
+      <% } %>
+
       <ul class="list-disc space-y-2 pl-5">
         <li>海選報名費：HKD $<%= feeBase %>／隊（兩名球員）</li>
         <% if (wantPlayerPack) { %>
@@ -66,13 +78,14 @@
         <li>Wonder 平台手續費 3%（參加者承擔）：HKD $<%= feeSurcharge %></li>
         <% } %>
         <li>應繳總額：<strong>HKD $<%= feeTotal %></strong></li>
-        <li>付款成功不等於報名成功；待資格及重複報名核實後才發正式確認</li>
       </ul>
-      <% } %>
 
       <div id="pay-error" class="hidden rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700 ring-1 ring-red-200"></div>
 
       <div class="flex flex-wrap gap-3 pt-2">
+        <% if (!paymentGatewayEnabled && applicationId && teamPaymentStatus !== 'paid') { %>
+        <a href="/rsvp/pay?id=<%= encodeURIComponent(applicationId) %>" class="btn-primary">前往轉賬付款</a>
+        <% } %>
         <% if (applicationId && paymentGatewayEnabled && wonderConfigured && teamPaymentStatus !== 'paid') { %>
         <button type="button" id="btn-pay-wonder" class="btn-primary" data-team-id="<%= applicationId %>">
           立即以 Wonder 付款 HKD $<%= feeTotal %>

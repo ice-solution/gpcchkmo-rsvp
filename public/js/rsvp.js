@@ -568,9 +568,9 @@
         const id = json.data.applicationId;
         const gatewayOn = Boolean(meta && meta.paymentGatewayEnabled);
         clearDraft();
-        window.location.href = gatewayOn
-          ? `/rsvp/success?id=${encodeURIComponent(id)}&pay=1`
-          : `/rsvp/pay?id=${encodeURIComponent(id)}`;
+        window.location.href = `/rsvp/success?id=${encodeURIComponent(id)}${
+          gatewayOn ? '&pay=1' : ''
+        }`;
       } catch (err) {
         console.error(err);
         showAlert(['網絡錯誤，請稍後再試']);

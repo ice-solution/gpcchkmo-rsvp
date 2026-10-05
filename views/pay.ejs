@@ -55,6 +55,9 @@
       </div>
 
       <div class="flex flex-wrap gap-3 pt-2">
+        <% if (applicationId) { %>
+        <a href="/rsvp/success?id=<%= encodeURIComponent(applicationId) %>" class="btn-secondary">返回申請詳情</a>
+        <% } %>
         <a href="/rsvp" class="btn-secondary">返回報名表</a>
         <a href="https://gpcchkmo.org/" class="btn-secondary" target="_blank" rel="noopener">官方網站</a>
       </div>

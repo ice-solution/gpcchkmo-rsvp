@@ -15,7 +15,14 @@ const { ensureDefaultAdmin } = require('./services/adminSeed');
 const { attachAdminLocals } = require('./middleware/adminAuth');
 const { isWonderConfigured, PROVIDER_ID } = require('./services/wonder/gpcchkmoWonderCheckout');
 const { isPaymentGatewayEnabled } = require('./config/paymentGateway');
-const { FEE } = require('./constants/enums');
+const {
+  FEE,
+  TEAM_STATUS_LABELS,
+  PAYMENT_STATUS_LABELS,
+  AGE_GROUP_LABELS,
+  EVENT_CATEGORY_LABELS,
+  PLAYER_ROLES,
+} = require('./constants/enums');
 const { buildPaymentSummary } = require('./services/paymentService');
 
 const app = express();
@@ -46,6 +53,62 @@ app.use(
 );
 app.use(attachAdminLocals);
 
+function formatDateYmd(d) {
+  if (!d) return '';
+  const dt = new Date(d);
+  if (Number.isNaN(dt.getTime())) return '';
+  return dt.toISOString().slice(0, 10);
+}
+
+async function loadReceiptContext(applicationId) {
+  const empty = {
+    applicationId: applicationId || '',
+    team: null,
+    captain: null,
+    teammate: null,
+    teamPaymentStatus: '',
+    teamStatus: '',
+    teamStatusLabel: '',
+    paymentStatusLabel: '',
+    wantPlayerPack: false,
+    proofUrl: '',
+    proofLink: '',
+    paymentReference: '',
+  };
+  if (!applicationId) return empty;
+  try {
+    const Team = require('./models/Team');
+    const Player = require('./models/Player');
+    const team = await Team.findById(applicationId).lean();
+    if (!team) return empty;
+    const players = await Player.find({ teamId: team._id }).lean();
+    const captain = players.find((p) => p.role === PLAYER_ROLES.CAPTAIN) || null;
+    const teammate = players.find((p) => p.role === PLAYER_ROLES.TEAMMATE) || null;
+    return {
+      applicationId: String(team._id),
+      team,
+      captain,
+      teammate,
+      teamPaymentStatus: team.payment?.status || '',
+      teamStatus: team.status || '',
+      teamStatusLabel: TEAM_STATUS_LABELS[team.status] || team.status || '',
+      paymentStatusLabel: PAYMENT_STATUS_LABELS[team.payment?.status] || '',
+      wantPlayerPack: team.wantPlayerPack === true,
+      proofUrl: team.payment?.proofUrl || '',
+      proofLink: team.payment?.proofLink || '',
+      paymentReference: team.payment?.paymentReference || '',
+    };
+  } catch (err) {
+    console.error(err);
+    return empty;
+  }
+}
+
+const receiptLabels = {
+  ageGroup: AGE_GROUP_LABELS,
+  eventCategory: EVENT_CATEGORY_LABELS,
+};
+
 app.get('/', (_req, res) => res.redirect('/rsvp'));
 app.get('/rsvp', (_req, res) => {
   const gatewayOn = isPaymentGatewayEnabled();
@@ -60,90 +123,45 @@ app.get('/rsvp', (_req, res) => {
   });
 });
 app.get('/rsvp/success', async (req, res) => {
-  if (!isPaymentGatewayEnabled()) {
-    const q = req.query.id ? `?id=${encodeURIComponent(String(req.query.id))}` : '';
-    return res.redirect(`/rsvp/pay${q}`);
-  }
   const applicationId = req.query.id || '';
   let paymentState = req.query.payment || '';
-  const gatewayOn = true;
-  let wonderConfigured = false;
-  let teamPaymentStatus = '';
-  let teamStatus = '';
-  let wantPlayerPack = false;
-  let proofUrl = '';
-  let proofLink = '';
-  let paymentReference = '';
-  try {
-    wonderConfigured = isWonderConfigured();
-    if (applicationId) {
-      const Team = require('./models/Team');
-      const team = await Team.findById(applicationId).lean();
-      if (team) {
-        teamPaymentStatus = team.payment?.status || '';
-        teamStatus = team.status || '';
-        wantPlayerPack = team.wantPlayerPack === true;
-        proofUrl = team.payment?.proofUrl || '';
-        proofLink = team.payment?.proofLink || '';
-        paymentReference = team.payment?.paymentReference || '';
-        if (teamPaymentStatus === 'paid') paymentState = paymentState || 'paid';
-      }
-    }
-  } catch (err) {
-    console.error(err);
-  }
-  const fee = buildPaymentSummary({ wantPlayerPack, gatewayEnabled: gatewayOn });
+  const gatewayOn = isPaymentGatewayEnabled();
+  const ctx = await loadReceiptContext(applicationId);
+  if (ctx.teamPaymentStatus === 'paid') paymentState = paymentState || 'paid';
+  const fee = buildPaymentSummary({
+    wantPlayerPack: ctx.wantPlayerPack,
+    gatewayEnabled: gatewayOn,
+  });
   res.render('success', {
     title: '已收到報名申請｜GPCC 香港站',
-    applicationId,
     paymentState,
-    wonderConfigured,
+    wonderConfigured: gatewayOn && isWonderConfigured(),
     paymentGatewayEnabled: gatewayOn,
-    teamPaymentStatus,
-    teamStatus,
     paymentProvider: PROVIDER_ID,
-    wantPlayerPack,
-    proofUrl,
-    proofLink,
-    paymentReference,
     feeBase: FEE.BASE_HKD,
     packFee: FEE.PLAYER_PACK_HKD,
     feeSurcharge: fee.feeAmountHkd,
     feeTotal: fee.totalAmountHkd,
+    labels: receiptLabels,
+    formatDate: formatDateYmd,
+    ...ctx,
   });
 });
 app.get('/rsvp/pay', async (req, res) => {
-  if (isPaymentGatewayEnabled()) {
-    const q = req.query.id ? `?id=${encodeURIComponent(String(req.query.id))}` : '';
+  const applicationId = req.query.id || '';
+  const gatewayOn = isPaymentGatewayEnabled();
+  if (gatewayOn) {
+    const q = applicationId ? `?id=${encodeURIComponent(String(applicationId))}` : '';
     return res.redirect(`/rsvp/success${q}`);
   }
-  const applicationId = req.query.id || '';
-  let wantPlayerPack = false;
-  let proofUrl = '';
-  let paymentReference = '';
-  try {
-    if (applicationId) {
-      const Team = require('./models/Team');
-      const team = await Team.findById(applicationId).lean();
-      if (team) {
-        wantPlayerPack = team.wantPlayerPack === true;
-        proofUrl = team.payment?.proofUrl || '';
-        paymentReference = team.payment?.paymentReference || '';
-      }
-    }
-  } catch (err) {
-    console.error(err);
-  }
-  const fee = buildPaymentSummary({ wantPlayerPack, gatewayEnabled: false });
+  const ctx = await loadReceiptContext(applicationId);
+  const fee = buildPaymentSummary({ wantPlayerPack: ctx.wantPlayerPack, gatewayEnabled: false });
   res.render('pay', {
     title: '轉賬付款｜GPCC 香港站',
-    applicationId,
-    wantPlayerPack,
-    proofUrl,
-    paymentReference,
     feeBase: FEE.BASE_HKD,
     packFee: FEE.PLAYER_PACK_HKD,
     feeTotal: fee.totalAmountHkd,
+    ...ctx,
   });
 });
 
