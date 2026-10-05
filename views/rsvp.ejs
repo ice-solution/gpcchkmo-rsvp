@@ -15,7 +15,7 @@
             2026「凱瑞麟盃」香港站海選賽官方報名
           </h1>
           <p class="mt-2 max-w-xl text-sm text-sky-100">
-            填寫本表即表示隊長及隊友確認資料真實完整。每份 RSVP 只可登記一個競賽項目；海選報名費 HKD $<%= feeBase %>／隊。
+            填寫本表即表示隊長及隊友確認資料真實完整。每份 RSVP 只可登記一個競賽項目；海選報名費 HKD $<%= feeBase %>／隊，可選加購選手包 HKD $<%= packFee %>，經 Wonder 付款另加 3% 平台手續費。
           </p>
         </div>
       </div>
@@ -28,9 +28,9 @@
 
     <!-- Step 0: Intro -->
     <section class="step-panel rounded-3xl bg-white p-5 shadow-panel ring-1 ring-slate-200 sm:p-7" data-step="0">
-      <h2 class="font-display text-lg font-bold text-brand-deep">一、表格簡介</h2>
+      <h2 class="font-display text-lg font-bold text-brand-deep">一、活動簡介</h2>
       <div class="mt-4 space-y-3 text-sm leading-relaxed text-slate-700">
-        <p>歡迎報名參加 2026「凱瑞麟盃」粵港澳大灣區匹克球城市挑戰賽（GPCC）香港站海選賽。本賽事獲廣東省粵港澳合作促進會指導，並獲中國網球協會官方支持，是橫跨大灣區八個城市並設總決賽的「體育＋文旅＋娛樂」三融合匹克球盛事。</p>
+        <p>2026「凱瑞麟盃」粵港澳大灣區匹克球城市挑戰賽（GPCC）香港站海選賽正式啟動！GPCC是橫跨大灣區八個城市並設總決賽的「體育＋文旅＋娛樂」三融合匹克球盛事。本次賽事由中國網球協會、廣東省粵港澳合作促進會、廣東省社會體育和訓練競賽中心、廣東省網球協會指導，廣東省粵港澳合作促進會文化傳播委員會、南方都市報社和廣州文化集團共同主辦，廣州亞特蘭斯體育有限公司承辦，泉州凱瑞麟體育用品有限公司總冠名，香港賽區賽事由香港網球總會、澳門網球總會、盈動體育會及 MEMO PLUS PR &amp; CONSULTANTS 等單位聯合策動，期望與大眾攜手推動「全民匹克球」。</p>
         <p>GPCC 不只是一項競賽，更是屬於所有匹克球愛好者的城市嘉年華。海選優勝隊伍將晉級香港站城市決賽；香港站優勝隊伍可按大會正式安排代表香港參與大灣區賽事交流，為香港增光。</p>
       </div>
 
@@ -42,9 +42,9 @@
             <tr><th class="px-4 py-3 font-semibold text-brand-deep">海選地點</th><td class="px-4 py-3 text-slate-700">大會指定的合作球會、球館及場地；個別隊伍的日期、時間及場地以確認電郵為準</td></tr>
             <tr class="bg-slate-50"><th class="px-4 py-3 font-semibold text-brand-deep">香港站城市決賽及嘉年華</th><td class="px-4 py-3 text-slate-700">2026 年 11 月 14–15 日</td></tr>
             <tr><th class="px-4 py-3 font-semibold text-brand-deep">城市決賽地點</th><td class="px-4 py-3 text-slate-700">屯門市廣場</td></tr>
-            <tr class="bg-slate-50"><th class="px-4 py-3 font-semibold text-brand-deep">年齡組別</th><td class="px-4 py-3 text-slate-700">常青組（50–65 歲）、壯年組（36–49 歲）、公開組（18–65 歲）</td></tr>
+            <tr class="bg-slate-50"><th class="px-4 py-3 font-semibold text-brand-deep">年齡組別</th><td class="px-4 py-3 text-slate-700">常青組 50–65 歲、壯年組 36–49 歲、公開組 18–65 歲（出生日期範圍見下方 2.1）</td></tr>
             <tr><th class="px-4 py-3 font-semibold text-brand-deep">競賽項目</th><td class="px-4 py-3 text-slate-700">男子雙打、女子雙打、混合雙打</td></tr>
-            <tr class="bg-slate-50"><th class="px-4 py-3 font-semibold text-brand-deep">海選報名費</th><td class="px-4 py-3 text-slate-700">HKD $<%= feeBase %>／隊（兩名球員，含海選參賽資格）。另加 HKD $200 即可獲大會專屬選手包（兩人份；選手包另行安排，不計入本表網上付款）。</td></tr>
+            <tr class="bg-slate-50"><th class="px-4 py-3 font-semibold text-brand-deep">海選報名費</th><td class="px-4 py-3 text-slate-700">HKD $<%= feeBase %>／隊（兩名球員，含海選參賽資格）。可選加購大會專屬選手包（兩人份）HKD $<%= packFee %>；若加購會一併網上付款。經 Wonder 付款另收 3% 平台手續費（按報名費＋選手包計算）。</td></tr>
             <tr><th class="px-4 py-3 font-semibold text-brand-deep">每人報名上限</th><td class="px-4 py-3 text-slate-700">最多兩個競賽項目；每個項目須以獨立報名另行提交</td></tr>
           </tbody>
         </table>
@@ -55,7 +55,12 @@
         <li>填寫本表即表示隊長及隊友確認所提交資料真實、完整且可供核實。</li>
         <li>大會會核對參賽資格；若發現虛假資料、身份不符、冒名頂替或超出報名上限，大會有權即時取消該球員或隊伍的參賽、晉級及獲獎資格（DQ），已繳款項將按正式退賽及退款條款處理。</li>
         <li><strong>兼報規則：</strong>每位球員最多可報名兩個競賽項目。每份 RSVP 只可登記一個項目；如欲兼報第二項，請完成本次報名後，以「第二個兼報項目」另行提交。請勿在同一 RSVP 重複提交多個項目。超過兩項的報名將不獲接納。</li>
-        <li>報名前請完整閱讀：《香港站正式競賽規程》、退賽及退款條款。</li>
+        <li>報名前請完整閱讀：《香港站正式競賽規程》、退賽及退款條款。<ul class="mt-2 list-disc space-y-1 pl-5">
+          <li>常青組 50 歲–65 歲（1961 年 1 月 1 日（含）以後至 1976 年 12 月 31 日（含）以前出生）</li>
+          <li>壯年組 36 歲–49 歲（1977 年 1 月 1 日（含）以後至 1990 年 12 月 31 日（含）以前出生）</li>
+          <li>公開組 18 歲–65 歲（1961 年 1 月 1 日（含）以後至 2008 年 12 月 31 日（含）以前出生）</li>
+        </ul></li>
+        <li>本人同意主辦單位在毋須經本人事先審查的情況下，有權使用本人的肖像、姓名、聲線及個人資料作活動推廣之用。</li>
       </ul>
 
       <h3 class="mt-6 text-base font-bold text-brand-deep">2.2 晉級及同分排名重點提示</h3>
@@ -67,7 +72,7 @@
 
       <label class="choice-card mt-8">
         <input type="checkbox" id="introAck" required />
-        <span>我已閱讀並明白以上<strong>表格簡介</strong>及<strong>賽事資訊一覽</strong>（含參賽注意及晉級／同分排名提示），同意繼續填寫報名表格。*</span>
+        <span>我已閱讀並明白以上<strong>活動簡介</strong>及<strong>賽事資訊一覽</strong>（含參賽注意、肖像／資料使用同意及晉級／同分排名提示），同意繼續填寫報名表格。*</span>
       </label>
     </section>
 
@@ -273,14 +278,60 @@
           <span>直接行銷同意（選填）：我同意組委會／MEMO PLUS PR 按《個人資料收集聲明》透過所選聯絡方式發送 GPCC 及相關活動推廣資訊。我明白可隨時撤回同意。</span>
         </label>
 
+        <label class="choice-card">
+          <input type="checkbox" id="wantPlayerPack" />
+          <span>
+            加購大會專屬選手包（選填）：HKD $<%= packFee %>／隊（兩人份）。不勾選不影響參賽資格。
+            <% if (paymentGatewayEnabled) { %>
+            若勾選會與報名費一併網上付款，並另計 3% 平台手續費。
+            <% } else { %>
+            若勾選請一併轉賬至下列戶口。
+            <% } %>
+          </span>
+        </label>
+
+        <% if (paymentGatewayEnabled) { %>
         <div class="rounded-2xl border border-brand-blue/20 bg-sky-50 px-4 py-4">
           <p class="font-semibold text-brand-deep">付款摘要（提交後進入待付款）</p>
           <ul class="mt-2 list-disc space-y-1 pl-5 text-sm">
             <li>基本海選報名費：HKD $<%= feeBase %>／隊（兩名球員）</li>
-            <li>信用卡／網上支付手續費由參加者承擔，將於付款授權前清楚列示</li>
+            <li id="pack-line" class="hidden">選手包加購：HKD $<%= packFee %>（兩人份）</li>
+            <li>經 Wonder 網上付款會另收 <strong>3% 平台手續費</strong>（由參加者承擔）：HKD $<span id="fee-surcharge-display"><%= feeSurcharge %></span></li>
+            <li>應繳總額：HKD $<span id="fee-total-display"><%= feeTotal %></span></li>
             <li>提交後會發出「已收到報名，待付款／待核實」回條；<strong>不會</strong>稱為報名成功，亦不會附 QR Code</li>
           </ul>
         </div>
+        <% } else { %>
+        <div class="rounded-2xl border border-brand-blue/20 bg-sky-50 px-4 py-4 text-sm leading-relaxed text-slate-700">
+          <img src="/images/fps_logo.jpg" alt="轉數快 FPS" class="mb-3 h-14 w-auto object-contain" />
+          <p class="font-semibold text-brand-deep">請於提交表格前完成轉賬，並拍照/截圖保存付款憑證。</p>
+          <p class="mt-3">基本費用：HKD $<span id="manual-base-display"><%= feeBase %></span> / 隊</p>
+          <p id="pack-line" class="hidden mt-1">選手包加購：HKD $<%= packFee %>（兩人份）</p>
+          <p class="mt-1">應繳總額：<strong>HKD $<span id="fee-total-display"><%= feeTotal %></span></strong></p>
+          <p class="mt-3">轉數快 (FPS) 識別碼 / FPS #：<strong>133515288</strong>（大會指定收款戶口：Moves Sports Limited）</p>
+          <p>WhatsApp：<a class="font-semibold text-brand-blue underline" href="https://wa.me/85297232341" target="_blank" rel="noopener">97232341</a></p>
+          <div class="mt-3">
+            <p class="font-semibold text-slate-800">銀行轉賬資訊：</p>
+            <p>銀行: OCBC Bank (Hong Kong)</p>
+            <p>戶口號碼: 802030689001</p>
+            <p>銀行代碼: 035</p>
+          </div>
+          <img src="/images/fps.jpg" alt="轉數快收款 QR Code" class="mx-auto mt-4 w-full max-w-[220px] rounded-xl bg-white p-2 ring-1 ring-slate-200" />
+          <div class="mt-5 space-y-3 border-t border-brand-blue/20 pt-4">
+            <p class="font-semibold text-brand-deep">上載付款憑證</p>
+            <p class="text-xs text-slate-500">可上載相片／截圖／PDF，或貼上已上載憑證的連結（兩者可同時提供）。</p>
+            <div>
+              <label class="field-label" for="paymentProofFile">上載檔案</label>
+              <input class="field-input" type="file" id="paymentProofFile" name="paymentProof" accept="image/jpeg,image/png,image/webp,image/gif,application/pdf" />
+            </div>
+            <div>
+              <label class="field-label" for="paymentProofUrl">憑證連結（選填）</label>
+              <input class="field-input" type="url" id="paymentProofUrl" placeholder="https://" />
+            </div>
+          </div>
+          <p class="mt-3 text-xs text-slate-500">提交後狀態為「人工待付」；<strong>不會</strong>稱為報名成功，亦不會附賽事 QR Code。</p>
+        </div>
+        <% } %>
       </div>
     </section>
 

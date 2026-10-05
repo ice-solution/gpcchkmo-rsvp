@@ -56,6 +56,23 @@
     @apply border-slate-300 bg-white text-slate-400;
   }
 
+  .step-jump {
+    @apply flex items-center gap-2 rounded-full bg-transparent p-0 text-left;
+  }
+
+  .step-jump:not(:disabled) {
+    @apply cursor-pointer;
+  }
+
+  .step-jump:not(:disabled):hover .step-dot-done,
+  .step-jump:not(:disabled):hover .step-dot-idle {
+    @apply border-brand-blue/70 ring-2 ring-brand-blue/20;
+  }
+
+  .step-jump:disabled {
+    @apply cursor-not-allowed;
+  }
+
   .choice-card {
     @apply flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm transition hover:border-brand-blue/50;
   }

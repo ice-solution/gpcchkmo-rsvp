@@ -6,18 +6,59 @@
  */
 
 const { FEE, PAYMENT_STATUS } = require('../constants/enums');
+const { isPaymentGatewayEnabled } = require('../config/paymentGateway');
 
-function buildPaymentSummary({ feeAmountHkd = null } = {}) {
-  const base = FEE.BASE_HKD;
-  const fee = feeAmountHkd;
+function roundMoney(n) {
+  return Math.round(Number(n) * 100) / 100;
+}
+
+function registrationSubtotal(wantPlayerPack = false) {
+  return roundMoney(FEE.BASE_HKD + (wantPlayerPack ? FEE.PLAYER_PACK_HKD : 0));
+}
+
+function withPlatformFee(baseAmountHkd = FEE.BASE_HKD) {
+  const base = roundMoney(baseAmountHkd);
+  const fee = roundMoney(base * FEE.PLATFORM_FEE_RATE);
+  const total = roundMoney(base + fee);
   return {
     baseAmountHkd: base,
     feeAmountHkd: fee,
-    totalAmountHkd: fee == null ? base : base + fee,
+    totalAmountHkd: total,
+    feeRate: FEE.PLATFORM_FEE_RATE,
+  };
+}
+
+function buildPaymentSummary({
+  wantPlayerPack = false,
+  gatewayEnabled = isPaymentGatewayEnabled(),
+} = {}) {
+  const subtotal = registrationSubtotal(wantPlayerPack);
+  const pack = wantPlayerPack ? FEE.PLAYER_PACK_HKD : 0;
+  const amounts = gatewayEnabled
+    ? withPlatformFee(subtotal)
+    : {
+        baseAmountHkd: subtotal,
+        feeAmountHkd: 0,
+        totalAmountHkd: subtotal,
+        feeRate: 0,
+      };
+  return {
+    ...amounts,
+    entryFeeHkd: FEE.BASE_HKD,
+    playerPackHkd: pack,
+    playerPackPriceHkd: FEE.PLAYER_PACK_HKD,
+    wantPlayerPack: Boolean(wantPlayerPack),
     currency: FEE.CURRENCY,
-    providerHint: 'wonder_gpcchkmo',
-    feeDisclaimer:
-      '所有信用卡及經付款網關處理的交易均會產生手續費。該費用由參加者承擔，並會在您確認付款授權前，以獨立項目清楚列示。',
+    paymentGatewayEnabled: Boolean(gatewayEnabled),
+    providerHint: gatewayEnabled ? 'wonder_gpcchkmo' : 'manual_fps',
+    feeDisclaimer: gatewayEnabled
+      ? `經 Wonder 網上付款會另收 ${FEE.PLATFORM_FEE_RATE * 100}% 平台手續費（由參加者承擔）。` +
+        (wantPlayerPack
+          ? `報名費 HKD $${FEE.BASE_HKD} ＋ 選手包 HKD $${FEE.PLAYER_PACK_HKD} ＋ 手續費 HKD $${amounts.feeAmountHkd}，應繳總額 HKD $${amounts.totalAmountHkd}。`
+          : `海選報名費 HKD $${FEE.BASE_HKD} ＋ 手續費 HKD $${amounts.feeAmountHkd}，應繳總額 HKD $${amounts.totalAmountHkd}。`)
+      : wantPlayerPack
+        ? `銀行／轉數快轉賬：報名費 HKD $${FEE.BASE_HKD} ＋ 選手包 HKD $${FEE.PLAYER_PACK_HKD}，應繳總額 HKD $${amounts.totalAmountHkd}。`
+        : `銀行／轉數快轉賬：海選報名費 HKD $${FEE.BASE_HKD}／隊。`,
   };
 }
 
@@ -41,6 +82,9 @@ async function createManualPaymentReference(team) {
 }
 
 module.exports = {
+  roundMoney,
+  registrationSubtotal,
+  withPlatformFee,
   buildPaymentSummary,
   createStripeCheckoutSession,
   handleStripeWebhook,

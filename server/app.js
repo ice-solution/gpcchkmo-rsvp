@@ -14,7 +14,9 @@ const ClubVenue = require('./models/ClubVenue');
 const { ensureDefaultAdmin } = require('./services/adminSeed');
 const { attachAdminLocals } = require('./middleware/adminAuth');
 const { isWonderConfigured, PROVIDER_ID } = require('./services/wonder/gpcchkmoWonderCheckout');
+const { isPaymentGatewayEnabled } = require('./config/paymentGateway');
 const { FEE } = require('./constants/enums');
+const { buildPaymentSummary } = require('./services/paymentService');
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3480;
@@ -46,40 +48,64 @@ app.use(attachAdminLocals);
 
 app.get('/', (_req, res) => res.redirect('/rsvp'));
 app.get('/rsvp', (_req, res) => {
+  const gatewayOn = isPaymentGatewayEnabled();
+  const fee = buildPaymentSummary({ wantPlayerPack: false, gatewayEnabled: gatewayOn });
   res.render('rsvp', {
     title: '海選報名 RSVP｜GPCC 香港站',
+    paymentGatewayEnabled: gatewayOn,
     feeBase: FEE.BASE_HKD,
+    packFee: FEE.PLAYER_PACK_HKD,
+    feeSurcharge: fee.feeAmountHkd,
+    feeTotal: fee.totalAmountHkd,
   });
 });
 app.get('/rsvp/success', async (req, res) => {
   const applicationId = req.query.id || '';
   let paymentState = req.query.payment || '';
+  const gatewayOn = isPaymentGatewayEnabled();
   let wonderConfigured = false;
   let teamPaymentStatus = '';
   let teamStatus = '';
+  let wantPlayerPack = false;
+  let proofUrl = '';
+  let proofLink = '';
+  let paymentReference = '';
   try {
-    wonderConfigured = isWonderConfigured();
+    wonderConfigured = gatewayOn && isWonderConfigured();
     if (applicationId) {
       const Team = require('./models/Team');
       const team = await Team.findById(applicationId).lean();
       if (team) {
         teamPaymentStatus = team.payment?.status || '';
         teamStatus = team.status || '';
+        wantPlayerPack = team.wantPlayerPack === true;
+        proofUrl = team.payment?.proofUrl || '';
+        proofLink = team.payment?.proofLink || '';
+        paymentReference = team.payment?.paymentReference || '';
         if (teamPaymentStatus === 'paid') paymentState = paymentState || 'paid';
       }
     }
   } catch (err) {
     console.error(err);
   }
+  const fee = buildPaymentSummary({ wantPlayerPack, gatewayEnabled: gatewayOn });
   res.render('success', {
     title: '已收到報名申請｜GPCC 香港站',
     applicationId,
     paymentState,
     wonderConfigured,
+    paymentGatewayEnabled: gatewayOn,
     teamPaymentStatus,
     teamStatus,
     paymentProvider: PROVIDER_ID,
+    wantPlayerPack,
+    proofUrl,
+    proofLink,
+    paymentReference,
     feeBase: FEE.BASE_HKD,
+    packFee: FEE.PLAYER_PACK_HKD,
+    feeSurcharge: fee.feeAmountHkd,
+    feeTotal: fee.totalAmountHkd,
   });
 });
 
@@ -119,7 +145,13 @@ async function start() {
     console.log(`GPCC RSVP listening on http://localhost:${PORT}/rsvp`);
     console.log(`Admin panel: http://localhost:${PORT}/admin`);
     console.log(
-      `Wonder (${PROVIDER_ID}): ${isWonderConfigured() ? 'configured' : 'NOT configured'} → /api/gpcchkmo/wonder`
+      `Wonder (${PROVIDER_ID}): ${
+        isPaymentGatewayEnabled()
+          ? isWonderConfigured()
+            ? 'configured'
+            : 'NOT configured'
+          : 'DISABLED (PAYMENT_GATEWAY_ENABLED=false)'
+      } → /api/gpcchkmo/wonder`
     );
   });
 }

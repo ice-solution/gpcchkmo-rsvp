@@ -26,6 +26,19 @@
         <div><dt class="text-xs text-slate-500">年齡組別</dt><dd><%= labels.ageGroup[team.ageGroup] %></dd></div>
         <div><dt class="text-xs text-slate-500">競賽項目</dt><dd><%= labels.eventCategory[team.eventCategory] %></dd></div>
         <div class="sm:col-span-2"><dt class="text-xs text-slate-500">首選場地</dt><dd><%= team.preferredVenueLabel %></dd></div>
+        <div class="sm:col-span-2"><dt class="text-xs text-slate-500">選手包加購</dt><dd><%= team.wantPlayerPack ? '是（HKD $200／兩人份）' : '否' %></dd></div>
+        <div><dt class="text-xs text-slate-500">付款方式</dt><dd><%= team.payment && team.payment.method ? team.payment.method : '—' %></dd></div>
+        <div><dt class="text-xs text-slate-500">付款參考</dt><dd class="font-mono text-xs"><%= team.payment && team.payment.paymentReference ? team.payment.paymentReference : '—' %></dd></div>
+        <div class="sm:col-span-2"><dt class="text-xs text-slate-500">付款憑證（上載）</dt><dd>
+          <% if (team.payment && team.payment.proofUrl) { %>
+          <a class="text-brand-blue underline" href="<%= team.payment.proofUrl %>" target="_blank" rel="noopener"><%= team.payment.proofOriginalName || '查看檔案' %></a>
+          <% } else { %>—<% } %>
+        </dd></div>
+        <div class="sm:col-span-2"><dt class="text-xs text-slate-500">付款憑證（連結）</dt><dd>
+          <% if (team.payment && team.payment.proofLink) { %>
+          <a class="text-brand-blue underline" href="<%= team.payment.proofLink %>" target="_blank" rel="noopener"><%= team.payment.proofLink %></a>
+          <% } else { %>—<% } %>
+        </dd></div>
         <div class="sm:col-span-2"><dt class="text-xs text-slate-500">可參賽時段</dt><dd><%= (team.availability||[]).join('、') || '—' %></dd></div>
         <div><dt class="text-xs text-slate-500">提交時間</dt><dd><%= formatDateTime(team.submittedAt) %></dd></div>
         <div><dt class="text-xs text-slate-500">確認時間</dt><dd><%= formatDateTime(team.confirmedAt) || '—' %></dd></div>

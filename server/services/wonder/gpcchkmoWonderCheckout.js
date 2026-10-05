@@ -24,15 +24,15 @@ const {
   extractReferenceNumber,
   getPaymentBaseUrl,
 } = require('./gpcchkmoWonderClient');
-
-function roundMoney(n) {
-  return Math.round(Number(n) * 100) / 100;
-}
+const { withPlatformFee } = require('../paymentService');
+const { isPaymentGatewayEnabled } = require('../../config/paymentGateway');
 
 async function startWonderCheckout({ teamId }) {
-  if (!isWonderConfigured()) {
+  if (!isWonderConfigured() || !isPaymentGatewayEnabled()) {
     const err = new Error(
-      'GPCC Wonder 尚未設定：請在 .env 填寫 GPCCHKMO_WONDER_APP_ID 與 GPCCHKMO_WONDER_PRIVATE_KEY'
+      !isPaymentGatewayEnabled()
+        ? '網上付款閘道已關閉，請使用轉數快／銀行轉賬'
+        : 'GPCC Wonder 尚未設定：請在 .env 填寫 GPCCHKMO_WONDER_APP_ID 與 GPCCHKMO_WONDER_PRIVATE_KEY'
     );
     err.status = 503;
     throw err;
@@ -59,12 +59,14 @@ async function startWonderCheckout({ teamId }) {
     throw err;
   }
 
-  const amountHkd = roundMoney(team.payment?.baseAmountHkd || FEE.BASE_HKD);
+  const amounts = withPlatformFee(team.payment?.baseAmountHkd || FEE.BASE_HKD);
+  const amountHkd = amounts.totalAmountHkd;
 
-  // Reuse an open processing payment if still unpaid
+  // Reuse an open processing payment if still unpaid AND amount matches
   let payment = await GpcchkmoWonderPayment.findOne({
     teamId: team._id,
     status: { $in: [PAYMENT_STATUS.PROCESSING, PAYMENT_STATUS.UNPAID] },
+    amountHkd,
   }).sort({ createdAt: -1 });
 
   if (!payment) {
@@ -101,8 +103,9 @@ async function startWonderCheckout({ teamId }) {
   team.payment = team.payment || {};
   team.payment.method = PROVIDER_ID;
   team.payment.status = PAYMENT_STATUS.PROCESSING;
-  team.payment.baseAmountHkd = amountHkd;
-  team.payment.totalAmountHkd = amountHkd;
+  team.payment.baseAmountHkd = amounts.baseAmountHkd;
+  team.payment.feeAmountHkd = amounts.feeAmountHkd;
+  team.payment.totalAmountHkd = amounts.totalAmountHkd;
   team.payment.paymentReference = payment.referenceNumber;
   team.payment.stripeSessionId = null; // unused; keep null so Wonder is not mixed with Stripe fields
   await team.save();
@@ -167,11 +170,11 @@ async function handleWonderWebhook(body, query = {}) {
       team.payment.status = PAYMENT_STATUS.PAID;
       team.payment.paidAt = payment.paidAt;
       team.payment.paymentReference = payment.referenceNumber;
-      team.payment.baseAmountHkd = payment.amountHkd;
       team.payment.totalAmountHkd = payment.amountHkd;
       // Paid ≠ confirmed registration; move to review queue
       if (
         team.status === TEAM_STATUS.SUBMITTED_PENDING_PAYMENT ||
+        team.status === TEAM_STATUS.MANUAL_PENDING_PAYMENT ||
         team.status === TEAM_STATUS.PAYMENT_FAILED
       ) {
         team.status = TEAM_STATUS.PAID_PENDING_REVIEW;

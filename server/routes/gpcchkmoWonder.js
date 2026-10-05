@@ -12,6 +12,7 @@ const {
   isWonderConfigured,
   PROVIDER_ID,
 } = require('../services/wonder/gpcchkmoWonderCheckout');
+const { isPaymentGatewayEnabled } = require('../config/paymentGateway');
 
 const router = express.Router();
 
@@ -28,6 +29,7 @@ router.get('/status', (_req, res) => {
     data: {
       provider: PROVIDER_ID,
       configured: isWonderConfigured(),
+      paymentGatewayEnabled: isPaymentGatewayEnabled(),
       callbackPath: '/api/gpcchkmo/wonder/webhook',
       referencePrefix: 'gpcchkmo_',
       envPrefix: 'GPCCHKMO_WONDER_',

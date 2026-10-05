@@ -29,9 +29,16 @@ const AGE_GROUPS = {
 };
 
 const AGE_GROUP_LABELS = {
-  [AGE_GROUPS.SENIOR]: '常青組（50–65 歲）',
-  [AGE_GROUPS.MID]: '壯年組（36–49 歲）',
-  [AGE_GROUPS.OPEN]: '公開組（18–65 歲）',
+  [AGE_GROUPS.SENIOR]: '常青組（50–65 歲；1961-01-01 至 1976-12-31 出生）',
+  [AGE_GROUPS.MID]: '壯年組（36–49 歲；1977-01-01 至 1990-12-31 出生）',
+  [AGE_GROUPS.OPEN]: '公開組（18–65 歲；1961-01-01 至 2008-12-31 出生）',
+};
+
+/** Official birth-date windows (inclusive start / inclusive end) */
+const AGE_GROUP_DOB_RANGES = {
+  [AGE_GROUPS.SENIOR]: { start: '1961-01-01', end: '1976-12-31' },
+  [AGE_GROUPS.MID]: { start: '1977-01-01', end: '1990-12-31' },
+  [AGE_GROUPS.OPEN]: { start: '1961-01-01', end: '2008-12-31' },
 };
 
 const EVENT_CATEGORIES = {
@@ -110,6 +117,7 @@ const CONTACT_PREFS = [
 const TEAM_STATUS = {
   DRAFT: 'draft',
   SUBMITTED_PENDING_PAYMENT: 'submitted_pending_payment',
+  MANUAL_PENDING_PAYMENT: 'manual_pending_payment',
   PAID_PENDING_REVIEW: 'paid_pending_review',
   PAYMENT_FAILED: 'payment_failed',
   CONFIRMED: 'confirmed',
@@ -120,6 +128,7 @@ const TEAM_STATUS = {
 const TEAM_STATUS_LABELS = {
   [TEAM_STATUS.DRAFT]: '草稿',
   [TEAM_STATUS.SUBMITTED_PENDING_PAYMENT]: '已提交／待付款',
+  [TEAM_STATUS.MANUAL_PENDING_PAYMENT]: '人工待付',
   [TEAM_STATUS.PAID_PENDING_REVIEW]: '已付款／待核實',
   [TEAM_STATUS.PAYMENT_FAILED]: '付款失敗',
   [TEAM_STATUS.CONFIRMED]: '已確認',
@@ -168,6 +177,8 @@ const PLAYER_ROLES = {
 
 const FEE = {
   BASE_HKD: 680,
+  PLAYER_PACK_HKD: 200,
+  PLATFORM_FEE_RATE: 0.03,
   CURRENCY: 'HKD',
   MAX_EVENTS_PER_PLAYER: 2,
 };
@@ -182,6 +193,7 @@ module.exports = {
   GENDERS,
   AGE_GROUPS,
   AGE_GROUP_LABELS,
+  AGE_GROUP_DOB_RANGES,
   EVENT_CATEGORIES,
   EVENT_CATEGORY_LABELS,
   AVAILABILITY_SLOTS,

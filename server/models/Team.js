@@ -48,6 +48,8 @@ const paymentSchema = new mongoose.Schema(
     stripePaymentIntentId: { type: String, default: null },
     paymentReference: { type: String, default: null },
     proofUrl: { type: String, default: null },
+    proofLink: { type: String, default: null },
+    proofOriginalName: { type: String, default: null },
     paidAt: { type: Date, default: null },
   },
   { _id: false }
@@ -76,6 +78,7 @@ const teamSchema = new mongoose.Schema(
     },
     preferredVenueLabel: { type: String, required: true, trim: true },
     availability: [{ type: String }],
+    wantPlayerPack: { type: Boolean, default: false },
     research: { type: researchSchema, required: true },
     agreements: { type: agreementsSchema, required: true },
     introAcknowledged: { type: Boolean, required: true, default: false },

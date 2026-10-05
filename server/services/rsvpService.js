@@ -22,7 +22,11 @@ const {
   assertPlayerEventLimit,
 } = require('./eligibility');
 const { sendSubmissionReceipt } = require('./emailService');
-const { buildPaymentSummary } = require('./paymentService');
+const { buildPaymentSummary, createManualPaymentReference } = require('./paymentService');
+const {
+  isPaymentGatewayEnabled,
+  parseProofLink,
+} = require('../config/paymentGateway');
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -165,8 +169,16 @@ async function createRsvp(body) {
     return { ok: false, status: 400, errors: ['首選海選地區／球館無效'] };
   }
 
-  const paymentSummary = buildPaymentSummary();
+  const paymentSummary = buildPaymentSummary({
+    wantPlayerPack: body.wantPlayerPack === true,
+  });
   const captainEmail = body.captainEmail.trim().toLowerCase();
+  const gatewayOn = isPaymentGatewayEnabled();
+  const proofLinkResult = parseProofLink(body.paymentProofUrl || body.paymentProofLink);
+  if (!proofLinkResult.ok) {
+    return { ok: false, status: 400, errors: [proofLinkResult.error] };
+  }
+  const uploadedProofPath = String(body.paymentProofFileUrl || '').trim();
 
   // Standalone MongoDB (non-replica-set) does not support multi-doc transactions.
   const team = await Team.create({
@@ -179,6 +191,7 @@ async function createRsvp(body) {
     preferredVenueId,
     preferredVenueLabel,
     availability: body.availability,
+    wantPlayerPack: body.wantPlayerPack === true,
     research: {
       carnivalIntent: body.research.carnivalIntent,
       spectatorCount: body.research.spectatorCount || '',
@@ -189,24 +202,39 @@ async function createRsvp(body) {
         ? body.research.contactPrefs
         : [],
     },
-          agreements: {
-            rules: true,
-            ranking: true,
-            truthfulness: true,
-            pics: true,
-            marketing: body.agreements.marketing === true,
-          },
-          introAcknowledged: true,
-          introAcknowledgedAt: new Date(),
-          status: TEAM_STATUS.SUBMITTED_PENDING_PAYMENT,
+    agreements: {
+      rules: true,
+      ranking: true,
+      truthfulness: true,
+      pics: true,
+      marketing: body.agreements.marketing === true,
+    },
+    introAcknowledged: true,
+    introAcknowledgedAt: new Date(),
+    status: gatewayOn
+      ? TEAM_STATUS.SUBMITTED_PENDING_PAYMENT
+      : TEAM_STATUS.MANUAL_PENDING_PAYMENT,
     payment: {
-      status: PAYMENT_STATUS.UNPAID,
+      status: gatewayOn ? PAYMENT_STATUS.UNPAID : PAYMENT_STATUS.PENDING_MANUAL,
+      method: gatewayOn ? null : 'fps',
       baseAmountHkd: paymentSummary.baseAmountHkd,
+      feeAmountHkd: paymentSummary.feeAmountHkd,
+      totalAmountHkd: paymentSummary.totalAmountHkd,
       currency: paymentSummary.currency,
+      proofUrl: uploadedProofPath || null,
+      proofLink: proofLinkResult.url || null,
+      proofOriginalName: body.paymentProofOriginalName || null,
     },
     qualificationStatus: QUALIFICATION_STATUS.PENDING,
     submittedAt: new Date(),
   });
+
+  if (!gatewayOn) {
+    const manualRef = await createManualPaymentReference(team);
+    team.payment.paymentReference = manualRef.paymentReference;
+    team.markModified('payment');
+    await team.save();
+  }
 
   try {
     const players = await Player.create([
@@ -264,9 +292,11 @@ async function createRsvp(body) {
       data: {
         applicationId: String(team._id),
         status: team.status,
+        paymentGatewayEnabled: gatewayOn,
         payment: paymentSummary,
-        message:
-          '已收到報名申請。請完成付款及等候資格核實；此階段尚未等同報名成功，亦不會發放隊伍編號或 QR Code。',
+        message: gatewayOn
+          ? '已收到報名申請。請完成付款及等候資格核實；此階段尚未等同報名成功，亦不會發放隊伍編號或 QR Code。'
+          : '已收到報名申請（人工待付）。請完成轉數快／銀行轉賬並提交付款憑證；此階段尚未等同報名成功。',
       },
     };
   } catch (err) {

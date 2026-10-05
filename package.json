@@ -24,6 +24,7 @@
     "express-session": "^1.19.0",
     "mongoose": "^8.9.5",
     "morgan": "^1.10.0",
+    "multer": "^2.4.0",
     "nanoid": "^3.3.8"
   },
   "devDependencies": {

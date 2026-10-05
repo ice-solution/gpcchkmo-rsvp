@@ -1,45 +1,43 @@
 const {
-  AGE_GROUPS,
+  AGE_GROUP_DOB_RANGES,
   EVENT_CATEGORIES,
   GENDERS,
-  EVENT_YEAR,
   FEE,
+  TEAM_STATUS,
 } = require('../constants/enums');
 const Player = require('../models/Player');
 const Team = require('../models/Team');
-const { TEAM_STATUS } = require('../constants/enums');
 
-function ageOnEventYear(dateOfBirth, eventYear = EVENT_YEAR) {
-  const dob = new Date(dateOfBirth);
-  if (Number.isNaN(dob.getTime())) return null;
-  // Age as of Dec 31 of event year (common tournament convention)
-  const ref = new Date(eventYear, 11, 31);
-  let age = ref.getFullYear() - dob.getFullYear();
-  const m = ref.getMonth() - dob.getMonth();
-  if (m < 0 || (m === 0 && ref.getDate() < dob.getDate())) age -= 1;
-  return age;
+function toDateOnly(value) {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return null;
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+}
+
+function inDobRange(dateOfBirth, startIso, endIso) {
+  const dob = toDateOnly(dateOfBirth);
+  const start = toDateOnly(startIso);
+  const end = toDateOnly(endIso);
+  if (!dob || !start || !end) return false;
+  return dob >= start && dob <= end;
 }
 
 function eligibleAgeGroups(dateOfBirth, partnerDob) {
-  const a1 = ageOnEventYear(dateOfBirth);
-  const a2 = ageOnEventYear(partnerDob);
-  if (a1 == null || a2 == null) return [];
-
-  const both = (min, max) => a1 >= min && a1 <= max && a2 >= min && a2 <= max;
+  if (!dateOfBirth || !partnerDob) return [];
   const out = [];
-  if (both(50, 65)) out.push(AGE_GROUPS.SENIOR);
-  if (both(36, 49)) out.push(AGE_GROUPS.MID);
-  if (both(18, 65)) out.push(AGE_GROUPS.OPEN);
+  for (const [group, range] of Object.entries(AGE_GROUP_DOB_RANGES)) {
+    if (inDobRange(dateOfBirth, range.start, range.end) && inDobRange(partnerDob, range.start, range.end)) {
+      out.push(group);
+    }
+  }
   return out;
 }
 
 function eligibleEventCategories(gender1, gender2) {
-  const g1 = gender1;
-  const g2 = gender2;
   const out = [];
-  if (g1 === GENDERS.MALE && g2 === GENDERS.MALE) out.push(EVENT_CATEGORIES.MD);
-  if (g1 === GENDERS.FEMALE && g2 === GENDERS.FEMALE) out.push(EVENT_CATEGORIES.WD);
-  if (g1 !== g2) out.push(EVENT_CATEGORIES.XD);
+  if (gender1 === GENDERS.MALE && gender2 === GENDERS.MALE) out.push(EVENT_CATEGORIES.MD);
+  if (gender1 === GENDERS.FEMALE && gender2 === GENDERS.FEMALE) out.push(EVENT_CATEGORIES.WD);
+  if (gender1 && gender2 && gender1 !== gender2) out.push(EVENT_CATEGORIES.XD);
   return out;
 }
 
@@ -67,6 +65,7 @@ function validateEventCategory(eventCategory, captainGender, teammateGender) {
 
 const ACTIVE_STATUSES = [
   TEAM_STATUS.SUBMITTED_PENDING_PAYMENT,
+  TEAM_STATUS.MANUAL_PENDING_PAYMENT,
   TEAM_STATUS.PAID_PENDING_REVIEW,
   TEAM_STATUS.CONFIRMED,
 ];
@@ -108,7 +107,6 @@ async function assertPlayerEventLimit({ email, whatsapp, excludeTeamId = null })
 }
 
 module.exports = {
-  ageOnEventYear,
   eligibleAgeGroups,
   eligibleEventCategories,
   validateAgeGroupSelection,

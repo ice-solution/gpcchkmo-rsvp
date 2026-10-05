@@ -2,6 +2,11 @@ const express = require('express');
 const rateLimit = require('express-rate-limit');
 const ClubVenue = require('../models/ClubVenue');
 const { createRsvp } = require('../services/rsvpService');
+const { isPaymentGatewayEnabled } = require('../config/paymentGateway');
+const {
+  optionalPaymentProof,
+  publicProofPath,
+} = require('../middleware/paymentProofUpload');
 const {
   eligibleAgeGroups,
   eligibleEventCategories,
@@ -42,6 +47,7 @@ router.get('/meta', async (_req, res, next) => {
     res.json({
       ok: true,
       data: {
+        paymentGatewayEnabled: isPaymentGatewayEnabled(),
         fee: buildPaymentSummary(),
         maxEventsPerPlayer: FEE.MAX_EVENTS_PER_PLAYER,
         captainClubs: [
@@ -119,9 +125,21 @@ router.get('/meta/eligibility', (req, res) => {
   res.json({ ok: true, data: { ageGroups, eventCategories } });
 });
 
-router.post('/rsvp', rsvpLimiter, async (req, res, next) => {
+router.post('/rsvp', rsvpLimiter, optionalPaymentProof, async (req, res, next) => {
   try {
-    const result = await createRsvp(req.body || {});
+    let body = req.body || {};
+    if (typeof body.payload === 'string') {
+      try {
+        body = JSON.parse(body.payload);
+      } catch {
+        return res.status(400).json({ ok: false, errors: ['提交資料格式不正確'] });
+      }
+    }
+    if (req.file) {
+      body.paymentProofFileUrl = publicProofPath(req.file);
+      body.paymentProofOriginalName = req.file.originalname || '';
+    }
+    const result = await createRsvp(body);
     if (!result.ok) {
       return res.status(result.status).json({
         ok: false,
