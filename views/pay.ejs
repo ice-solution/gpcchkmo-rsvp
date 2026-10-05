@@ -45,7 +45,7 @@
         <p id="proof-ok" class="hidden text-sm text-emerald-800"></p>
         <% } %>
         <div id="proof-error" class="hidden rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700 ring-1 ring-red-200"></div>
-        <form id="proof-form" class="space-y-3">
+        <form id="proof-form" class="space-y-3" data-team-id="<%= applicationId || '' %>">
           <div>
             <label class="field-label" for="paymentProofFile">上載檔案</label>
             <input class="field-input" type="file" id="paymentProofFile" name="paymentProof" accept="image/jpeg,image/png,image/webp,image/gif,application/pdf" />
@@ -68,7 +68,7 @@
 (function () {
   var form = document.getElementById('proof-form');
   if (!form) return;
-  var teamId = <%= applicationId ? JSON.stringify(String(applicationId)) : 'null' %>;
+  var teamId = form.getAttribute('data-team-id') || '';
   var err = document.getElementById('proof-error');
   var ok = document.getElementById('proof-ok');
   var btn = document.getElementById('btn-upload-proof');
