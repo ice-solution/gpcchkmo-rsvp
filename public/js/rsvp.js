@@ -33,7 +33,6 @@
     'teammateEmergencyPhone',
     'preferredVenueId',
     'spectatorCount',
-    'paymentProofUrl',
   ];
   const CHECK_IDS = [
     'introAck',
@@ -427,7 +426,6 @@
         pics: $('#agreePics').checked,
         marketing: $('#agreeMarketing').checked,
       },
-      paymentProofUrl: $('#paymentProofUrl') ? $('#paymentProofUrl').value.trim() : '',
     };
   }
 
@@ -555,22 +553,11 @@
       btn.disabled = true;
       btn.textContent = '提交中…';
       try {
-        const payload = buildPayload();
-        const fileEl = $('#paymentProofFile');
-        const hasFile = fileEl && fileEl.files && fileEl.files[0];
-        let res;
-        if (hasFile) {
-          const fd = new FormData();
-          fd.append('payload', JSON.stringify(payload));
-          fd.append('paymentProof', fileEl.files[0]);
-          res = await fetch('/api/rsvp', { method: 'POST', body: fd });
-        } else {
-          res = await fetch('/api/rsvp', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-          });
-        }
+        const res = await fetch('/api/rsvp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(buildPayload()),
+        });
         const json = await res.json();
         if (!json.ok) {
           showAlert(json.errors || ['提交失敗']);
@@ -581,8 +568,9 @@
         const id = json.data.applicationId;
         const gatewayOn = Boolean(meta && meta.paymentGatewayEnabled);
         clearDraft();
-        const payQ = gatewayOn ? '&pay=1' : '';
-        window.location.href = `/rsvp/success?id=${encodeURIComponent(id)}${payQ}`;
+        window.location.href = gatewayOn
+          ? `/rsvp/success?id=${encodeURIComponent(id)}&pay=1`
+          : `/rsvp/pay?id=${encodeURIComponent(id)}`;
       } catch (err) {
         console.error(err);
         showAlert(['網絡錯誤，請稍後再試']);

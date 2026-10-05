@@ -23,10 +23,7 @@ const {
 } = require('./eligibility');
 const { sendSubmissionReceipt } = require('./emailService');
 const { buildPaymentSummary, createManualPaymentReference } = require('./paymentService');
-const {
-  isPaymentGatewayEnabled,
-  parseProofLink,
-} = require('../config/paymentGateway');
+const { isPaymentGatewayEnabled } = require('../config/paymentGateway');
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -174,10 +171,6 @@ async function createRsvp(body) {
   });
   const captainEmail = body.captainEmail.trim().toLowerCase();
   const gatewayOn = isPaymentGatewayEnabled();
-  const proofLinkResult = parseProofLink(body.paymentProofUrl || body.paymentProofLink);
-  if (!proofLinkResult.ok) {
-    return { ok: false, status: 400, errors: [proofLinkResult.error] };
-  }
   const uploadedProofPath = String(body.paymentProofFileUrl || '').trim();
 
   // Standalone MongoDB (non-replica-set) does not support multi-doc transactions.
@@ -222,7 +215,7 @@ async function createRsvp(body) {
       totalAmountHkd: paymentSummary.totalAmountHkd,
       currency: paymentSummary.currency,
       proofUrl: uploadedProofPath || null,
-      proofLink: proofLinkResult.url || null,
+      proofLink: null,
       proofOriginalName: body.paymentProofOriginalName || null,
     },
     qualificationStatus: QUALIFICATION_STATUS.PENDING,
@@ -306,7 +299,37 @@ async function createRsvp(body) {
   }
 }
 
+async function attachPaymentProof(teamId, { proofUrl, originalName }) {
+  if (!mongoose.isValidObjectId(teamId)) {
+    return { ok: false, status: 400, errors: ['申請編號無效'] };
+  }
+  if (!proofUrl) {
+    return { ok: false, status: 400, errors: ['請上載付款憑證'] };
+  }
+  const team = await Team.findById(teamId);
+  if (!team) {
+    return { ok: false, status: 404, errors: ['找不到報名申請'] };
+  }
+  if (team.payment?.status === PAYMENT_STATUS.PAID) {
+    return { ok: false, status: 409, errors: ['此申請已付款'] };
+  }
+  team.payment = team.payment || {};
+  team.payment.proofUrl = proofUrl;
+  team.payment.proofOriginalName = originalName || null;
+  team.markModified('payment');
+  await team.save();
+  await AuditLog.create({
+    action: 'rsvp.payment_proof',
+    entityType: 'Team',
+    entityId: team._id,
+    actor: team.captainEmail,
+    meta: { proofUrl },
+  });
+  return { ok: true, status: 200, data: { proofUrl } };
+}
+
 module.exports = {
   createRsvp,
+  attachPaymentProof,
   validatePayload,
 };

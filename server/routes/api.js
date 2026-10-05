@@ -1,7 +1,7 @@
 const express = require('express');
 const rateLimit = require('express-rate-limit');
 const ClubVenue = require('../models/ClubVenue');
-const { createRsvp } = require('../services/rsvpService');
+const { createRsvp, attachPaymentProof } = require('../services/rsvpService');
 const { isPaymentGatewayEnabled } = require('../config/paymentGateway');
 const {
   optionalPaymentProof,
@@ -125,21 +125,9 @@ router.get('/meta/eligibility', (req, res) => {
   res.json({ ok: true, data: { ageGroups, eventCategories } });
 });
 
-router.post('/rsvp', rsvpLimiter, optionalPaymentProof, async (req, res, next) => {
+router.post('/rsvp', rsvpLimiter, async (req, res, next) => {
   try {
-    let body = req.body || {};
-    if (typeof body.payload === 'string') {
-      try {
-        body = JSON.parse(body.payload);
-      } catch {
-        return res.status(400).json({ ok: false, errors: ['提交資料格式不正確'] });
-      }
-    }
-    if (req.file) {
-      body.paymentProofFileUrl = publicProofPath(req.file);
-      body.paymentProofOriginalName = req.file.originalname || '';
-    }
-    const result = await createRsvp(body);
+    const result = await createRsvp(req.body || {});
     if (!result.ok) {
       return res.status(result.status).json({
         ok: false,
@@ -151,5 +139,28 @@ router.post('/rsvp', rsvpLimiter, optionalPaymentProof, async (req, res, next) =
     next(err);
   }
 });
+
+router.post(
+  '/rsvp/:id/payment-proof',
+  rsvpLimiter,
+  optionalPaymentProof,
+  async (req, res, next) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ ok: false, errors: ['請上載付款憑證'] });
+      }
+      const result = await attachPaymentProof(req.params.id, {
+        proofUrl: publicProofPath(req.file),
+        originalName: req.file.originalname || '',
+      });
+      if (!result.ok) {
+        return res.status(result.status).json({ ok: false, errors: result.errors });
+      }
+      return res.json({ ok: true, data: result.data });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
 
 module.exports = router;

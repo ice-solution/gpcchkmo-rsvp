@@ -1,0 +1,106 @@
+<%- include('partials/head') %>
+<main class="mx-auto max-w-xl px-4 py-12">
+  <div class="overflow-hidden rounded-3xl bg-white shadow-panel ring-1 ring-slate-200">
+    <div class="bg-gradient-to-r from-brand-deep to-brand-blue px-6 py-5 text-white">
+      <p class="text-xs font-semibold uppercase tracking-[0.2em] text-brand-lime">GPCC Hong Kong</p>
+      <h1 class="mt-2 font-display text-2xl font-bold">轉賬付款</h1>
+    </div>
+    <div class="space-y-4 px-6 py-6 text-sm leading-relaxed text-slate-700">
+      <% if (applicationId) { %>
+      <p>申請參考編號：<span class="font-mono font-semibold text-brand-deep"><%= applicationId %></span></p>
+      <% } %>
+      <% if (paymentReference) { %>
+      <p>轉賬備註／參考：<span class="font-mono font-semibold text-brand-deep"><%= paymentReference %></span></p>
+      <% } %>
+
+      <p class="font-semibold text-brand-deep">請完成轉賬，並拍照/截圖保存付款憑證。</p>
+      <p>基本費用：HKD $<%= feeBase %> / 隊</p>
+      <% if (wantPlayerPack) { %>
+      <p>選手包加購：HKD $<%= packFee %>（兩人份）</p>
+      <% } %>
+      <p>應繳總額：<strong>HKD $<%= feeTotal %></strong></p>
+      <p>轉數快 (FPS) 識別碼 / FPS #：<strong>133515288</strong>（大會指定收款戶口：Moves Sports Limited）</p>
+      <p>WhatsApp：<a class="font-semibold text-brand-blue underline" href="https://wa.me/85297232341" target="_blank" rel="noopener">97232341</a></p>
+      <div>
+        <p class="font-semibold text-slate-800">銀行轉賬資訊：</p>
+        <p>銀行: OCBC Bank (Hong Kong)</p>
+        <p>戶口號碼: 802030689001</p>
+        <p>銀行代碼: 035</p>
+      </div>
+
+      <div class="flex flex-col items-center py-2">
+        <img src="/images/fps_logo.jpg" alt="轉數快 FPS" class="h-[39px] w-auto object-contain" />
+        <img src="/images/fps.jpg" alt="轉數快收款 QR Code" class="mt-3 w-[154px] rounded-xl bg-white p-1.5 ring-1 ring-slate-200" />
+      </div>
+
+      <div class="space-y-3 border-t border-slate-200 pt-4">
+        <p class="font-semibold text-brand-deep">上載付款憑證</p>
+        <p class="text-xs text-slate-500">可上載相片、截圖或 PDF。</p>
+        <% if (proofUrl) { %>
+        <p id="proof-ok" class="text-sm text-emerald-800">
+          已收到付款憑證：
+          <a class="text-brand-blue underline" href="<%= proofUrl %>" target="_blank" rel="noopener">查看檔案</a>
+        </p>
+        <% } else { %>
+        <p id="proof-ok" class="hidden text-sm text-emerald-800"></p>
+        <% } %>
+        <div id="proof-error" class="hidden rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700 ring-1 ring-red-200"></div>
+        <form id="proof-form" class="space-y-3">
+          <div>
+            <label class="field-label" for="paymentProofFile">上載檔案</label>
+            <input class="field-input" type="file" id="paymentProofFile" name="paymentProof" accept="image/jpeg,image/png,image/webp,image/gif,application/pdf" />
+          </div>
+          <button type="submit" id="btn-upload-proof" class="btn-primary" <%= applicationId ? '' : 'disabled' %>>提交憑證</button>
+        </form>
+      </div>
+
+      <div class="flex flex-wrap gap-3 pt-2">
+        <a href="/rsvp" class="btn-secondary">返回報名表</a>
+        <a href="https://gpcchkmo.org/" class="btn-secondary" target="_blank" rel="noopener">官方網站</a>
+      </div>
+    </div>
+  </div>
+</main>
+<script>
+(function () {
+  var form = document.getElementById('proof-form');
+  if (!form) return;
+  var teamId = <%= applicationId ? JSON.stringify(String(applicationId)) : 'null' %>;
+  var err = document.getElementById('proof-error');
+  var ok = document.getElementById('proof-ok');
+  var btn = document.getElementById('btn-upload-proof');
+  var fileEl = document.getElementById('paymentProofFile');
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    if (!teamId) return;
+    if (!fileEl.files || !fileEl.files[0]) {
+      err.textContent = '請先選擇付款憑證檔案';
+      err.classList.remove('hidden');
+      return;
+    }
+    err.classList.add('hidden');
+    btn.disabled = true;
+    btn.textContent = '上載中…';
+    try {
+      var fd = new FormData();
+      fd.append('paymentProof', fileEl.files[0]);
+      var res = await fetch('/api/rsvp/' + encodeURIComponent(teamId) + '/payment-proof', {
+        method: 'POST',
+        body: fd,
+      });
+      var json = await res.json();
+      if (!json.ok) throw new Error((json.errors && json.errors[0]) || '上載失敗');
+      ok.innerHTML = '已收到付款憑證：<a class="text-brand-blue underline" href="' + json.data.proofUrl + '" target="_blank" rel="noopener">查看檔案</a>';
+      ok.classList.remove('hidden');
+      fileEl.value = '';
+    } catch (e2) {
+      err.textContent = e2.message || '上載失敗';
+      err.classList.remove('hidden');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '提交憑證';
+    }
+  });
+})();
+</script>
+<%- include('partials/foot') %>

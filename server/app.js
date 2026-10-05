@@ -60,9 +60,13 @@ app.get('/rsvp', (_req, res) => {
   });
 });
 app.get('/rsvp/success', async (req, res) => {
+  if (!isPaymentGatewayEnabled()) {
+    const q = req.query.id ? `?id=${encodeURIComponent(String(req.query.id))}` : '';
+    return res.redirect(`/rsvp/pay${q}`);
+  }
   const applicationId = req.query.id || '';
   let paymentState = req.query.payment || '';
-  const gatewayOn = isPaymentGatewayEnabled();
+  const gatewayOn = true;
   let wonderConfigured = false;
   let teamPaymentStatus = '';
   let teamStatus = '';
@@ -71,7 +75,7 @@ app.get('/rsvp/success', async (req, res) => {
   let proofLink = '';
   let paymentReference = '';
   try {
-    wonderConfigured = gatewayOn && isWonderConfigured();
+    wonderConfigured = isWonderConfigured();
     if (applicationId) {
       const Team = require('./models/Team');
       const team = await Team.findById(applicationId).lean();
@@ -105,6 +109,40 @@ app.get('/rsvp/success', async (req, res) => {
     feeBase: FEE.BASE_HKD,
     packFee: FEE.PLAYER_PACK_HKD,
     feeSurcharge: fee.feeAmountHkd,
+    feeTotal: fee.totalAmountHkd,
+  });
+});
+app.get('/rsvp/pay', async (req, res) => {
+  if (isPaymentGatewayEnabled()) {
+    const q = req.query.id ? `?id=${encodeURIComponent(String(req.query.id))}` : '';
+    return res.redirect(`/rsvp/success${q}`);
+  }
+  const applicationId = req.query.id || '';
+  let wantPlayerPack = false;
+  let proofUrl = '';
+  let paymentReference = '';
+  try {
+    if (applicationId) {
+      const Team = require('./models/Team');
+      const team = await Team.findById(applicationId).lean();
+      if (team) {
+        wantPlayerPack = team.wantPlayerPack === true;
+        proofUrl = team.payment?.proofUrl || '';
+        paymentReference = team.payment?.paymentReference || '';
+      }
+    }
+  } catch (err) {
+    console.error(err);
+  }
+  const fee = buildPaymentSummary({ wantPlayerPack, gatewayEnabled: false });
+  res.render('pay', {
+    title: '轉賬付款｜GPCC 香港站',
+    applicationId,
+    wantPlayerPack,
+    proofUrl,
+    paymentReference,
+    feeBase: FEE.BASE_HKD,
+    packFee: FEE.PLAYER_PACK_HKD,
     feeTotal: fee.totalAmountHkd,
   });
 });
