@@ -93,7 +93,14 @@
           <td class="px-4 py-3">
             <span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700"><%= labels.teamStatus[team.status] || team.status %></span>
           </td>
-          <td class="px-4 py-3 text-xs text-slate-600"><%= labels.paymentStatus[team.payment && team.payment.status] || '—' %></td>
+          <td class="px-4 py-3 text-xs text-slate-600">
+            <div><%= labels.paymentStatus[team.payment && team.payment.status] || '—' %></div>
+            <% if (team.payment && team.payment.proofUrl) { %>
+            <a class="mt-1 inline-block text-brand-blue underline" href="/admin/teams/<%= team._id %>#payment-proof">已上載憑證</a>
+            <% } else { %>
+            <div class="mt-1 text-slate-400">未上載憑證</div>
+            <% } %>
+          </td>
           <td class="px-4 py-3 text-right">
             <a class="text-sm font-semibold text-brand-blue hover:underline" href="/admin/teams/<%= team._id %>">詳情</a>
           </td>
