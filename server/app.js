@@ -160,6 +160,7 @@ app.get('/rsvp/pay', async (req, res) => {
     title: '轉賬付款｜GPCC 香港站',
     feeBase: FEE.BASE_HKD,
     packFee: FEE.PLAYER_PACK_HKD,
+    feeSurcharge: fee.feeAmountHkd,
     feeTotal: fee.totalAmountHkd,
     ...ctx,
   });

@@ -34,14 +34,11 @@ function buildPaymentSummary({
 } = {}) {
   const subtotal = registrationSubtotal(wantPlayerPack);
   const pack = wantPlayerPack ? FEE.PLAYER_PACK_HKD : 0;
-  const amounts = gatewayEnabled
-    ? withPlatformFee(subtotal)
-    : {
-        baseAmountHkd: subtotal,
-        feeAmountHkd: 0,
-        totalAmountHkd: subtotal,
-        feeRate: 0,
-      };
+  const amounts = withPlatformFee(subtotal);
+  const feePct = FEE.PLATFORM_FEE_RATE * 100;
+  const packBit = wantPlayerPack
+    ? `報名費 HKD $${FEE.BASE_HKD} ＋ 選手包 HKD $${FEE.PLAYER_PACK_HKD} ＋ 手續費 HKD $${amounts.feeAmountHkd}，應繳總額 HKD $${amounts.totalAmountHkd}。`
+    : `海選報名費 HKD $${FEE.BASE_HKD} ＋ 手續費 HKD $${amounts.feeAmountHkd}，應繳總額 HKD $${amounts.totalAmountHkd}。`;
   return {
     ...amounts,
     entryFeeHkd: FEE.BASE_HKD,
@@ -52,13 +49,8 @@ function buildPaymentSummary({
     paymentGatewayEnabled: Boolean(gatewayEnabled),
     providerHint: gatewayEnabled ? 'wonder_gpcchkmo' : 'manual_fps',
     feeDisclaimer: gatewayEnabled
-      ? `經 Wonder 網上付款會另收 ${FEE.PLATFORM_FEE_RATE * 100}% 平台手續費（由參加者承擔）。` +
-        (wantPlayerPack
-          ? `報名費 HKD $${FEE.BASE_HKD} ＋ 選手包 HKD $${FEE.PLAYER_PACK_HKD} ＋ 手續費 HKD $${amounts.feeAmountHkd}，應繳總額 HKD $${amounts.totalAmountHkd}。`
-          : `海選報名費 HKD $${FEE.BASE_HKD} ＋ 手續費 HKD $${amounts.feeAmountHkd}，應繳總額 HKD $${amounts.totalAmountHkd}。`)
-      : wantPlayerPack
-        ? `銀行／轉數快轉賬：報名費 HKD $${FEE.BASE_HKD} ＋ 選手包 HKD $${FEE.PLAYER_PACK_HKD}，應繳總額 HKD $${amounts.totalAmountHkd}。`
-        : `銀行／轉數快轉賬：海選報名費 HKD $${FEE.BASE_HKD}／隊。`,
+      ? `經 Wonder 網上付款會另收 ${feePct}% 平台手續費（由參加者承擔）。${packBit}`
+      : `轉數快／銀行轉賬另收 ${feePct}% 手續費（由參加者承擔）。${packBit}`,
   };
 }
 
