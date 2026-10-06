@@ -16,6 +16,7 @@ const {
   AGE_GROUP_LABELS,
   EVENT_CATEGORY_LABELS,
   PLAYER_ROLES,
+  CAPTAIN_CLUBS,
 } = require('../constants/enums');
 const {
   buildTeamsCsv,
@@ -33,6 +34,37 @@ const loginLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
+
+function buildAdminFilter({ status, payment, qualification, ageGroup, eventCategory, club, q }) {
+  const filter = {};
+  if (status) filter.status = status;
+  if (payment) filter['payment.status'] = payment;
+  if (qualification) filter.qualificationStatus = qualification;
+  if (ageGroup) filter.ageGroup = ageGroup;
+  if (eventCategory) filter.eventCategory = eventCategory;
+  if (club) filter.captainClub = club;
+  if (q && String(q).trim()) {
+    const re = new RegExp(String(q).trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+    filter.$or = [
+      { captainEmail: re },
+      { captainClub: re },
+      { displayName: re },
+      { teamCode: re },
+      { preferredVenueLabel: re },
+    ];
+  }
+  return filter;
+}
+
+function queryString(filters, extra = {}) {
+  const params = new URLSearchParams();
+  const merged = { ...filters, ...extra };
+  Object.entries(merged).forEach(([key, value]) => {
+    if (value != null && String(value).trim() !== '') params.set(key, String(value));
+  });
+  const s = params.toString();
+  return s ? `?${s}` : '';
+}
 
 function labels() {
   return {
@@ -96,35 +128,28 @@ router.get('/', requireAdmin, async (req, res, next) => {
       qualification = '',
       ageGroup = '',
       eventCategory = '',
+      club = '',
       q = '',
       page = '1',
     } = req.query;
 
-    const filter = {};
-    if (status) filter.status = status;
-    if (payment) filter['payment.status'] = payment;
-    if (qualification) filter.qualificationStatus = qualification;
-    if (ageGroup) filter.ageGroup = ageGroup;
-    if (eventCategory) filter.eventCategory = eventCategory;
-    if (q.trim()) {
-      const re = new RegExp(q.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
-      filter.$or = [
-        { captainEmail: re },
-        { captainClub: re },
-        { displayName: re },
-        { teamCode: re },
-        { preferredVenueLabel: re },
-      ];
-    }
+    const filters = { status, payment, qualification, ageGroup, eventCategory, club, q };
+    const filter = buildAdminFilter(filters);
+    const filterWithoutClub = buildAdminFilter({ ...filters, club: '' });
 
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
     const limit = 25;
     const skip = (pageNum - 1) * limit;
 
-    const [total, teams, statusCounts] = await Promise.all([
+    const [total, teams, statusCounts, clubCountsRaw] = await Promise.all([
       Team.countDocuments(filter),
-      Team.find(filter).sort({ submittedAt: -1 }).skip(skip).limit(limit).lean(),
+      Team.find(filter).sort({ captainClub: 1, submittedAt: -1 }).skip(skip).limit(limit).lean(),
       Team.aggregate([{ $group: { _id: '$status', count: { $sum: 1 } } }]),
+      Team.aggregate([
+        { $match: filterWithoutClub },
+        { $group: { _id: '$captainClub', count: { $sum: 1 } } },
+        { $sort: { count: -1, _id: 1 } },
+      ]),
     ]);
 
     const teamIds = teams.map((t) => t._id);
@@ -150,10 +175,35 @@ router.get('/', requireAdmin, async (req, res, next) => {
       if (row._id) counts[row._id] = row.count;
     }
 
+    const clubCountMap = new Map(
+      clubCountsRaw.filter((row) => row._id).map((row) => [row._id, row.count])
+    );
+    const extraClubs = [...clubCountMap.keys()]
+      .filter((name) => !CAPTAIN_CLUBS.includes(name))
+      .sort((a, b) => a.localeCompare(b, 'zh-Hant'));
+    const clubOptions = [
+      ...CAPTAIN_CLUBS.map((name) => ({ name, count: clubCountMap.get(name) || 0 })),
+      ...extraClubs.map((name) => ({ name, count: clubCountMap.get(name) || 0 })),
+    ];
+
+    const groupedRows = [];
+    for (const row of rows) {
+      const name = row.team.captainClub || '未填球會';
+      const last = groupedRows[groupedRows.length - 1];
+      if (!last || last.club !== name) {
+        groupedRows.push({ club: name, rows: [row] });
+      } else {
+        last.rows.push(row);
+      }
+    }
+
     res.render('admin/teams', {
       title: '報名列表｜GPCC Admin',
       rows,
-      filters: { status, payment, qualification, ageGroup, eventCategory, q },
+      groupedRows,
+      clubOptions,
+      filters,
+      queryString: (extra) => queryString(filters, extra),
       labels: labels(),
       enums: {
         TEAM_STATUS,
@@ -292,20 +342,14 @@ router.post('/teams/:id/update', requireAdmin, async (req, res, next) => {
 
 router.get('/export.csv', requireAdmin, async (req, res, next) => {
   try {
-    const { status = '', payment = '', qualification = '', q = '' } = req.query;
-    const filter = {};
-    if (status) filter.status = status;
-    if (payment) filter['payment.status'] = payment;
-    if (qualification) filter.qualificationStatus = qualification;
-    if (q.trim()) {
-      const re = new RegExp(q.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
-      filter.$or = [
-        { captainEmail: re },
-        { captainClub: re },
-        { displayName: re },
-        { teamCode: re },
-      ];
-    }
+    const {
+      status = '',
+      payment = '',
+      qualification = '',
+      club = '',
+      q = '',
+    } = req.query;
+    const filter = buildAdminFilter({ status, payment, qualification, club, q });
 
     const teams = await Team.find(filter).sort({ submittedAt: -1 }).lean();
     const players = await Player.find({

@@ -4,29 +4,50 @@
     <h1 class="font-display text-2xl font-bold text-brand-deep">報名列表</h1>
     <p class="mt-1 text-sm text-slate-500">共 <%= pagination.total %> 筆申請</p>
   </div>
-  <a
-    class="btn-primary"
-    href="/admin/export.csv?status=<%= encodeURIComponent(filters.status) %>&payment=<%= encodeURIComponent(filters.payment) %>&qualification=<%= encodeURIComponent(filters.qualification) %>&q=<%= encodeURIComponent(filters.q) %>"
-  >匯出 CSV</a>
+  <a class="btn-primary" href="/admin/export.csv<%= queryString() %>">匯出 CSV</a>
 </div>
 
 <% if (flash) { %>
 <div class="mb-4 rounded-xl bg-emerald-50 px-4 py-2 text-sm text-emerald-800 ring-1 ring-emerald-200"><%= flash %></div>
 <% } %>
 
-<div class="mb-4 flex flex-wrap gap-2">
-  <% Object.keys(counts).forEach(function(key) { %>
-    <a href="/admin?status=<%= key %>" class="rounded-full px-3 py-1 text-xs font-semibold ring-1 <%= filters.status===key ? 'bg-brand-lime text-brand-deep ring-brand-deep' : 'bg-white text-slate-600 ring-slate-200' %>">
-      <%= labels.teamStatus[key] || key %> (<%= counts[key] %>)
+<div class="mb-3">
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">報名狀態</p>
+  <div class="flex flex-wrap gap-2">
+    <% Object.keys(counts).forEach(function(key) { %>
+      <a href="/admin<%= queryString({ status: key, page: '' }) %>" class="rounded-full px-3 py-1 text-xs font-semibold ring-1 <%= filters.status===key ? 'bg-brand-lime text-brand-deep ring-brand-deep' : 'bg-white text-slate-600 ring-slate-200' %>">
+        <%= labels.teamStatus[key] || key %> (<%= counts[key] %>)
+      </a>
+    <% }) %>
+    <a href="/admin<%= queryString({ status: '', page: '' }) %>" class="rounded-full px-3 py-1 text-xs font-semibold text-slate-500 ring-1 ring-slate-200">全部狀態</a>
+  </div>
+</div>
+
+<div class="mb-4">
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">隊長所屬匹克球球會</p>
+  <div class="flex flex-wrap gap-2">
+    <a href="/admin<%= queryString({ club: '', page: '' }) %>" class="rounded-full px-3 py-1 text-xs font-semibold ring-1 <%= !filters.club ? 'bg-brand-lime text-brand-deep ring-brand-deep' : 'bg-white text-slate-600 ring-slate-200' %>">全部球會</a>
+    <% clubOptions.forEach(function(opt) { %>
+    <a href="/admin<%= queryString({ club: opt.name, page: '' }) %>" class="rounded-full px-3 py-1 text-xs font-semibold ring-1 <%= filters.club===opt.name ? 'bg-brand-lime text-brand-deep ring-brand-deep' : 'bg-white text-slate-600 ring-slate-200' %>">
+      <%= opt.name %> (<%= opt.count %>)
     </a>
-  <% }) %>
-  <a href="/admin" class="rounded-full px-3 py-1 text-xs font-semibold text-slate-500 ring-1 ring-slate-200">全部</a>
+    <% }) %>
+  </div>
 </div>
 
 <form method="get" action="/admin" class="mb-5 grid gap-3 rounded-2xl bg-white p-4 shadow-panel ring-1 ring-slate-200 md:grid-cols-6">
   <div class="md:col-span-2">
     <label class="field-label">搜尋</label>
     <input class="field-input" name="q" value="<%= filters.q %>" placeholder="電郵／球會／隊名／隊伍編號" />
+  </div>
+  <div>
+    <label class="field-label">隊長球會</label>
+    <select class="field-input" name="club">
+      <option value="">全部</option>
+      <% clubOptions.forEach(function(opt){ %>
+      <option value="<%= opt.name %>" <%= filters.club===opt.name?'selected':'' %>><%= opt.name %> (<%= opt.count %>)</option>
+      <% }) %>
+    </select>
   </div>
   <div>
     <label class="field-label">報名狀態</label>
@@ -55,8 +76,8 @@
       <% }) %>
     </select>
   </div>
-  <div class="flex items-end gap-2">
-    <button type="submit" class="btn-primary w-full">篩選</button>
+  <div class="flex items-end gap-2 md:col-span-6">
+    <button type="submit" class="btn-primary">篩選</button>
   </div>
 </form>
 
@@ -77,7 +98,14 @@
         <% if (!rows.length) { %>
         <tr><td colspan="6" class="px-4 py-8 text-center text-slate-500">暫無資料</td></tr>
         <% } %>
-        <% rows.forEach(function(row){ var team=row.team; var captain=row.captain; var teammate=row.teammate; %>
+        <% (groupedRows || []).forEach(function(group){ %>
+        <tr class="bg-sky-50/70">
+          <td colspan="6" class="px-4 py-2 text-xs font-bold text-brand-deep">
+            <%= group.club %>
+            <span class="ml-1 font-medium text-slate-500">（<%= group.rows.length %>）</span>
+          </td>
+        </tr>
+        <% group.rows.forEach(function(row){ var team=row.team; var captain=row.captain; var teammate=row.teammate; %>
         <tr class="hover:bg-sky-50/40">
           <td class="whitespace-nowrap px-4 py-3 text-xs text-slate-500"><%= formatDateTime(team.submittedAt) %></td>
           <td class="px-4 py-3">
@@ -106,6 +134,7 @@
           </td>
         </tr>
         <% }) %>
+        <% }) %>
       </tbody>
     </table>
   </div>
@@ -114,11 +143,11 @@
 <% if (pagination.pages > 1) { %>
 <nav class="mt-4 flex items-center justify-center gap-2 text-sm">
   <% if (pagination.page > 1) { %>
-  <a class="btn-secondary !py-1.5" href="/admin?page=<%= pagination.page-1 %>&status=<%= filters.status %>&payment=<%= filters.payment %>&qualification=<%= filters.qualification %>&q=<%= encodeURIComponent(filters.q) %>">上一頁</a>
+  <a class="btn-secondary !py-1.5" href="/admin<%= queryString({ page: pagination.page-1 }) %>">上一頁</a>
   <% } %>
   <span class="text-slate-500"><%= pagination.page %> / <%= pagination.pages %></span>
   <% if (pagination.page < pagination.pages) { %>
-  <a class="btn-secondary !py-1.5" href="/admin?page=<%= pagination.page+1 %>&status=<%= filters.status %>&payment=<%= filters.payment %>&qualification=<%= filters.qualification %>&q=<%= encodeURIComponent(filters.q) %>">下一頁</a>
+  <a class="btn-secondary !py-1.5" href="/admin<%= queryString({ page: pagination.page+1 }) %>">下一頁</a>
   <% } %>
 </nav>
 <% } %>
