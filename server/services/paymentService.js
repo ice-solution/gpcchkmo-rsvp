@@ -5,6 +5,9 @@
  *   /api/gpcchkmo/wonder/*
  */
 
+const { FEE, PAYMENT_STATUS } = require('../constants/enums');
+const { isPaymentGatewayEnabled } = require('../config/paymentGateway');
+
 const AIRWALLEX_PAY_URLS = {
   base: 'https://pay.airwallex.com/sghmy57gxoo5',
   withPack: 'https://pay.airwallex.com/sghmy50i94e0',
