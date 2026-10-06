@@ -5,8 +5,14 @@
  *   /api/gpcchkmo/wonder/*
  */
 
-const { FEE, PAYMENT_STATUS } = require('../constants/enums');
-const { isPaymentGatewayEnabled } = require('../config/paymentGateway');
+const AIRWALLEX_PAY_URLS = {
+  base: 'https://pay.airwallex.com/sghmy57gxoo5',
+  withPack: 'https://pay.airwallex.com/sghmy50i94e0',
+};
+
+function airwallexPayUrl(wantPlayerPack = false) {
+  return wantPlayerPack ? AIRWALLEX_PAY_URLS.withPack : AIRWALLEX_PAY_URLS.base;
+}
 
 function roundMoney(n) {
   return Math.round(Number(n) * 100) / 100;
@@ -34,11 +40,21 @@ function buildPaymentSummary({
 } = {}) {
   const subtotal = registrationSubtotal(wantPlayerPack);
   const pack = wantPlayerPack ? FEE.PLAYER_PACK_HKD : 0;
-  const amounts = withPlatformFee(subtotal);
+  const amounts = gatewayEnabled
+    ? withPlatformFee(subtotal)
+    : {
+        baseAmountHkd: subtotal,
+        feeAmountHkd: 0,
+        totalAmountHkd: subtotal,
+        feeRate: 0,
+      };
   const feePct = FEE.PLATFORM_FEE_RATE * 100;
-  const packBit = wantPlayerPack
+  const packBitOn = wantPlayerPack
     ? `報名費 HKD $${FEE.BASE_HKD} ＋ 選手包 HKD $${FEE.PLAYER_PACK_HKD} ＋ 手續費 HKD $${amounts.feeAmountHkd}，應繳總額 HKD $${amounts.totalAmountHkd}。`
     : `海選報名費 HKD $${FEE.BASE_HKD} ＋ 手續費 HKD $${amounts.feeAmountHkd}，應繳總額 HKD $${amounts.totalAmountHkd}。`;
+  const packBitOff = wantPlayerPack
+    ? `報名費 HKD $${FEE.BASE_HKD} ＋ 選手包 HKD $${FEE.PLAYER_PACK_HKD}，應繳總額 HKD $${amounts.totalAmountHkd}。`
+    : `海選報名費 HKD $${FEE.BASE_HKD}／隊。`;
   return {
     ...amounts,
     entryFeeHkd: FEE.BASE_HKD,
@@ -47,10 +63,11 @@ function buildPaymentSummary({
     wantPlayerPack: Boolean(wantPlayerPack),
     currency: FEE.CURRENCY,
     paymentGatewayEnabled: Boolean(gatewayEnabled),
-    providerHint: gatewayEnabled ? 'wonder_gpcchkmo' : 'manual_fps',
+    providerHint: gatewayEnabled ? 'wonder_gpcchkmo' : 'airwallex',
+    airwallexPayUrl: airwallexPayUrl(wantPlayerPack),
     feeDisclaimer: gatewayEnabled
-      ? `經 Wonder 網上付款會另收 ${feePct}% 平台手續費（由參加者承擔）。${packBit}`
-      : `轉數快／銀行轉賬另收 ${feePct}% 手續費（由參加者承擔）。${packBit}`,
+      ? `經 Wonder 網上付款會另收 ${feePct}% 平台手續費（由參加者承擔）。${packBitOn}`
+      : `請以 Airwallex 連結完成付款。${packBitOff}`,
   };
 }
 
@@ -65,9 +82,9 @@ async function handleStripeWebhook(/* rawBody, signature */) {
 }
 
 async function createManualPaymentReference(team) {
-  const ref = `GPCC-FPS-${String(team._id).slice(-8).toUpperCase()}`;
+  const ref = `GPCC-${String(team._id).slice(-8).toUpperCase()}`;
   return {
-    method: 'fps',
+    method: 'airwallex',
     paymentReference: ref,
     status: PAYMENT_STATUS.PENDING_MANUAL,
   };
@@ -81,4 +98,6 @@ module.exports = {
   createStripeCheckoutSession,
   handleStripeWebhook,
   createManualPaymentReference,
+  airwallexPayUrl,
+  AIRWALLEX_PAY_URLS,
 };

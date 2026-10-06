@@ -209,7 +209,7 @@ async function createRsvp(body) {
       : TEAM_STATUS.MANUAL_PENDING_PAYMENT,
     payment: {
       status: gatewayOn ? PAYMENT_STATUS.UNPAID : PAYMENT_STATUS.PENDING_MANUAL,
-      method: gatewayOn ? null : 'fps',
+      method: gatewayOn ? null : 'airwallex',
       baseAmountHkd: paymentSummary.baseAmountHkd,
       feeAmountHkd: paymentSummary.feeAmountHkd,
       totalAmountHkd: paymentSummary.totalAmountHkd,

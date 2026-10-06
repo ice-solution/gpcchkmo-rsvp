@@ -3,40 +3,35 @@
   <div class="overflow-hidden rounded-3xl bg-white shadow-panel ring-1 ring-slate-200">
     <div class="bg-gradient-to-r from-brand-deep to-brand-blue px-6 py-5 text-white">
       <p class="text-xs font-semibold uppercase tracking-[0.2em] text-brand-lime">GPCC Hong Kong</p>
-      <h1 class="mt-2 font-display text-2xl font-bold">轉賬付款</h1>
+      <h1 class="mt-2 font-display text-2xl font-bold">付款</h1>
     </div>
     <div class="space-y-4 px-6 py-6 text-sm leading-relaxed text-slate-700">
       <% if (applicationId) { %>
       <p>申請參考編號：<span class="font-mono font-semibold text-brand-deep"><%= applicationId %></span></p>
       <% } %>
       <% if (paymentReference) { %>
-      <p>轉賬備註／參考：<span class="font-mono font-semibold text-brand-deep"><%= paymentReference %></span></p>
+      <p>付款備註／參考：<span class="font-mono font-semibold text-brand-deep"><%= paymentReference %></span></p>
       <% } %>
 
-      <p class="font-semibold text-brand-deep">請完成轉賬，並拍照/截圖保存付款憑證。</p>
+      <p class="font-semibold text-brand-deep">請先經付款連結完成付款，然後上載收據。</p>
       <p>基本費用：HKD $<%= feeBase %> / 隊</p>
       <% if (wantPlayerPack) { %>
       <p>選手包加購：HKD $<%= packFee %>（兩人份）</p>
       <% } %>
-      <p>3% 手續費（由參加者承擔）：HKD $<%= feeSurcharge %></p>
       <p>應繳總額：<strong>HKD $<%= feeTotal %></strong></p>
-      <p>轉數快 (FPS) 識別碼 / FPS #：<strong>133515288</strong>（大會指定收款戶口：Moves Sports Limited）</p>
       <p>WhatsApp：<a class="font-semibold text-brand-blue underline" href="https://wa.me/85297232341" target="_blank" rel="noopener">97232341</a></p>
-      <div>
-        <p class="font-semibold text-slate-800">銀行轉賬資訊：</p>
-        <p>銀行: OCBC Bank (Hong Kong)</p>
-        <p>戶口號碼: 802030689001</p>
-        <p>銀行代碼: 035</p>
-      </div>
 
-      <div class="flex flex-col items-center py-2">
-        <img src="/images/fps_logo.jpg" alt="轉數快 FPS" class="h-[39px] w-auto object-contain" />
-        <img src="/images/fps.jpg" alt="轉數快收款 QR Code" class="mt-3 w-[154px] rounded-xl bg-white p-1.5 ring-1 ring-slate-200" />
-      </div>
+      <a
+        class="btn-primary inline-flex"
+        href="<%= airwallexPayUrl %>"
+        target="_blank"
+        rel="noopener"
+      >前往付款 HKD $<%= feeTotal %></a>
+      <p class="text-xs text-slate-500">會開啟新分頁完成付款；付款後請返回本頁上載收據。</p>
 
       <div class="space-y-3 border-t border-slate-200 pt-4">
-        <p class="font-semibold text-brand-deep">上載付款憑證</p>
-        <p class="text-xs text-slate-500">可上載相片、截圖或 PDF。</p>
+        <p class="font-semibold text-brand-deep">上載付款收據</p>
+        <p class="text-xs text-slate-500">完成付款後，請上載相片、截圖或 PDF。</p>
         <% if (proofUrl) { %>
         <p id="proof-ok" class="text-sm text-emerald-800">
           已收到付款憑證：

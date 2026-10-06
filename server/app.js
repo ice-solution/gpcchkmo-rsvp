@@ -157,11 +157,12 @@ app.get('/rsvp/pay', async (req, res) => {
   const ctx = await loadReceiptContext(applicationId);
   const fee = buildPaymentSummary({ wantPlayerPack: ctx.wantPlayerPack, gatewayEnabled: false });
   res.render('pay', {
-    title: '轉賬付款｜GPCC 香港站',
+    title: '付款｜GPCC 香港站',
     feeBase: FEE.BASE_HKD,
     packFee: FEE.PLAYER_PACK_HKD,
     feeSurcharge: fee.feeAmountHkd,
     feeTotal: fee.totalAmountHkd,
+    airwallexPayUrl: fee.airwallexPayUrl,
     ...ctx,
   });
 });

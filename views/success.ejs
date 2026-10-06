@@ -18,7 +18,7 @@
       </p>
       <% } else if (!paymentGatewayEnabled) { %>
       <p class="rounded-2xl bg-amber-50 px-4 py-3 text-amber-900 ring-1 ring-amber-200">
-        已收到您的報名申請<% if (teamStatusLabel) { %>（<%= teamStatusLabel %>）<% } %>。請按下方按鈕前往轉賬付款頁，完成轉數快／銀行轉賬並上載憑證。
+        已收到您的報名申請<% if (teamStatusLabel) { %>（<%= teamStatusLabel %>）<% } %>。請按下方按鈕前往付款頁，完成付款並上載收據。
       </p>
       <% } else { %>
       <p class="rounded-2xl bg-amber-50 px-4 py-3 text-amber-900 ring-1 ring-amber-200">
@@ -74,7 +74,9 @@
         <% if (wantPlayerPack) { %>
         <li>選手包加購：HKD $<%= packFee %>（兩人份）</li>
         <% } %>
-        <li>3% 手續費（由參加者承擔）：HKD $<%= feeSurcharge %></li>
+        <% if (paymentGatewayEnabled) { %>
+        <li>平台手續費 3%：HKD $<%= feeSurcharge %></li>
+        <% } %>
         <li>應繳總額：<strong>HKD $<%= feeTotal %></strong></li>
       </ul>
 
@@ -82,7 +84,7 @@
 
       <div class="flex flex-wrap gap-3 pt-2">
         <% if (!paymentGatewayEnabled && applicationId && teamPaymentStatus !== 'paid') { %>
-        <a href="/rsvp/pay?id=<%= encodeURIComponent(applicationId) %>" class="btn-primary">前往轉賬付款</a>
+        <a href="/rsvp/pay?id=<%= encodeURIComponent(applicationId) %>" class="btn-primary">前往付款</a>
         <% } %>
         <% if (applicationId && paymentGatewayEnabled && wonderConfigured && teamPaymentStatus !== 'paid') { %>
         <button type="button" id="btn-pay-wonder" class="btn-primary" data-team-id="<%= applicationId %>">

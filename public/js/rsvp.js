@@ -459,7 +459,8 @@
       const packOn = $('#wantPlayerPack') && $('#wantPlayerPack').checked;
       const entry = Number(meta.fee.entryFeeHkd || meta.fee.baseAmountHkd || 680);
       const pack = packOn ? Number(meta.fee.playerPackPriceHkd || 200) : 0;
-      const rate = Number(meta.fee.feeRate || 0.03);
+      const rateRaw = meta.fee && meta.fee.feeRate;
+      const rate = Number.isFinite(Number(rateRaw)) ? Number(rateRaw) : 0.03;
       const subtotal = roundMoney(entry + pack);
       const surcharge = roundMoney(subtotal * rate);
       const total = roundMoney(subtotal + surcharge);
