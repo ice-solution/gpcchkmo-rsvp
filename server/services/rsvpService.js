@@ -159,7 +159,9 @@ async function createRsvp(body) {
     const venue = await ClubVenue.findById(body.preferredVenueId);
     if (venue) {
       preferredVenueId = venue._id;
-      preferredVenueLabel = venue.label;
+      preferredVenueLabel = venue.address
+        ? `${venue.label} — ${venue.address}`
+        : venue.label;
     }
   }
   if (!preferredVenueLabel) {

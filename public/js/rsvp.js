@@ -488,7 +488,15 @@
     venue.innerHTML =
       '<option value="">請選擇</option>' +
       meta.venues
-        .map((v) => `<option value="${v.id}">${escapeHtml(v.label)}</option>`)
+        .map((v) => {
+          const name = v.name || v.label || '';
+          const address = v.address || '';
+          const text =
+            address && !String(name).includes(address)
+              ? `${name} — ${address}`
+              : name;
+          return `<option value="${v.id}">${escapeHtml(text)}</option>`;
+        })
         .join('');
 
     const spectators = $('#spectatorCount');

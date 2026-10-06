@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const clubVenueSchema = new mongoose.Schema(
   {
     label: { type: String, required: true, trim: true },
-    region: { type: String, trim: true, default: '' },
+    address: { type: String, trim: true, default: '' },
     sortOrder: { type: Number, default: 100 },
     isActive: { type: Boolean, default: true },
     /** Special option e.g. 由大會安排 */

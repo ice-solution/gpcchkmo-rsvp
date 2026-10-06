@@ -10,7 +10,6 @@ const apiRouter = require('./routes/api');
 const phaseStubsRouter = require('./routes/phaseStubs');
 const adminRouter = require('./routes/admin');
 const gpcchkmoWonderRouter = require('./routes/gpcchkmoWonder');
-const ClubVenue = require('./models/ClubVenue');
 const { ensureDefaultAdmin } = require('./services/adminSeed');
 const { attachAdminLocals } = require('./middleware/adminAuth');
 const { isWonderConfigured, PROVIDER_ID } = require('./services/wonder/gpcchkmoWonderCheckout');
@@ -188,14 +187,11 @@ async function start() {
   await mongoose.connect(MONGODB_URI);
   console.log('MongoDB connected');
 
-  const existing = await ClubVenue.countDocuments();
-  if (existing === 0) {
-    const { execSync } = require('child_process');
-    execSync('node server/scripts/seedClubs.js', {
-      cwd: path.join(__dirname, '..'),
-      stdio: 'inherit',
-    });
-  }
+  const { execSync } = require('child_process');
+  execSync('node server/scripts/seedClubs.js', {
+    cwd: path.join(__dirname, '..'),
+    stdio: 'inherit',
+  });
 
   await ensureDefaultAdmin();
 

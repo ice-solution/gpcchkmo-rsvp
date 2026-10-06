@@ -66,7 +66,9 @@ router.get('/meta', async (_req, res, next) => {
         ],
         venues: clubs.map((c) => ({
           id: String(c._id),
-          label: c.label,
+          label: c.address ? `${c.label} — ${c.address}` : c.label,
+          name: c.label,
+          address: c.address || '',
           region: c.region,
           isOrganizerAssign: c.isOrganizerAssign,
         })),
@@ -99,7 +101,9 @@ router.get('/meta/clubs', async (_req, res, next) => {
       ok: true,
       data: clubs.map((c) => ({
         id: String(c._id),
-        label: c.label,
+        label: c.address ? `${c.label} — ${c.address}` : c.label,
+        name: c.label,
+        address: c.address || '',
         region: c.region,
         isOrganizerAssign: c.isOrganizerAssign,
       })),
