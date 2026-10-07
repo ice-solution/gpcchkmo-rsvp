@@ -26,7 +26,10 @@
         <div><dt class="text-xs text-slate-500">年齡組別</dt><dd><%= labels.ageGroup[team.ageGroup] %></dd></div>
         <div><dt class="text-xs text-slate-500">競賽項目</dt><dd><%= labels.eventCategory[team.eventCategory] %></dd></div>
         <div class="sm:col-span-2"><dt class="text-xs text-slate-500">首選場地</dt><dd><%= team.preferredVenueLabel %></dd></div>
-        <div class="sm:col-span-2"><dt class="text-xs text-slate-500">選手包加購</dt><dd><%= team.wantPlayerPack ? '是（HKD $200／兩人份）' : '否' %></dd></div>
+        <div class="sm:col-span-2"><dt class="text-xs text-slate-500">選手包套裝</dt><dd>
+          <% var tier = team.packTier || (team.wantPlayerPack ? 'essential' : 'standard'); %>
+          <%= labels.packTier && labels.packTier[tier] ? labels.packTier[tier] : tier %>
+        </dd></div>
         <div class="sm:col-span-2"><dt class="text-xs text-slate-500">可參賽時段</dt><dd><%= (team.availability||[]).join('、') || '—' %></dd></div>
         <div><dt class="text-xs text-slate-500">提交時間</dt><dd><%= formatDateTime(team.submittedAt) %></dd></div>
         <div><dt class="text-xs text-slate-500">確認時間</dt><dd><%= formatDateTime(team.confirmedAt) || '—' %></dd></div>

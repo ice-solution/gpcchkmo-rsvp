@@ -15,8 +15,11 @@
 
       <p class="font-semibold text-brand-deep">請先經付款連結完成付款，然後上載收據。</p>
       <p>基本費用：HKD $<%= feeBase %> / 隊</p>
-      <% if (wantPlayerPack) { %>
-      <p>選手包加購：HKD $<%= packFee %>（兩人份）</p>
+      <% if (packTierLabel) { %>
+      <p>選手包套裝：<%= packTierLabel %></p>
+      <% } %>
+      <% if (packFee > 0) { %>
+      <p>套裝加購：HKD $<%= packFee %></p>
       <% } %>
       <p>應繳總額：<strong>HKD $<%= feeTotal %></strong></p>
       <p>WhatsApp：<a class="font-semibold text-brand-blue underline" href="https://wa.me/85297232341" target="_blank" rel="noopener">97232341</a></p>

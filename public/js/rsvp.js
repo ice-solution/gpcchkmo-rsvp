@@ -2,13 +2,13 @@
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 
-  const STEP_LABELS = ['簡介', '隊伍', '隊長', '隊友', '競賽', '意向', '條款'];
+  const STEP_LABELS = ['簡介', '隊伍', '隊長', '隊友', '競賽', '意向', '套裝', '條款'];
   let meta = null;
   let step = 0;
   let maxReached = 0;
-  const total = 7;
+  const total = 8;
 
-  const DRAFT_KEY = 'gpcchkmo.rsvp.draft.v1';
+  const DRAFT_KEY = 'gpcchkmo.rsvp.draft.v2';
   let saveTimer = null;
   let restoring = false;
 
@@ -36,7 +36,6 @@
   ];
   const CHECK_IDS = [
     'introAck',
-    'wantPlayerPack',
     'agreeRules',
     'agreeRanking',
     'agreeTruth',
@@ -52,6 +51,7 @@
     'carnivalIntent',
     'skillLevel',
     'hearAbout',
+    'packTier',
   ];
   const MULTI_CHECK_NAMES = ['availability', 'interests', 'contactPrefs'];
 
@@ -144,7 +144,7 @@
 
       const clubSelect = $('#captainClub');
       if (clubSelect) clubSelect.dispatchEvent(new Event('change'));
-      if ($('#wantPlayerPack')) $('#wantPlayerPack').dispatchEvent(new Event('change'));
+      document.dispatchEvent(new Event('change'));
 
       await refreshEligibility();
       setRadio('ageGroup', draft.radios && draft.radios.ageGroup);
@@ -363,6 +363,9 @@
       if (!radioValue('hearAbout')) errors.push('請選擇得知渠道');
     }
     if (n === 6) {
+      if (!radioValue('packTier')) errors.push('請選擇選手包套裝級別');
+    }
+    if (n === 7) {
       ['agreeRules', 'agreeRanking', 'agreeTruth', 'agreePics'].forEach((id) => {
         if (!$(`#${id}`).checked) errors.push('請勾選所有必填聲明');
       });
@@ -374,9 +377,11 @@
     const venueSelect = $('#preferredVenueId');
     const venueOption = venueSelect.selectedOptions[0];
     const clubSelect = $('#captainClub').value.trim();
+    const packTier = radioValue('packTier') || 'standard';
     return {
       introAcknowledged: $('#introAck').checked,
-      wantPlayerPack: $('#wantPlayerPack') ? $('#wantPlayerPack').checked : false,
+      packTier,
+      wantPlayerPack: packTier !== 'standard',
       captainClub: clubSelect,
       captainClubOther: clubSelect === '__other__' ? $('#captainClubOther').value.trim() : '',
       registrationType: radioValue('registrationType'),
@@ -456,25 +461,34 @@
       return Math.round(Number(n) * 100) / 100;
     }
     function syncPackFee() {
-      const packOn = $('#wantPlayerPack') && $('#wantPlayerPack').checked;
+      const tier = radioValue('packTier') || 'standard';
+      const tierMeta = (meta.packTiers || []).find((t) => t.value === tier);
       const entry = Number(meta.fee.entryFeeHkd || meta.fee.baseAmountHkd || 680);
-      const pack = packOn ? Number(meta.fee.playerPackPriceHkd || 200) : 0;
+      const pack = tierMeta
+        ? Number(tierMeta.addonHkd || 0)
+        : tier === 'premium'
+          ? Number(meta.fee.premiumPackHkd || 760)
+          : tier === 'essential'
+            ? Number(meta.fee.essentialPackHkd || meta.fee.playerPackPriceHkd || 200)
+            : 0;
       const rateRaw = meta.fee && meta.fee.feeRate;
-      const rate = Number.isFinite(Number(rateRaw)) ? Number(rateRaw) : 0.03;
+      const rate = Number.isFinite(Number(rateRaw)) ? Number(rateRaw) : 0;
       const subtotal = roundMoney(entry + pack);
       const surcharge = roundMoney(subtotal * rate);
       const total = roundMoney(subtotal + surcharge);
-      const packLine = $('#pack-line');
-      if (packLine) packLine.classList.toggle('hidden', !packOn);
+      $$('#pack-line').forEach((el) => el.classList.toggle('hidden', pack <= 0));
+      $$('#pack-addon-display').forEach((el) => {
+        el.textContent = String(pack);
+      });
       const sEl = $('#fee-surcharge-display');
       const tEl = $('#fee-total-display');
       if (sEl) sEl.textContent = String(surcharge);
       if (tEl) tEl.textContent = String(total);
     }
-    if ($('#wantPlayerPack')) {
-      $('#wantPlayerPack').addEventListener('change', syncPackFee);
-      syncPackFee();
-    }
+    document.addEventListener('change', (e) => {
+      if (e.target && e.target.name === 'packTier') syncPackFee();
+    });
+    syncPackFee();
 
     radioCards($('#registrationTypeOptions'), 'registrationType', meta.registrationTypes);
     checkCards($('#availabilityOptions'), 'availability', meta.availabilitySlots);
@@ -547,7 +561,7 @@
 
     $('#rsvp-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const errors = validateStep(6);
+      const errors = validateStep(7);
       if (errors.length) {
         showAlert(errors);
         return;

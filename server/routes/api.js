@@ -25,6 +25,9 @@ const {
   CAPTAIN_CLUBS,
   CAPTAIN_CLUB_OTHER_VALUE,
   FEE,
+  PACK_TIERS,
+  PACK_TIER_LABELS,
+  PACK_TIER_ADDON_HKD,
 } = require('../constants/enums');
 const { buildPaymentSummary } = require('../services/paymentService');
 
@@ -48,7 +51,13 @@ router.get('/meta', async (_req, res, next) => {
       ok: true,
       data: {
         paymentGatewayEnabled: isPaymentGatewayEnabled(),
-        fee: buildPaymentSummary(),
+        fee: buildPaymentSummary({ packTier: PACK_TIERS.STANDARD }),
+        packTiers: Object.values(PACK_TIERS).map((value) => ({
+          value,
+          label: PACK_TIER_LABELS[value],
+          addonHkd: PACK_TIER_ADDON_HKD[value],
+          totalHkd: FEE.BASE_HKD + PACK_TIER_ADDON_HKD[value],
+        })),
         maxEventsPerPlayer: FEE.MAX_EVENTS_PER_PLAYER,
         captainClubs: [
           ...CAPTAIN_CLUBS.map((label) => ({ value: label, label })),

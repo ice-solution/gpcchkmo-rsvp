@@ -17,6 +17,7 @@ const {
   EVENT_CATEGORY_LABELS,
   PLAYER_ROLES,
   CAPTAIN_CLUBS,
+  PACK_TIER_LABELS,
 } = require('../constants/enums');
 const {
   buildTeamsCsv,
@@ -74,6 +75,7 @@ function labels() {
     ageGroup: AGE_GROUP_LABELS,
     eventCategory: EVENT_CATEGORY_LABELS,
     registrationType: REGISTRATION_TYPE_LABELS,
+    packTier: PACK_TIER_LABELS,
   };
 }
 

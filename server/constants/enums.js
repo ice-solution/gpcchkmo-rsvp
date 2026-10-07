@@ -13,6 +13,7 @@ const CAPTAIN_CLUBS = [
   'Pickle.Ready',
   'My Pickle World',
   'Table meets Pickle',
+  'Pickle Lab',
 ];
 
 const CAPTAIN_CLUB_OTHER_VALUE = '__other__';
@@ -175,12 +176,32 @@ const PLAYER_ROLES = {
   TEAMMATE: 'teammate',
 };
 
+const PACK_TIERS = {
+  STANDARD: 'standard',
+  ESSENTIAL: 'essential',
+  PREMIUM: 'premium',
+};
+
+const PACK_TIER_LABELS = {
+  [PACK_TIERS.STANDARD]: 'Standard（不加購選手包）',
+  [PACK_TIERS.ESSENTIAL]: 'Essential【賽事標準選手包套裝】',
+  [PACK_TIERS.PREMIUM]: 'Premium【尊尚俱樂部體驗與球員自助晚宴套裝】',
+};
+
 const FEE = {
   BASE_HKD: 680,
-  PLAYER_PACK_HKD: 200,
+  PLAYER_PACK_HKD: 200, // Essential（向後兼容）
+  ESSENTIAL_PACK_HKD: 200,
+  PREMIUM_PACK_HKD: 760,
   PLATFORM_FEE_RATE: 0.03,
   CURRENCY: 'HKD',
   MAX_EVENTS_PER_PLAYER: 2,
+};
+
+const PACK_TIER_ADDON_HKD = {
+  [PACK_TIERS.STANDARD]: 0,
+  [PACK_TIERS.ESSENTIAL]: FEE.ESSENTIAL_PACK_HKD,
+  [PACK_TIERS.PREMIUM]: FEE.PREMIUM_PACK_HKD,
 };
 
 /** Reference year for age-group eligibility (event year) */
@@ -210,6 +231,9 @@ module.exports = {
   QUALIFICATION_STATUS,
   QUALIFICATION_STATUS_LABELS,
   PLAYER_ROLES,
+  PACK_TIERS,
+  PACK_TIER_LABELS,
+  PACK_TIER_ADDON_HKD,
   FEE,
   EVENT_YEAR,
 };

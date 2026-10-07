@@ -21,8 +21,10 @@ const {
   AGE_GROUP_LABELS,
   EVENT_CATEGORY_LABELS,
   PLAYER_ROLES,
+  PACK_TIER_LABELS,
+  PACK_TIERS,
 } = require('./constants/enums');
-const { buildPaymentSummary } = require('./services/paymentService');
+const { buildPaymentSummary, normalizePackTier } = require('./services/paymentService');
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3480;
@@ -70,6 +72,8 @@ async function loadReceiptContext(applicationId) {
     teamStatusLabel: '',
     paymentStatusLabel: '',
     wantPlayerPack: false,
+    packTier: PACK_TIERS.STANDARD,
+    packTierLabel: PACK_TIER_LABELS[PACK_TIERS.STANDARD],
     proofUrl: '',
     proofLink: '',
     paymentReference: '',
@@ -83,6 +87,7 @@ async function loadReceiptContext(applicationId) {
     const players = await Player.find({ teamId: team._id }).lean();
     const captain = players.find((p) => p.role === PLAYER_ROLES.CAPTAIN) || null;
     const teammate = players.find((p) => p.role === PLAYER_ROLES.TEAMMATE) || null;
+    const packTier = normalizePackTier(team.packTier, team.wantPlayerPack);
     return {
       applicationId: String(team._id),
       team,
@@ -92,7 +97,9 @@ async function loadReceiptContext(applicationId) {
       teamStatus: team.status || '',
       teamStatusLabel: TEAM_STATUS_LABELS[team.status] || team.status || '',
       paymentStatusLabel: PAYMENT_STATUS_LABELS[team.payment?.status] || '',
-      wantPlayerPack: team.wantPlayerPack === true,
+      packTier,
+      packTierLabel: PACK_TIER_LABELS[packTier] || packTier,
+      wantPlayerPack: packTier !== PACK_TIERS.STANDARD,
       proofUrl: team.payment?.proofUrl || '',
       proofLink: team.payment?.proofLink || '',
       paymentReference: team.payment?.paymentReference || '',
@@ -111,12 +118,17 @@ const receiptLabels = {
 app.get('/', (_req, res) => res.redirect('/rsvp'));
 app.get('/rsvp', (_req, res) => {
   const gatewayOn = isPaymentGatewayEnabled();
-  const fee = buildPaymentSummary({ wantPlayerPack: false, gatewayEnabled: gatewayOn });
+  const fee = buildPaymentSummary({
+    packTier: PACK_TIERS.STANDARD,
+    gatewayEnabled: gatewayOn,
+  });
   res.render('rsvp', {
     title: '海選報名 RSVP｜GPCC 香港站',
     paymentGatewayEnabled: gatewayOn,
     feeBase: FEE.BASE_HKD,
-    packFee: FEE.PLAYER_PACK_HKD,
+    packFee: FEE.ESSENTIAL_PACK_HKD,
+    essentialPackFee: FEE.ESSENTIAL_PACK_HKD,
+    premiumPackFee: FEE.PREMIUM_PACK_HKD,
     feeSurcharge: fee.feeAmountHkd,
     feeTotal: fee.totalAmountHkd,
   });
@@ -128,7 +140,7 @@ app.get('/rsvp/success', async (req, res) => {
   const ctx = await loadReceiptContext(applicationId);
   if (ctx.teamPaymentStatus === 'paid') paymentState = paymentState || 'paid';
   const fee = buildPaymentSummary({
-    wantPlayerPack: ctx.wantPlayerPack,
+    packTier: ctx.packTier,
     gatewayEnabled: gatewayOn,
   });
   res.render('success', {
@@ -138,7 +150,9 @@ app.get('/rsvp/success', async (req, res) => {
     paymentGatewayEnabled: gatewayOn,
     paymentProvider: PROVIDER_ID,
     feeBase: FEE.BASE_HKD,
-    packFee: FEE.PLAYER_PACK_HKD,
+    packFee: fee.playerPackHkd,
+    essentialPackFee: FEE.ESSENTIAL_PACK_HKD,
+    premiumPackFee: FEE.PREMIUM_PACK_HKD,
     feeSurcharge: fee.feeAmountHkd,
     feeTotal: fee.totalAmountHkd,
     labels: receiptLabels,
@@ -154,11 +168,13 @@ app.get('/rsvp/pay', async (req, res) => {
     return res.redirect(`/rsvp/success${q}`);
   }
   const ctx = await loadReceiptContext(applicationId);
-  const fee = buildPaymentSummary({ wantPlayerPack: ctx.wantPlayerPack, gatewayEnabled: false });
+  const fee = buildPaymentSummary({ packTier: ctx.packTier, gatewayEnabled: false });
   res.render('pay', {
     title: '付款｜GPCC 香港站',
     feeBase: FEE.BASE_HKD,
-    packFee: FEE.PLAYER_PACK_HKD,
+    packFee: fee.playerPackHkd,
+    essentialPackFee: FEE.ESSENTIAL_PACK_HKD,
+    premiumPackFee: FEE.PREMIUM_PACK_HKD,
     feeSurcharge: fee.feeAmountHkd,
     feeTotal: fee.totalAmountHkd,
     airwallexPayUrl: fee.airwallexPayUrl,

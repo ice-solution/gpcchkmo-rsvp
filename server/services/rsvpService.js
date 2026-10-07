@@ -15,6 +15,7 @@ const {
   FEE,
   CAPTAIN_CLUBS,
   CAPTAIN_CLUB_OTHER_VALUE,
+  PACK_TIERS,
 } = require('../constants/enums');
 const {
   validateAgeGroupSelection,
@@ -22,7 +23,11 @@ const {
   assertPlayerEventLimit,
 } = require('./eligibility');
 const { sendSubmissionReceipt } = require('./emailService');
-const { buildPaymentSummary, createManualPaymentReference } = require('./paymentService');
+const {
+  buildPaymentSummary,
+  createManualPaymentReference,
+  normalizePackTier,
+} = require('./paymentService');
 const { isPaymentGatewayEnabled } = require('../config/paymentGateway');
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -114,6 +119,12 @@ function validatePayload(body) {
     errors.push('請先閱讀並確認表格簡介及賽事資訊');
   }
 
+  const packTier = normalizePackTier(body.packTier, body.wantPlayerPack);
+  if (!Object.values(PACK_TIERS).includes(packTier)) {
+    errors.push('請選擇選手包套裝級別');
+  }
+  body.packTier = packTier;
+
   return errors;
 }
 
@@ -168,9 +179,8 @@ async function createRsvp(body) {
     return { ok: false, status: 400, errors: ['首選海選地區／球館無效'] };
   }
 
-  const paymentSummary = buildPaymentSummary({
-    wantPlayerPack: body.wantPlayerPack === true,
-  });
+  const packTier = normalizePackTier(body.packTier, body.wantPlayerPack);
+  const paymentSummary = buildPaymentSummary({ packTier });
   const captainEmail = body.captainEmail.trim().toLowerCase();
   const gatewayOn = isPaymentGatewayEnabled();
   const uploadedProofPath = String(body.paymentProofFileUrl || '').trim();
@@ -186,7 +196,8 @@ async function createRsvp(body) {
     preferredVenueId,
     preferredVenueLabel,
     availability: body.availability,
-    wantPlayerPack: body.wantPlayerPack === true,
+    packTier,
+    wantPlayerPack: packTier !== PACK_TIERS.STANDARD,
     research: {
       carnivalIntent: body.research.carnivalIntent,
       spectatorCount: body.research.spectatorCount || '',

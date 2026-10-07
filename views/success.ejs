@@ -45,7 +45,7 @@
           <div><dt class="text-xs text-slate-500">年齡組別</dt><dd><%= labels.ageGroup[team.ageGroup] || team.ageGroup %></dd></div>
           <div><dt class="text-xs text-slate-500">競賽項目</dt><dd><%= labels.eventCategory[team.eventCategory] || team.eventCategory %></dd></div>
           <div class="sm:col-span-2"><dt class="text-xs text-slate-500">首選場地</dt><dd><%= team.preferredVenueLabel || '—' %></dd></div>
-          <div class="sm:col-span-2"><dt class="text-xs text-slate-500">選手包</dt><dd><%= wantPlayerPack ? '是（HKD $' + packFee + '／兩人份）' : '否' %></dd></div>
+          <div class="sm:col-span-2"><dt class="text-xs text-slate-500">選手包套裝</dt><dd><%= packTierLabel || '—' %><% if (packFee > 0) { %>（加購 HKD $<%= packFee %>）<% } %></dd></div>
         </dl>
       </div>
       <% } %>
@@ -71,8 +71,8 @@
 
       <ul class="list-disc space-y-2 pl-5">
         <li>海選報名費：HKD $<%= feeBase %>／隊（兩名球員）</li>
-        <% if (wantPlayerPack) { %>
-        <li>選手包加購：HKD $<%= packFee %>（兩人份）</li>
+        <% if (packFee > 0) { %>
+        <li>套裝加購（<%= packTierLabel %>）：HKD $<%= packFee %></li>
         <% } %>
         <% if (paymentGatewayEnabled) { %>
         <li>平台手續費 3%：HKD $<%= feeSurcharge %></li>

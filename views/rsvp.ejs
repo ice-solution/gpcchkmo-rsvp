@@ -15,7 +15,7 @@
             2026「凱瑞麟盃」香港站海選賽官方報名
           </h1>
           <p class="mt-2 max-w-xl text-sm text-sky-100">
-            填寫本表即表示隊長及隊友確認資料真實完整。每份 RSVP 只可登記一個競賽項目；海選報名費 HKD $<%= feeBase %>／隊，可選加購選手包 HKD $<%= packFee %>。
+            填寫本表即表示隊長及隊友確認資料真實完整。每份 RSVP 只可登記一個競賽項目；海選報名費 HKD $<%= feeBase %>／隊，可選 Essential（HKD $<%= essentialPackFee %>／隊）或 Premium（HKD $<%= premiumPackFee %>／隊）套裝。
           </p>
         </div>
       </div>
@@ -44,7 +44,7 @@
             <tr><th class="px-4 py-3 font-semibold text-brand-deep">城市決賽地點</th><td class="px-4 py-3 text-slate-700">屯門市廣場</td></tr>
             <tr class="bg-slate-50"><th class="px-4 py-3 font-semibold text-brand-deep">年齡組別</th><td class="px-4 py-3 text-slate-700">常青組 50–65 歲、壯年組 36–49 歲、公開組 18–65 歲（出生日期範圍見下方 2.1）</td></tr>
             <tr><th class="px-4 py-3 font-semibold text-brand-deep">競賽項目</th><td class="px-4 py-3 text-slate-700">男子雙打、女子雙打、混合雙打</td></tr>
-            <tr class="bg-slate-50"><th class="px-4 py-3 font-semibold text-brand-deep">海選報名費</th><td class="px-4 py-3 text-slate-700">HKD $<%= feeBase %>／隊（兩名球員，含海選參賽資格）。可選加購大會專屬選手包（兩人份）HKD $<%= packFee %>；若加購會一併網上付款。經 Wonder 付款另收 3% 平台手續費（按報名費＋選手包計算）。</td></tr>
+            <tr class="bg-slate-50"><th class="px-4 py-3 font-semibold text-brand-deep">海選報名費</th><td class="px-4 py-3 text-slate-700">HKD $<%= feeBase %>／隊（兩名球員，含海選參賽資格）。可選加購 Essential 選手包（HKD $<%= essentialPackFee %>／隊）或 Premium 尊尚套裝（HKD $<%= premiumPackFee %>／隊）；詳見報名表套裝選擇頁。</td></tr>
             <tr><th class="px-4 py-3 font-semibold text-brand-deep">每人報名上限</th><td class="px-4 py-3 text-slate-700">最多兩個競賽項目；每個項目須以獨立報名另行提交</td></tr>
           </tbody>
         </table>
@@ -256,9 +256,55 @@
       </div>
     </section>
 
-    <!-- Step 5 -->
+    <!-- Step 6: Pack tier -->
     <section class="step-panel hidden rounded-3xl bg-white p-5 shadow-panel ring-1 ring-slate-200 sm:p-7" data-step="6">
-      <h2 class="font-display text-lg font-bold text-brand-deep">第 5 區：聲明、私隱及條款確認</h2>
+      <h2 class="font-display text-lg font-bold text-brand-deep">第 5 區：選手包套裝選擇</h2>
+      <p class="mt-2 text-sm text-slate-600">請選擇一個級別（必選）。海選報名費 HKD $<%= feeBase %>／隊另計。</p>
+      <div class="mt-5 space-y-4 text-sm text-slate-700">
+        <label class="choice-card !items-start">
+          <input type="radio" name="packTier" value="standard" required />
+          <span>
+            <strong class="block text-brand-deep">Standard</strong>
+            <span class="mt-1 block">不加購選手包。只繳交海選報名費 HKD $<%= feeBase %>／隊。</span>
+          </span>
+        </label>
+
+        <label class="choice-card !items-start">
+          <input type="radio" name="packTier" value="essential" />
+          <span>
+            <strong class="block text-brand-deep">Essential：【賽事標準選手包套裝】</strong>
+            <span class="mt-1 block font-semibold">加購價：HKD $<%= essentialPackFee %>／隊（一組兩份）</span>
+            <span class="mt-2 block">禮品組合：大會限定選手袋、賽事 T-Shirt、限定鑰匙扣及比賽匹克球（各 2 份）。</span>
+            <span class="mt-2 block">獨家權益：附贈指定合作匹克球會之專屬優惠券組合。</span>
+          </span>
+        </label>
+
+        <label class="choice-card !items-start">
+          <input type="radio" name="packTier" value="premium" />
+          <span>
+            <strong class="block text-brand-deep">Premium：【尊尚俱樂部體驗與球員自助晚宴套裝】</strong>
+            <span class="mt-1 block font-semibold">加購價：HKD $380／人｜HKD $<%= premiumPackFee %>／隊</span>
+            <ul class="mt-2 list-disc space-y-1.5 pl-5">
+              <li>為追求頂級運動休閒體驗的球員打造，享半日會所設施、球員晚宴及參與十萬豪華大抽獎。</li>
+              <li>包含 Essential 所有賽事選手包及禮券，並額外尊享「錦綉花園鄉村俱樂部」11 月 13 號專屬行程與設施：</li>
+              <li><strong>14:00 – 17:00</strong>｜會所私人暢打與球友交流專場（熱身賽、技術交流與球友互動）</li>
+              <li><strong>17:00 – 18:30</strong>｜更衣及參觀會員設施</li>
+              <li><strong>19:00 – 21:00</strong>｜錦綉花園球員專屬自助晚宴</li>
+            </ul>
+            <span class="mt-3 block font-semibold text-brand-deep">晚宴專屬豪華大抽獎（Lucky Draw）</span>
+            <span class="mt-1 block">晚宴現場特別設有豪華幸運大抽獎，獎品總價值超過十萬港幣：</span>
+            <ul class="mt-2 list-disc space-y-2 pl-5">
+              <li><strong>終極大獎（1 名）</strong>：錦綉花園鄉村俱樂部官方尊尚會籍 1 個（價值 HKD $43,800）＋會籍免費 6 個月月費禮遇（價值 HKD $1,800 × 6 = HKD $10,800），總值 HKD $54,600</li>
+              <li><strong>大獎（6 名）</strong>：錦綉花園鄉村俱樂部 S&amp;R 康體券 1 張（可供 4 人使用，價值 HKD $600）＋ F&amp;B 餐飲現金禮券 HKD $500</li>
+            </ul>
+          </span>
+        </label>
+      </div>
+    </section>
+
+    <!-- Step 7: Agreements -->
+    <section class="step-panel hidden rounded-3xl bg-white p-5 shadow-panel ring-1 ring-slate-200 sm:p-7" data-step="7">
+      <h2 class="font-display text-lg font-bold text-brand-deep">第 6 區：聲明、私隱及條款確認</h2>
       <div class="mt-5 space-y-3 text-sm text-slate-700">
         <label class="choice-card">
           <input type="checkbox" id="agreeRules" required />
@@ -285,24 +331,12 @@
           <span>直接行銷同意（選填）：我同意組委會／MEMO PLUS PR 按《個人資料收集聲明》透過所選聯絡方式發送 GPCC 及相關活動推廣資訊。我明白可隨時撤回同意。</span>
         </label>
 
-        <label class="choice-card">
-          <input type="checkbox" id="wantPlayerPack" />
-          <span>
-            加購大會專屬選手包（選填）：HKD $<%= packFee %>／隊（兩人份）。不勾選不影響參賽資格。
-            <% if (paymentGatewayEnabled) { %>
-            若勾選會與報名費一併網上付款，並另計 3% 平台手續費。
-            <% } else { %>
-            若勾選請於提交後的付款頁一併付款。
-            <% } %>
-          </span>
-        </label>
-
         <% if (paymentGatewayEnabled) { %>
         <div class="rounded-2xl border border-brand-blue/20 bg-sky-50 px-4 py-4">
           <p class="font-semibold text-brand-deep">付款摘要（提交後進入待付款）</p>
           <ul class="mt-2 list-disc space-y-1 pl-5 text-sm">
             <li>基本海選報名費：HKD $<%= feeBase %>／隊（兩名球員）</li>
-            <li id="pack-line" class="hidden">選手包加購：HKD $<%= packFee %>（兩人份）</li>
+            <li id="pack-line" class="hidden">套裝加購：HKD $<span id="pack-addon-display"><%= packFee %></span></li>
             <li>經 Wonder 網上付款會另收 <strong>平台手續費 3%</strong>：HKD $<span id="fee-surcharge-display"><%= feeSurcharge %></span></li>
             <li>應繳總額：HKD $<span id="fee-total-display"><%= feeTotal %></span></li>
             <li>提交後會發出「已收到報名，待付款／待核實」回條；<strong>不會</strong>稱為報名成功，亦不會附 QR Code</li>
@@ -313,7 +347,7 @@
           <p class="font-semibold text-brand-deep">付款摘要</p>
           <ul class="mt-2 list-disc space-y-1 pl-5">
             <li>基本費用：HKD $<%= feeBase %>／隊</li>
-            <li id="pack-line" class="hidden">選手包加購：HKD $<%= packFee %>（兩人份）</li>
+            <li id="pack-line" class="hidden">套裝加購：HKD $<span id="pack-addon-display"><%= packFee %></span></li>
             <li>應繳總額：HKD $<span id="fee-total-display"><%= feeTotal %></span></li>
           </ul>
           <p class="mt-3 text-xs text-slate-600">提交後會開啟獨立付款頁，以付款連結完成付款並上載收據。</p>
@@ -324,7 +358,7 @@
 
     <div class="flex flex-wrap items-center justify-between gap-3 rounded-3xl bg-white px-5 py-4 shadow-panel ring-1 ring-slate-200">
       <button type="button" id="btn-prev" class="btn-secondary" disabled>上一步</button>
-      <p class="text-xs text-slate-500" id="step-caption">步驟 1 / 7</p>
+      <p class="text-xs text-slate-500" id="step-caption">步驟 1 / 8</p>
       <button type="button" id="btn-next" class="btn-primary">開始填寫報名表</button>
       <button type="submit" id="btn-submit" class="btn-primary hidden">提交報名申請</button>
     </div>

@@ -6,6 +6,7 @@ const {
   TEAM_STATUS,
   PAYMENT_STATUS,
   QUALIFICATION_STATUS,
+  PACK_TIERS,
   FEE,
 } = require('../constants/enums');
 
@@ -79,6 +80,11 @@ const teamSchema = new mongoose.Schema(
     preferredVenueLabel: { type: String, required: true, trim: true },
     availability: [{ type: String }],
     wantPlayerPack: { type: Boolean, default: false },
+    packTier: {
+      type: String,
+      enum: Object.values(PACK_TIERS),
+      default: PACK_TIERS.STANDARD,
+    },
     research: { type: researchSchema, required: true },
     agreements: { type: agreementsSchema, required: true },
     introAcknowledged: { type: Boolean, required: true, default: false },

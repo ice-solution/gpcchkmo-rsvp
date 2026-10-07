@@ -52,6 +52,12 @@ const SEED = [
     region: '新界西',
     sortOrder: 70,
   },
+  {
+    label: 'Pickle Lab',
+    address: '香港島灣仔軒尼詩道256號軒尼詩大廈10樓及11樓',
+    region: '香港島',
+    sortOrder: 80,
+  },
 ];
 
 function displayLabel(row) {

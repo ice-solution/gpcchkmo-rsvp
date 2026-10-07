@@ -6,6 +6,8 @@ const {
   QUALIFICATION_STATUS_LABELS,
   PLAYER_ROLES,
   REGISTRATION_TYPES,
+  PACK_TIER_LABELS,
+  PACK_TIERS,
 } = require('../constants/enums');
 
 const REGISTRATION_TYPE_LABELS = {
@@ -48,6 +50,7 @@ function buildTeamsCsv(teams, playersByTeamId) {
     'eventCategory',
     'preferredVenue',
     'playerPack',
+    'packTier',
     'paymentReference',
     'paymentProofUrl',
     'paymentProofLink',
@@ -95,6 +98,9 @@ function buildTeamsCsv(teams, playersByTeamId) {
       EVENT_CATEGORY_LABELS[team.eventCategory] || team.eventCategory,
       team.preferredVenueLabel,
       team.wantPlayerPack ? 'Y' : 'N',
+      PACK_TIER_LABELS[team.packTier] ||
+        team.packTier ||
+        (team.wantPlayerPack ? PACK_TIER_LABELS[PACK_TIERS.ESSENTIAL] : PACK_TIER_LABELS[PACK_TIERS.STANDARD]),
       team.payment?.paymentReference || '',
       team.payment?.proofUrl || '',
       team.payment?.proofLink || '',
