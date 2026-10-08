@@ -14,6 +14,7 @@ const CAPTAIN_CLUBS = [
   'My Pickle World',
   'Table meets Pickle',
   'Pickle Lab',
+  '錦綉花園鄉村俱樂部',
 ];
 
 const CAPTAIN_CLUB_OTHER_VALUE = '__other__';
