@@ -223,6 +223,14 @@ async function start() {
           : 'DISABLED (PAYMENT_GATEWAY_ENABLED=false)'
       } → /api/gpcchkmo/wonder`
     );
+    const { isMailConfigured } = require('./config/mail');
+    console.log(
+      `Gmail mail: ${
+        isMailConfigured()
+          ? `configured (${process.env.GMAIL_USER})`
+          : 'NOT configured (set GMAIL_USER + GMAIL_APP_PASSWORD)'
+      }`
+    );
   });
 }
 

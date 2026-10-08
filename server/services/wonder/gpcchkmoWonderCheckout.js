@@ -11,6 +11,7 @@ const {
   PAYMENT_STATUS,
   FEE,
 } = require('../../constants/enums');
+const { notifyPaymentCompleted } = require('../emailService');
 const {
   PROVIDER_ID,
   isWonderConfigured,
@@ -192,6 +193,8 @@ async function handleWonderWebhook(body, query = {}) {
           amountHkd: payment.amountHkd,
         },
       });
+
+      await notifyPaymentCompleted(team);
     } else {
       await payment.save();
     }

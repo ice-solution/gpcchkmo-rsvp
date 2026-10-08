@@ -289,7 +289,11 @@ async function createRsvp(body) {
 
     const captain = players.find((p) => p.role === PLAYER_ROLES.CAPTAIN);
     const teammate = players.find((p) => p.role === PLAYER_ROLES.TEAMMATE);
-    await sendSubmissionReceipt({ team, captain, teammate });
+    try {
+      await sendSubmissionReceipt({ team, captain, teammate });
+    } catch (mailErr) {
+      console.error('[rsvp] confirmation email failed', mailErr.message);
+    }
 
     return {
       ok: true,

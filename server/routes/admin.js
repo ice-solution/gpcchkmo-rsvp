@@ -26,6 +26,7 @@ const {
   formatDate,
   formatDateTime,
 } = require('../services/adminExport');
+const { notifyPaymentCompleted } = require('../services/emailService');
 
 const router = express.Router();
 
@@ -301,6 +302,15 @@ router.post('/teams/:id/update', requireAdmin, async (req, res, next) => {
       if (paymentStatus === PAYMENT_STATUS.PAID && !team.payment.paidAt) {
         team.payment.paidAt = new Date();
       }
+      // Align application status when admin marks payment as paid
+      if (
+        paymentStatus === PAYMENT_STATUS.PAID &&
+        (team.status === TEAM_STATUS.SUBMITTED_PENDING_PAYMENT ||
+          team.status === TEAM_STATUS.MANUAL_PENDING_PAYMENT ||
+          team.status === TEAM_STATUS.PAYMENT_FAILED)
+      ) {
+        team.status = TEAM_STATUS.PAID_PENDING_REVIEW;
+      }
     }
     if (
       qualificationStatus &&
@@ -328,6 +338,13 @@ router.post('/teams/:id/update', requireAdmin, async (req, res, next) => {
       actor: req.session.admin.username,
       meta: { before, after: req.body },
     });
+
+    const becamePaid =
+      before.paymentStatus !== PAYMENT_STATUS.PAID &&
+      team.payment?.status === PAYMENT_STATUS.PAID;
+    if (becamePaid) {
+      await notifyPaymentCompleted(team);
+    }
 
     res.redirect(
       `/admin/teams/${team._id}?msg=${encodeURIComponent('已更新')}`
