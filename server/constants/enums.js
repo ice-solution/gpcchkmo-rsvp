@@ -59,12 +59,9 @@ const EVENT_CATEGORY_LABELS = {
 };
 
 const AVAILABILITY_SLOTS = [
-  { value: 'weekday_morning', label: '平日早上' },
-  { value: 'weekday_afternoon', label: '平日下午' },
-  { value: 'weekday_evening', label: '平日晚上' },
-  { value: 'weekend_morning', label: '週末早上' },
-  { value: 'weekend_afternoon', label: '週末下午' },
-  { value: 'weekend_evening', label: '週末晚上' },
+  { value: 'morning', label: '早上（9am – 12pm）' },
+  { value: 'afternoon', label: '下午（1pm – 4pm）' },
+  { value: 'evening', label: '晚上（4pm – 當日比賽結束）' },
 ];
 
 const CARNIVAL_INTENT = [
