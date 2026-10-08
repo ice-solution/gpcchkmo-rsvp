@@ -23,6 +23,7 @@ const {
   CONTACT_PREFS,
   REGISTRATION_TYPES,
   CAPTAIN_CLUBS,
+  HIDDEN_CAPTAIN_CLUBS,
   CAPTAIN_CLUB_OTHER_VALUE,
   FEE,
   PACK_TIERS,
@@ -60,7 +61,9 @@ router.get('/meta', async (_req, res, next) => {
         })),
         maxEventsPerPlayer: FEE.MAX_EVENTS_PER_PLAYER,
         captainClubs: [
-          ...CAPTAIN_CLUBS.map((label) => ({ value: label, label })),
+          ...CAPTAIN_CLUBS.filter((label) => !HIDDEN_CAPTAIN_CLUBS.includes(label)).map(
+            (label) => ({ value: label, label })
+          ),
           { value: CAPTAIN_CLUB_OTHER_VALUE, label: '其他' },
         ],
         registrationTypes: [

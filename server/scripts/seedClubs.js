@@ -15,6 +15,7 @@ const SEED = [
     address: '香港島銅鑼灣木星街23號',
     region: '香港島',
     sortOrder: 10,
+    isActive: false, // temporarily hidden from RSVP venue select
   },
   {
     label: 'PickleVibes',
@@ -75,12 +76,13 @@ async function main() {
   );
 
   for (const row of SEED) {
+    const isActive = row.isActive !== false;
     await ClubVenue.findOneAndUpdate(
       { label: row.label },
       {
         $set: {
           ...row,
-          isActive: true,
+          isActive,
           isOrganizerAssign: Boolean(row.isOrganizerAssign),
         },
       },
@@ -88,9 +90,14 @@ async function main() {
     );
   }
 
-  const count = await ClubVenue.countDocuments({ isActive: true });
-  console.log(`Seeded ClubVenue options: ${count}`);
-  keepLabels.forEach((label) => console.log(' -', label));
+  const active = await ClubVenue.find({ isActive: true }).sort({ sortOrder: 1 }).lean();
+  const hidden = await ClubVenue.find({ isActive: false }).sort({ sortOrder: 1 }).lean();
+  console.log(`Seeded ClubVenue active: ${active.length}`);
+  active.forEach((v) => console.log(' +', v.label));
+  if (hidden.length) {
+    console.log(`Hidden: ${hidden.length}`);
+    hidden.forEach((v) => console.log(' -', v.label));
+  }
   await mongoose.disconnect();
 }
 

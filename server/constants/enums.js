@@ -17,6 +17,9 @@ const CAPTAIN_CLUBS = [
   '錦綉花園鄉村俱樂部',
 ];
 
+/** Temporarily hide from RSVP dropdowns (still valid if already submitted) */
+const HIDDEN_CAPTAIN_CLUBS = ['Bay Pickle'];
+
 const CAPTAIN_CLUB_OTHER_VALUE = '__other__';
 
 const GENDERS = {
@@ -211,6 +214,7 @@ const EVENT_YEAR = 2026;
 module.exports = {
   REGISTRATION_TYPES,
   CAPTAIN_CLUBS,
+  HIDDEN_CAPTAIN_CLUBS,
   CAPTAIN_CLUB_OTHER_VALUE,
   GENDERS,
   AGE_GROUPS,
