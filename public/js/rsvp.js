@@ -503,12 +503,7 @@
       '<option value="">請選擇</option>' +
       meta.venues
         .map((v) => {
-          const name = v.name || v.label || '';
-          const address = v.address || '';
-          const text =
-            address && !String(name).includes(address)
-              ? `${name} — ${address}`
-              : name;
+          const text = v.label || v.name || '';
           return `<option value="${v.id}">${escapeHtml(text)}</option>`;
         })
         .join('');

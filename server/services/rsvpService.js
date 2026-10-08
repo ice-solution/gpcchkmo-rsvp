@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Team = require('../models/Team');
 const Player = require('../models/Player');
 const ClubVenue = require('../models/ClubVenue');
+const { formatVenueOptionLabel } = ClubVenue;
 const AuditLog = require('../models/AuditLog');
 const {
   TEAM_STATUS,
@@ -170,9 +171,7 @@ async function createRsvp(body) {
     const venue = await ClubVenue.findById(body.preferredVenueId);
     if (venue) {
       preferredVenueId = venue._id;
-      preferredVenueLabel = venue.address
-        ? `${venue.label} — ${venue.address}`
-        : venue.label;
+      preferredVenueLabel = formatVenueOptionLabel(venue);
     }
   }
   if (!preferredVenueLabel) {

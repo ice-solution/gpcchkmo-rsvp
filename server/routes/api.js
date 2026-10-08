@@ -1,6 +1,7 @@
 const express = require('express');
 const rateLimit = require('express-rate-limit');
 const ClubVenue = require('../models/ClubVenue');
+const { formatVenueOptionLabel } = ClubVenue;
 const { createRsvp, attachPaymentProof } = require('../services/rsvpService');
 const { isPaymentGatewayEnabled } = require('../config/paymentGateway');
 const {
@@ -78,9 +79,10 @@ router.get('/meta', async (_req, res, next) => {
         ],
         venues: clubs.map((c) => ({
           id: String(c._id),
-          label: c.address ? `${c.label} — ${c.address}` : c.label,
+          label: formatVenueOptionLabel(c),
           name: c.label,
           address: c.address || '',
+          scheduleNote: c.scheduleNote || '',
           region: c.region,
           isOrganizerAssign: c.isOrganizerAssign,
         })),
@@ -113,9 +115,10 @@ router.get('/meta/clubs', async (_req, res, next) => {
       ok: true,
       data: clubs.map((c) => ({
         id: String(c._id),
-        label: c.address ? `${c.label} — ${c.address}` : c.label,
+        label: formatVenueOptionLabel(c),
         name: c.label,
         address: c.address || '',
+        scheduleNote: c.scheduleNote || '',
         region: c.region,
         isOrganizerAssign: c.isOrganizerAssign,
       })),
