@@ -10,11 +10,12 @@ const CAPTAIN_CLUBS = [
   'Pick&Match',
   'Bay Pickle',
   'PickleVibe',
-  'Pickle.Ready',
+  'PICKLE.READY',
   'My Pickle World',
   'Table meets Pickle',
   'Pickle Lab',
   '錦綉花園鄉村俱樂部',
+  'LIT PICKLE',
 ];
 
 /** Temporarily hide from RSVP dropdowns (still valid if already submitted) */

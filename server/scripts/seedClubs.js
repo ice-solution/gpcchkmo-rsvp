@@ -69,6 +69,13 @@ const SEED = [
     region: '香港島',
     sortOrder: 80,
   },
+  {
+    label: 'LIT PICKLE',
+    address: '觀塘中海日升中心15A',
+    scheduleNote: '28/10, 31/10, 4/11',
+    region: '九龍',
+    sortOrder: 90,
+  },
 ];
 
 function displayLabel(row) {
