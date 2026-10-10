@@ -24,6 +24,7 @@ const {
   assertPlayerEventLimit,
 } = require('./eligibility');
 const { sendSubmissionReceipt } = require('./emailService');
+const { resolveQualifierSlot } = require('../constants/qualifierSchedules');
 const {
   buildPaymentSummary,
   createManualPaymentReference,
@@ -99,10 +100,6 @@ function validatePayload(body) {
   if (!Object.values(EVENT_CATEGORIES).includes(body.eventCategory)) errors.push('競賽項目無效');
   push(requireString(body.preferredVenueLabel || body.preferredVenueId, '首選海選地區／球館'));
 
-  if (!Array.isArray(body.availability) || body.availability.length === 0) {
-    errors.push('請至少選擇一個可參賽時段');
-  }
-
   const research = body.research || {};
   push(requireString(research.carnivalIntent, '嘉年華出席意向'));
   push(requireString(research.skillLevel, '技術程度'));
@@ -115,6 +112,9 @@ function validatePayload(body) {
   ['rules', 'ranking', 'truthfulness', 'pics'].forEach((key) => {
     if (agreements[key] !== true) errors.push('請確認所有必填聲明及條款');
   });
+  if (agreements.scheduleTerms !== true) {
+    errors.push('請閱讀並同意《賽程管理與特別說明》');
+  }
 
   if (body.introAcknowledged !== true) {
     errors.push('請先閱讀並確認表格簡介及賽事資訊');
@@ -167,16 +167,26 @@ async function createRsvp(body) {
 
   let preferredVenueLabel = (body.preferredVenueLabel || '').trim();
   let preferredVenueId = null;
+  let preferredVenueDoc = null;
   if (body.preferredVenueId && mongoose.isValidObjectId(body.preferredVenueId)) {
     const venue = await ClubVenue.findById(body.preferredVenueId);
-    if (venue) {
+    if (venue && venue.isActive !== false && !venue.isOrganizerAssign) {
       preferredVenueId = venue._id;
+      preferredVenueDoc = venue;
       preferredVenueLabel = formatVenueOptionLabel(venue);
     }
   }
   if (!preferredVenueLabel) {
     return { ok: false, status: 400, errors: ['首選海選地區／球館無效'] };
   }
+
+  const slotInfo = resolveQualifierSlot({
+    scheduleKey: preferredVenueDoc?.scheduleKey,
+    venueLabel: preferredVenueDoc?.label || preferredVenueLabel,
+    ageGroup: body.ageGroup,
+    eventCategory: body.eventCategory,
+  });
+  const qualifierSlotLabel = slotInfo?.text || '';
 
   const packTier = normalizePackTier(body.packTier, body.wantPlayerPack);
   const paymentSummary = buildPaymentSummary({ packTier });
@@ -194,7 +204,8 @@ async function createRsvp(body) {
     eventCategory: body.eventCategory,
     preferredVenueId,
     preferredVenueLabel,
-    availability: body.availability,
+    qualifierSlotLabel,
+    availability: Array.isArray(body.availability) ? body.availability : [],
     packTier,
     wantPlayerPack: packTier !== PACK_TIERS.STANDARD,
     research: {
@@ -213,6 +224,7 @@ async function createRsvp(body) {
       truthfulness: true,
       pics: true,
       marketing: body.agreements.marketing === true,
+      scheduleTerms: true,
     },
     introAcknowledged: true,
     introAcknowledgedAt: new Date(),

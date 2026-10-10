@@ -17,6 +17,8 @@ const agreementsSchema = new mongoose.Schema(
     truthfulness: { type: Boolean, required: true },
     pics: { type: Boolean, required: true },
     marketing: { type: Boolean, default: false },
+    /** 賽程管理與特別說明 */
+    scheduleTerms: { type: Boolean, default: false },
   },
   { _id: false }
 );
@@ -78,6 +80,8 @@ const teamSchema = new mongoose.Schema(
       default: null,
     },
     preferredVenueLabel: { type: String, required: true, trim: true },
+    /** Resolved fixed qualifier slot text e.g. 31/10 09:00–11:20｜公開組 男雙 */
+    qualifierSlotLabel: { type: String, trim: true, default: '' },
     availability: [{ type: String }],
     wantPlayerPack: { type: Boolean, default: false },
     packTier: {

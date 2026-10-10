@@ -15,7 +15,6 @@ const {
 const {
   AGE_GROUP_LABELS,
   EVENT_CATEGORY_LABELS,
-  AVAILABILITY_SLOTS,
   CARNIVAL_INTENT,
   SPECTATOR_COUNTS,
   SKILL_LEVELS,
@@ -31,6 +30,7 @@ const {
   PACK_TIER_LABELS,
   PACK_TIER_ADDON_HKD,
 } = require('../constants/enums');
+const { getQualifierSchedulesMeta } = require('../constants/qualifierSchedules');
 const { buildPaymentSummary } = require('../services/paymentService');
 
 const router = express.Router();
@@ -45,7 +45,10 @@ const rsvpLimiter = rateLimit({
 
 router.get('/meta', async (_req, res, next) => {
   try {
-    const clubs = await ClubVenue.find({ isActive: true })
+    const clubs = await ClubVenue.find({
+      isActive: true,
+      isOrganizerAssign: { $ne: true },
+    })
       .sort({ sortOrder: 1, label: 1 })
       .lean();
 
@@ -83,10 +86,11 @@ router.get('/meta', async (_req, res, next) => {
           name: c.label,
           address: c.address || '',
           scheduleNote: c.scheduleNote || '',
+          scheduleKey: c.scheduleKey || '',
           region: c.region,
           isOrganizerAssign: c.isOrganizerAssign,
         })),
-        availabilitySlots: AVAILABILITY_SLOTS,
+        qualifierSchedules: getQualifierSchedulesMeta(),
         carnivalIntent: CARNIVAL_INTENT,
         spectatorCounts: SPECTATOR_COUNTS.map((v) => ({
           value: v,
@@ -108,7 +112,10 @@ router.get('/meta', async (_req, res, next) => {
 
 router.get('/meta/clubs', async (_req, res, next) => {
   try {
-    const clubs = await ClubVenue.find({ isActive: true })
+    const clubs = await ClubVenue.find({
+      isActive: true,
+      isOrganizerAssign: { $ne: true },
+    })
       .sort({ sortOrder: 1, label: 1 })
       .lean();
     res.json({

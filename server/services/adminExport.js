@@ -49,6 +49,7 @@ function buildTeamsCsv(teams, playersByTeamId) {
     'ageGroup',
     'eventCategory',
     'preferredVenue',
+    'qualifierSlot',
     'playerPack',
     'packTier',
     'paymentReference',
@@ -97,6 +98,7 @@ function buildTeamsCsv(teams, playersByTeamId) {
       AGE_GROUP_LABELS[team.ageGroup] || team.ageGroup,
       EVENT_CATEGORY_LABELS[team.eventCategory] || team.eventCategory,
       team.preferredVenueLabel,
+      team.qualifierSlotLabel || '',
       team.wantPlayerPack ? 'Y' : 'N',
       PACK_TIER_LABELS[team.packTier] ||
         team.packTier ||

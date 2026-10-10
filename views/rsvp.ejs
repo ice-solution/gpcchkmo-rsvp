@@ -217,10 +217,19 @@
           <label class="field-label" for="preferredVenueId">首選海選地區／合作球會／球館 *</label>
           <select class="field-input" id="preferredVenueId" required></select>
         </div>
-        <fieldset>
-          <legend class="field-label">可參賽時段（可複選）*</legend>
-          <div class="grid gap-2 sm:grid-cols-3" id="availabilityOptions"></div>
-        </fieldset>
+        <div id="qualifierSlotPanel" class="hidden rounded-2xl bg-sky-50 px-4 py-3 ring-1 ring-sky-200">
+          <p class="text-xs font-semibold uppercase tracking-wide text-sky-800">預計海選參賽時間</p>
+          <p id="qualifierSlotText" class="mt-1 text-sm font-semibold text-brand-deep"></p>
+          <p id="qualifierSlotHint" class="mt-1 hidden text-xs text-slate-600"></p>
+        </div>
+        <div id="scheduleTermsPanel" class="hidden rounded-2xl bg-slate-50 px-4 py-4 ring-1 ring-slate-200">
+          <p class="font-semibold text-brand-deep">【賽程管理與特別說明】</p>
+          <div id="scheduleTermsBody" class="mt-2 space-y-2 text-sm leading-relaxed text-slate-700"></div>
+          <label class="mt-4 flex items-start gap-3 text-sm text-slate-800">
+            <input type="checkbox" id="agreeScheduleTerms" class="mt-1" required />
+            <span>本人已閱讀並同意以上《賽程管理與特別說明》 *</span>
+          </label>
+        </div>
       </div>
     </section>
 

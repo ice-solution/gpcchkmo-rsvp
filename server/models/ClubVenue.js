@@ -6,6 +6,8 @@ const clubVenueSchema = new mongoose.Schema(
     address: { type: String, trim: true, default: '' },
     /** Qualifier schedule note shown after address in RSVP select */
     scheduleNote: { type: String, trim: true, default: '' },
+    /** Fixed-schedule venue key: lit_pickle | mypw */
+    scheduleKey: { type: String, trim: true, default: '' },
     region: { type: String, trim: true, default: '' },
     sortOrder: { type: Number, default: 100 },
     isActive: { type: Boolean, default: true },

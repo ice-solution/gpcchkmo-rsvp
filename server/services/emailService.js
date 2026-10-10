@@ -10,7 +10,6 @@ const {
   TEAM_STATUS_LABELS,
   PAYMENT_STATUS_LABELS,
   PACK_TIER_LABELS,
-  AVAILABILITY_SLOTS,
   REGISTRATION_TYPES,
 } = require('../constants/enums');
 
@@ -51,13 +50,6 @@ function formatDob(d) {
 
 function labelOf(map, value) {
   return map[value] || value || '—';
-}
-
-function availabilityText(values) {
-  const slots = Array.isArray(values) ? values : [];
-  if (!slots.length) return '—';
-  const byValue = Object.fromEntries(AVAILABILITY_SLOTS.map((s) => [s.value, s.label]));
-  return slots.map((v) => byValue[v] || v).join('、');
 }
 
 function row(label, value) {
@@ -126,7 +118,7 @@ function buildSubmissionSummaryHtml({ team, captain, teammate }) {
         row('年齡組別', escapeHtml(labelOf(AGE_GROUP_LABELS, team.ageGroup))),
         row('競賽項目', escapeHtml(labelOf(EVENT_CATEGORY_LABELS, team.eventCategory))),
         row('首選海選場地', escapeHtml(team.preferredVenueLabel)),
-        row('可參賽時段', escapeHtml(availabilityText(team.availability))),
+        row('預計海選時間', escapeHtml(team.qualifierSlotLabel || '—')),
         row('選手包套裝', escapeHtml(packLabel)),
       ].join('')
     )}

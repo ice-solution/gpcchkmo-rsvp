@@ -26,6 +26,7 @@
         <div><dt class="text-xs text-slate-500">年齡組別</dt><dd><%= labels.ageGroup[team.ageGroup] %></dd></div>
         <div><dt class="text-xs text-slate-500">競賽項目</dt><dd><%= labels.eventCategory[team.eventCategory] %></dd></div>
         <div class="sm:col-span-2"><dt class="text-xs text-slate-500">首選場地</dt><dd><%= team.preferredVenueLabel %></dd></div>
+        <div class="sm:col-span-2"><dt class="text-xs text-slate-500">預計海選時間</dt><dd><%= team.qualifierSlotLabel || '—' %></dd></div>
         <div class="sm:col-span-2"><dt class="text-xs text-slate-500">選手包套裝</dt><dd>
           <% var tier = team.packTier || (team.wantPlayerPack ? 'essential' : 'standard'); %>
           <%= labels.packTier && labels.packTier[tier] ? labels.packTier[tier] : tier %>

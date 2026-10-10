@@ -11,6 +11,7 @@ const SEED = [
     region: '',
     sortOrder: 0,
     isOrganizerAssign: true,
+    isActive: false, // removed from RSVP venue select (海選 Others)
   },
   {
     label: 'Bay Pickle',
@@ -37,7 +38,8 @@ const SEED = [
   {
     label: 'My Pickle World （MYPW）',
     address: '大窩口國瑞路116-122號城市工業中心一期15樓A室',
-    scheduleNote: '31/10, 1/11, 7/11, 8/11海選',
+    scheduleNote: '31/10–1/11（按年齡組別及項目）',
+    scheduleKey: 'mypw',
     region: '新界西',
     sortOrder: 40,
   },
@@ -72,7 +74,8 @@ const SEED = [
   {
     label: 'LIT PICKLE',
     address: '觀塘中海日升中心15A',
-    scheduleNote: '28/10, 31/10, 4/11',
+    scheduleNote: '28/10 女雙、31/10 男雙、04/11 混雙',
+    scheduleKey: 'lit_pickle',
     region: '九龍',
     sortOrder: 90,
   },
@@ -99,6 +102,7 @@ async function main() {
       {
         $set: {
           ...row,
+          scheduleKey: row.scheduleKey || '',
           isActive,
           isOrganizerAssign: Boolean(row.isOrganizerAssign),
         },

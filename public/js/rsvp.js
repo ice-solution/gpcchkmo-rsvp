@@ -41,6 +41,7 @@
     'agreeTruth',
     'agreePics',
     'agreeMarketing',
+    'agreeScheduleTerms',
   ];
   const RADIO_NAMES = [
     'registrationType',
@@ -53,7 +54,7 @@
     'hearAbout',
     'packTier',
   ];
-  const MULTI_CHECK_NAMES = ['availability', 'interests', 'contactPrefs'];
+  const MULTI_CHECK_NAMES = ['interests', 'contactPrefs'];
 
   function setRadio(name, value) {
     if (!value) return;
@@ -149,6 +150,7 @@
       await refreshEligibility();
       setRadio('ageGroup', draft.radios && draft.radios.ageGroup);
       setRadio('eventCategory', draft.radios && draft.radios.eventCategory);
+      syncQualifierAndScheduleTerms();
 
       const savedStep = Number(draft.step);
       if (Number.isFinite(savedStep) && savedStep >= 0 && savedStep < total) {
@@ -317,6 +319,7 @@
       eventHint.classList.add('hidden');
       radioCards(eventBox, 'eventCategory', eventCategories);
     }
+    syncQualifierAndScheduleTerms();
   }
 
   function validateStep(n) {
@@ -354,7 +357,9 @@
       if (!radioValue('ageGroup')) errors.push('請選擇年齡組別');
       if (!radioValue('eventCategory')) errors.push('請選擇競賽項目');
       if (!$('#preferredVenueId').value) errors.push('請選擇首選海選地區／球館');
-      if (!checkedValues('availability').length) errors.push('請至少選擇一個可參賽時段');
+      if (!$('#agreeScheduleTerms').checked) {
+        errors.push('請閱讀並同意《賽程管理與特別說明》');
+      }
     }
     if (n === 5) {
       if (!radioValue('carnivalIntent')) errors.push('請選擇嘉年華出席意向');
@@ -415,7 +420,8 @@
       eventCategory: radioValue('eventCategory'),
       preferredVenueId: venueSelect.value,
       preferredVenueLabel: venueOption ? venueOption.textContent : '',
-      availability: checkedValues('availability'),
+      qualifierSlotLabel: ($('#qualifierSlotText')?.textContent || '').trim(),
+      availability: [],
       research: {
         carnivalIntent: radioValue('carnivalIntent'),
         spectatorCount: $('#spectatorCount').value,
@@ -430,8 +436,110 @@
         truthfulness: $('#agreeTruth').checked,
         pics: $('#agreePics').checked,
         marketing: $('#agreeMarketing').checked,
+        scheduleTerms: $('#agreeScheduleTerms').checked,
       },
     };
+  }
+
+  function selectedVenueMeta() {
+    const id = $('#preferredVenueId')?.value;
+    if (!id || !meta?.venues) return null;
+    return meta.venues.find((v) => v.id === id) || null;
+  }
+
+  function formatQualifierSlot(slot) {
+    if (!slot) return '';
+    const category = [slot.ageShort, slot.eventShort].filter(Boolean).join(' ');
+    return category ? `${slot.date} ${slot.time}｜${category}` : `${slot.date} ${slot.time}`;
+  }
+
+  function resolveClientQualifierSlot() {
+    const venue = selectedVenueMeta();
+    if (!venue) return null;
+    const key = venue.scheduleKey || '';
+    const ageGroup = radioValue('ageGroup');
+    const eventCategory = radioValue('eventCategory');
+    const schedules = meta.qualifierSchedules || {};
+
+    if (key === 'lit_pickle') {
+      if (!eventCategory) {
+        return { key, text: '', hint: '請先選擇競賽項目，以顯示預計海選時間。' };
+      }
+      const slot = (schedules.litPickle || {})[eventCategory];
+      return {
+        key,
+        text: formatQualifierSlot(slot),
+        hint: slot ? '' : '未能對應此競賽項目的海選時間，請聯絡大會確認。',
+      };
+    }
+
+    if (key === 'mypw') {
+      if (!ageGroup || !eventCategory) {
+        return {
+          key,
+          text: '',
+          hint: '請先選擇年齡組別及競賽項目，以顯示預計海選時間。',
+        };
+      }
+      const slot = (schedules.mypw || {})[`${ageGroup}|${eventCategory}`];
+      return {
+        key,
+        text: formatQualifierSlot(slot),
+        hint: slot ? '' : '未能對應此年齡組別／競賽項目的海選時間，請聯絡大會確認。',
+      };
+    }
+
+    return null;
+  }
+
+  function syncQualifierAndScheduleTerms() {
+    const venue = selectedVenueMeta();
+    const termsPanel = $('#scheduleTermsPanel');
+    const termsBody = $('#scheduleTermsBody');
+    const slotPanel = $('#qualifierSlotPanel');
+    const slotText = $('#qualifierSlotText');
+    const slotHint = $('#qualifierSlotHint');
+    const agree = $('#agreeScheduleTerms');
+
+    if (termsPanel && termsBody && meta?.qualifierSchedules?.notice) {
+      const notice = meta.qualifierSchedules.notice;
+      termsBody.innerHTML = (notice.body || [])
+        .map((p) => `<p>${escapeHtml(p)}</p>`)
+        .join('');
+    }
+
+    if (!venue) {
+      termsPanel?.classList.add('hidden');
+      slotPanel?.classList.add('hidden');
+      if (agree) agree.required = false;
+      return;
+    }
+
+    termsPanel?.classList.remove('hidden');
+    if (agree) agree.required = true;
+
+    const resolved = resolveClientQualifierSlot();
+    if (!resolved) {
+      slotPanel?.classList.add('hidden');
+      if (slotText) slotText.textContent = '';
+      if (slotHint) {
+        slotHint.textContent = '';
+        slotHint.classList.add('hidden');
+      }
+      return;
+    }
+
+    slotPanel?.classList.remove('hidden');
+    if (slotText) slotText.textContent = resolved.text || '';
+    if (slotHint) {
+      if (resolved.hint) {
+        slotHint.textContent = resolved.hint;
+        slotHint.classList.remove('hidden');
+      } else {
+        slotHint.textContent = '';
+        slotHint.classList.add('hidden');
+      }
+    }
   }
 
   async function initMeta() {
@@ -491,7 +599,6 @@
     syncPackFee();
 
     radioCards($('#registrationTypeOptions'), 'registrationType', meta.registrationTypes);
-    checkCards($('#availabilityOptions'), 'availability', meta.availabilitySlots);
     radioCards($('#carnivalIntentOptions'), 'carnivalIntent', meta.carnivalIntent);
     radioCards($('#skillLevelOptions'), 'skillLevel', meta.skillLevels);
     checkCards($('#interestOptions'), 'interests', meta.interestTopics);
@@ -504,9 +611,10 @@
       meta.venues
         .map((v) => {
           const text = v.label || v.name || '';
-          return `<option value="${v.id}">${escapeHtml(text)}</option>`;
+          return `<option value="${v.id}" data-schedule-key="${escapeHtml(v.scheduleKey || '')}">${escapeHtml(text)}</option>`;
         })
         .join('');
+    venue.addEventListener('change', syncQualifierAndScheduleTerms);
 
     const spectators = $('#spectatorCount');
     spectators.innerHTML =
@@ -514,6 +622,8 @@
       meta.spectatorCounts
         .map((v) => `<option value="${v.value}">${escapeHtml(v.label)}</option>`)
         .join('');
+
+    syncQualifierAndScheduleTerms();
   }
 
   async function boot() {
@@ -545,12 +655,15 @@
       });
     });
     document.addEventListener('change', (e) => {
+      if (!e.target) return;
       if (
-        e.target &&
         (e.target.name === 'captainGender' || e.target.name === 'teammateGender') &&
         step >= 4
       ) {
         refreshEligibility();
+      }
+      if (e.target.name === 'ageGroup' || e.target.name === 'eventCategory') {
+        syncQualifierAndScheduleTerms();
       }
     });
 
