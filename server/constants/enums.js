@@ -220,6 +220,22 @@ const PACK_TIER_ADDON_HKD = {
 /** Reference year for age-group eligibility (event year) */
 const EVENT_YEAR = 2026;
 
+/** Eligible DOB window for RSVP date inputs (ages 18–65 in EVENT_YEAR). */
+function getEligibleDobBounds(eventYear = EVENT_YEAR) {
+  const minYear = eventYear - 65;
+  const maxYear = eventYear - 18;
+  const midYear = Math.floor((minYear + maxYear) / 2);
+  return {
+    min: `${minYear}-01-01`,
+    max: `${maxYear}-12-31`,
+    /** Calendar opens near mid-range when field is empty */
+    mid: `${midYear}-07-01`,
+    minAge: 18,
+    maxAge: 65,
+    eventYear,
+  };
+}
+
 module.exports = {
   REGISTRATION_TYPES,
   CAPTAIN_CLUBS,
@@ -250,4 +266,5 @@ module.exports = {
   PACK_TIER_ADDON_HKD,
   FEE,
   EVENT_YEAR,
+  getEligibleDobBounds,
 };

@@ -440,6 +440,34 @@
     };
   }
 
+  function setupDobInputs(bounds) {
+    const dob =
+      bounds && bounds.min && bounds.max
+        ? bounds
+        : { min: '1961-01-01', max: '2008-12-31', mid: '1984-07-01' };
+    ['captainDob', 'teammateDob'].forEach((id) => {
+      const el = $(`#${id}`);
+      if (!el) return;
+      el.min = dob.min;
+      el.max = dob.max;
+      el.addEventListener('focus', () => {
+        if (!el.value) {
+          el.value = dob.mid;
+          el.dataset.dobProbe = dob.mid;
+        }
+      });
+      el.addEventListener('change', () => {
+        delete el.dataset.dobProbe;
+      });
+      el.addEventListener('blur', () => {
+        if (el.dataset.dobProbe && el.value === el.dataset.dobProbe) {
+          el.value = '';
+          delete el.dataset.dobProbe;
+        }
+      });
+    });
+  }
+
   function selectedVenueMeta() {
     const id = $('#preferredVenueId')?.value;
     if (!id || !meta?.venues) return null;
@@ -596,6 +624,8 @@
       if (e.target && e.target.name === 'packTier') syncPackFee();
     });
     syncPackFee();
+
+    setupDobInputs(meta.dobBounds);
 
     radioCards($('#registrationTypeOptions'), 'registrationType', meta.registrationTypes);
     radioCards($('#carnivalIntentOptions'), 'carnivalIntent', meta.carnivalIntent);

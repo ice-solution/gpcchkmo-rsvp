@@ -29,6 +29,7 @@ const {
   PACK_TIERS,
   PACK_TIER_LABELS,
   PACK_TIER_ADDON_HKD,
+  getEligibleDobBounds,
 } = require('../constants/enums');
 const { getQualifierSchedulesMeta } = require('../constants/qualifierSchedules');
 const { buildPaymentSummary } = require('../services/paymentService');
@@ -103,6 +104,7 @@ router.get('/meta', async (_req, res, next) => {
         contactPrefs: CONTACT_PREFS,
         ageGroupLabels: AGE_GROUP_LABELS,
         eventCategoryLabels: EVENT_CATEGORY_LABELS,
+        dobBounds: getEligibleDobBounds(),
       },
     });
   } catch (err) {
