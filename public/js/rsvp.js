@@ -51,10 +51,9 @@
     'eventCategory',
     'carnivalIntent',
     'skillLevel',
-    'hearAbout',
     'packTier',
   ];
-  const MULTI_CHECK_NAMES = ['interests', 'contactPrefs'];
+  const MULTI_CHECK_NAMES = ['interests', 'contactPrefs', 'hearAbout'];
 
   function setRadio(name, value) {
     if (!value) return;
@@ -365,7 +364,7 @@
       if (!radioValue('carnivalIntent')) errors.push('請選擇嘉年華出席意向');
       if (!radioValue('skillLevel')) errors.push('請選擇技術程度');
       if (!checkedValues('interests').length) errors.push('請至少選擇一項感興趣內容');
-      if (!radioValue('hearAbout')) errors.push('請選擇得知渠道');
+      if (!checkedValues('hearAbout').length) errors.push('請至少選擇一個得知渠道');
     }
     if (n === 6) {
       if (!radioValue('packTier')) errors.push('請選擇選手包套裝級別');
@@ -427,7 +426,7 @@
         spectatorCount: $('#spectatorCount').value,
         skillLevel: radioValue('skillLevel'),
         interests: checkedValues('interests'),
-        hearAbout: radioValue('hearAbout'),
+        hearAbout: checkedValues('hearAbout'),
         contactPrefs: checkedValues('contactPrefs'),
       },
       agreements: {
@@ -602,7 +601,7 @@
     radioCards($('#carnivalIntentOptions'), 'carnivalIntent', meta.carnivalIntent);
     radioCards($('#skillLevelOptions'), 'skillLevel', meta.skillLevels);
     checkCards($('#interestOptions'), 'interests', meta.interestTopics);
-    radioCards($('#hearAboutOptions'), 'hearAbout', meta.hearAbout);
+    checkCards($('#hearAboutOptions'), 'hearAbout', meta.hearAbout);
     checkCards($('#contactPrefOptions'), 'contactPrefs', meta.contactPrefs);
 
     const venue = $('#preferredVenueId');

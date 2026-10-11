@@ -130,7 +130,9 @@ function buildTeamsCsv(teams, playersByTeamId) {
         : '',
       team.research?.carnivalIntent || '',
       team.research?.skillLevel || '',
-      team.research?.hearAbout || '',
+      Array.isArray(team.research?.hearAbout)
+        ? team.research.hearAbout.join('|')
+        : team.research?.hearAbout || '',
       team.agreements?.marketing ? 'Y' : 'N',
     ].map(csvEscape);
     lines.push(row.join(','));

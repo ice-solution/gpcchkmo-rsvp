@@ -29,7 +29,7 @@ const researchSchema = new mongoose.Schema(
     spectatorCount: { type: String, default: '' },
     skillLevel: { type: String, required: true },
     interests: [{ type: String }],
-    hearAbout: { type: String, required: true },
+    hearAbout: [{ type: String }],
     contactPrefs: [{ type: String }],
   },
   { _id: false }

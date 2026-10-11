@@ -103,7 +103,9 @@ function validatePayload(body) {
   const research = body.research || {};
   push(requireString(research.carnivalIntent, '嘉年華出席意向'));
   push(requireString(research.skillLevel, '技術程度'));
-  push(requireString(research.hearAbout, '得知渠道'));
+  if (!Array.isArray(research.hearAbout) || research.hearAbout.length === 0) {
+    errors.push('請至少選擇一個得知渠道');
+  }
   if (!Array.isArray(research.interests) || research.interests.length === 0) {
     errors.push('請至少選擇一項感興趣的 GPCC 內容');
   }
@@ -213,7 +215,9 @@ async function createRsvp(body) {
       spectatorCount: body.research.spectatorCount || '',
       skillLevel: body.research.skillLevel,
       interests: body.research.interests,
-      hearAbout: body.research.hearAbout,
+      hearAbout: Array.isArray(body.research.hearAbout)
+        ? body.research.hearAbout
+        : [],
       contactPrefs: Array.isArray(body.research.contactPrefs)
         ? body.research.contactPrefs
         : [],

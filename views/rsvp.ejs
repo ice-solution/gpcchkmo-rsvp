@@ -251,11 +251,12 @@
           <div class="grid gap-2" id="skillLevelOptions"></div>
         </fieldset>
         <fieldset>
-          <legend class="field-label">您最感興趣的 GPCC 活動或內容（可複選）*</legend>
-          <div class="grid gap-2 sm:grid-cols-2" id="interestOptions"></div>
+          <legend class="field-label">您其他最感興趣的 GPCC 活動或內容（可複選）*</legend>
+          <p class="mt-1 text-xs leading-relaxed text-slate-500">大會將收集此意向以作未來的相關活動安排考量。預先提交意向者，將獲優先邀請或預留名額／位置，詳情可留意官方網站及資訊。</p>
+          <div class="mt-3 grid gap-2 sm:grid-cols-2" id="interestOptions"></div>
         </fieldset>
         <fieldset>
-          <legend class="field-label">您從何得知 GPCC？ *</legend>
+          <legend class="field-label">您從何得知 GPCC？（可複選）*</legend>
           <div class="grid gap-2" id="hearAboutOptions"></div>
         </fieldset>
         <fieldset>
@@ -313,11 +314,11 @@
 
     <!-- Step 7: Agreements -->
     <section class="step-panel hidden rounded-3xl bg-white p-5 shadow-panel ring-1 ring-slate-200 sm:p-7" data-step="7">
-      <h2 class="font-display text-lg font-bold text-brand-deep">第 6 區：聲明、私隱及條款確認</h2>
+      <h2 class="font-display text-lg font-bold text-brand-deep">第 6 區：聲明、私隱及條款確認（請剔選所有方格）</h2>
       <div class="mt-5 space-y-3 text-sm text-slate-700">
         <label class="choice-card">
           <input type="checkbox" id="agreeRules" required />
-          <span>競賽規程確認：我代表本人及隊友確認已閱讀並同意《香港站正式競賽規程》及退賽／退款條款，並明白本 RSVP 每次只可申報一個競賽項目。*</span>
+          <span>競賽規程確認：我代表本人及隊友確認已閱讀並同意《香港站正式競賽規程》及退賽／退款條款，並明白本 RSVP 每次只可申報一個競賽項目，如報另外一個項目會重新填表 *</span>
         </label>
         <label class="choice-card">
           <input type="checkbox" id="agreeRanking" required />
@@ -329,15 +330,15 @@
         </label>
         <label class="choice-card">
           <input type="checkbox" id="agreePics" required />
-          <span>個人資料收集聲明確認：我已閱讀下列《個人資料收集聲明》，並同意大會為賽事管理、付款核實、賽務溝通、QR Code 發放及活動安排而處理本人及隊友資料。*</span>
+          <span>個人資料收集聲明確認：我已閱讀下列《個人資料收集聲明》，並同意大會為賽事管理、付款核實、賽務溝通、QR Code 發放、活動安排及其他資訊處理本人及隊友資料。*</span>
         </label>
         <div class="rounded-2xl bg-slate-50 px-4 py-3 text-xs leading-relaxed text-slate-600 ring-1 ring-slate-200">
           <p class="font-semibold text-slate-800">個人資料收集聲明（摘要）</p>
-          <p class="mt-2">粵港澳大灣區匹克球城市挑戰賽港澳組委會及承辦單位及秘書處 MEMO PLUS PR（統稱「大會」）會收集您及隊友在本 RSVP 提供的姓名、出生日期、性別、聯絡資料、所屬球會／機構、緊急聯絡資料、參賽安排、付款及交易參考資料，以及您自願提供的興趣及推廣偏好資料。必填資料用於處理報名、核實資格、編排賽程、聯絡隊伍、核實付款、發放選手包及現場報到 QR Code。興趣及直接行銷同意屬選填；拒絕同意不會影響參賽資格。</p>
+          <p class="mt-2">粵港澳大灣區匹克球城市挑戰賽組委會、承辦單位及秘書處（統稱「大會」）會收集您及隊友在本 RSVP 提供的姓名、出生日期、性別、聯絡資料、所屬球會／機構、緊急聯絡資料、參賽安排、付款及交易參考資料，以及您自願提供的興趣及推廣偏好資料。必填資料用於處理報名、核實資格、編排賽程、聯絡隊伍、核實付款、發放選手包及現場報到 QR Code。興趣及直接行銷同意屬選填；拒絕同意不會影響參賽資格。</p>
         </div>
         <label class="choice-card">
           <input type="checkbox" id="agreeMarketing" />
-          <span>直接行銷同意（選填）：我同意組委會／MEMO PLUS PR 按《個人資料收集聲明》透過所選聯絡方式發送 GPCC 及相關活動推廣資訊。我明白可隨時撤回同意。</span>
+          <span>直接行銷同意（選填）：我同意大會（組委會、承辦單位、秘書處及所有協辦和支持單位等）按《個人資料收集聲明》透過所選聯絡方式發送 GPCC 及其他推廣資訊。我明白可隨時撤回同意。</span>
         </label>
 
         <% if (paymentGatewayEnabled) { %>

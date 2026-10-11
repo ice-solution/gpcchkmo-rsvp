@@ -85,14 +85,25 @@ const SKILL_LEVELS = [
 ];
 
 const INTEREST_TOPICS = [
-  { value: 'carnival_zone', label: '城市嘉年華體驗區' },
+  { value: 'finals_carnival', label: '11月14-15日決賽日城市嘉年華及體驗區' },
+  { value: 'player_dinner_fairway', label: '11月13日球員晚宴／見面會／聚會（錦綉花園俱樂部）' },
+  { value: 'gba_finals_guangzhou', label: '大灣區匹克球城市總決賽（於廣州舉辦 - 約11月尾至12月）' },
+  { value: 'pro_photo_video', label: '參賽者比賽專業攝影／攝錄團隊' },
+  { value: 'club_experience_hk_mo', label: '球會匹克球體驗日（港澳）' },
+  { value: 'club_exchange_gba', label: '球會匹克球交流活動（大灣區其他城市）' },
+  { value: 'corp_team_building', label: '企業／團體匹克球團建／比賽訓練' },
+  { value: 'corp_private_cup', label: '企業／團體獨立盃賽' },
+  { value: 'star_coach_camp', label: '明星教練訓練營' },
+  { value: 'masterclass', label: '匹克球大師班訓練' },
+  { value: 'celebration_gala', label: '大賽祝捷會（將邀請明星或大師參與）' },
+  { value: 'referee_training', label: '專業裁判訓練及資格考核' },
   { value: 'cantonese_night', label: '匹克球廣東歌之夜' },
   { value: 'city_challenge', label: '城市擂台公開賽' },
   { value: 'star_match', label: '明星賽' },
   { value: 'charity', label: '慈善賽' },
   { value: 'family', label: '親子賽' },
   { value: 'corporate', label: '企業盃' },
-  { value: 'workshop', label: '教學與訓練工作坊' },
+  { value: 'workshop', label: '入門教學與訓練工作坊' },
   { value: 'merch', label: '官方紀念品' },
   { value: 'volunteer', label: '義工或社區參與' },
   { value: 'other', label: '其他' },
@@ -112,8 +123,8 @@ const HEAR_ABOUT = [
 const CONTACT_PREFS = [
   { value: 'email', label: '電郵' },
   { value: 'whatsapp', label: 'WhatsApp' },
-  { value: 'sms', label: '短訊' },
-  { value: 'no_promo', label: '不接收推廣資訊' },
+  { value: 'wechat', label: '微信' },
+  { value: 'phone', label: '電話' },
 ];
 
 /** Team-level application / payment / qualification lifecycle */
