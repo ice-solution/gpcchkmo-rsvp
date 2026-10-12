@@ -60,13 +60,13 @@ const paymentSchema = new mongoose.Schema(
 
 const teamSchema = new mongoose.Schema(
   {
-    displayName: { type: String, trim: true, default: '' },
+    displayName: { type: String, required: true, trim: true },
     captainClub: { type: String, required: true, trim: true },
     captainEmail: { type: String, required: true, trim: true, lowercase: true },
     registrationType: {
       type: String,
       enum: Object.values(REGISTRATION_TYPES),
-      required: true,
+      default: REGISTRATION_TYPES.FIRST_OR_ONLY,
     },
     ageGroup: { type: String, enum: Object.values(AGE_GROUPS), required: true },
     eventCategory: {

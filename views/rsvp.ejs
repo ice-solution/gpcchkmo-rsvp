@@ -105,19 +105,15 @@
             <textarea class="field-input min-h-[5.5rem] resize-y" id="captainClubSource" name="captainClubSource" maxlength="500" rows="3" placeholder="例如：社交媒體、朋友介紹等"></textarea>
           </div>
         </div>
-        <fieldset>
-          <legend class="field-label">本次報名類型 *</legend>
-          <div class="grid gap-2" id="registrationTypeOptions"></div>
-        </fieldset>
         <div>
           <label class="field-label" for="captainEmail">隊長主要電郵地址 *</label>
           <input class="field-input" id="captainEmail" name="captainEmail" type="email" required autocomplete="email" />
           <p class="mt-1 text-xs text-slate-500">用於接收報名確認、付款狀態、賽程、QR Code 及緊急通知。</p>
         </div>
         <div>
-          <label class="field-label" for="displayName">隊伍／組合顯示名稱（選填）</label>
-          <input class="field-input" id="displayName" name="displayName" maxlength="80" />
-          <p class="mt-1 text-xs text-slate-500">如無特別隊名，大會將以兩位球員姓名作賽程顯示。</p>
+          <label class="field-label" for="displayName">隊伍／組名 *</label>
+          <input class="field-input" id="displayName" name="displayName" maxlength="80" required />
+          <p class="mt-1 text-xs text-slate-500">必填。賽程、賽事公佈及相關安排將以組名為準。</p>
         </div>
       </div>
     </section>
@@ -194,7 +190,7 @@
           <input class="field-input" id="teammateEmail" type="email" required />
         </div>
         <div>
-          <label class="field-label" for="teammateClub">隊友所屬球會／機構（選填）</label>
+          <label class="field-label" for="teammateClub">隊友所屬球會／機構（選填）（如有）</label>
           <input class="field-input" id="teammateClub" />
         </div>
         <div>
@@ -262,8 +258,8 @@
           <div class="grid gap-2" id="skillLevelOptions"></div>
         </fieldset>
         <fieldset>
-          <legend class="field-label">您其他最感興趣的 GPCC 活動或內容（可複選）*</legend>
-          <p class="mt-1 text-xs leading-relaxed text-slate-500">大會將收集此意向以作未來的相關活動安排考量。預先提交意向者，將獲優先邀請或預留名額／位置，詳情可留意官方網站及資訊。</p>
+          <legend class="field-label">您其他最感興趣的 GPCC 活動或內容（可複選，最少選一項）*</legend>
+          <p class="mt-1 text-xs leading-relaxed text-slate-500">大會將收集此意向以作未來的相關活動安排考量。預先提交意向者，將獲優先邀請或預留名額／位置，詳情可留意官方網站及資訊。最少選擇一項即可。</p>
           <div class="mt-3 grid gap-2 sm:grid-cols-2" id="interestOptions"></div>
         </fieldset>
         <fieldset>
@@ -326,10 +322,11 @@
     <!-- Step 7: Agreements -->
     <section class="step-panel hidden rounded-3xl bg-white p-5 shadow-panel ring-1 ring-slate-200 sm:p-7" data-step="7">
       <h2 class="font-display text-lg font-bold text-brand-deep">第 6 區：聲明、私隱及條款確認（請剔選所有方格）</h2>
+      <p class="mt-2 rounded-2xl bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-950 ring-1 ring-amber-200">兼報多個項目／組別者，每項均需單獨填寫一份表格。</p>
       <div class="mt-5 space-y-3 text-sm text-slate-700">
         <label class="choice-card">
           <input type="checkbox" id="agreeRules" required />
-          <span>競賽規程確認：我代表本人及隊友確認已閱讀並同意《香港站正式競賽規程》及退賽／退款條款，並明白本報名表每次只可申報一個競賽項目，如報另外一個項目會重新填表 *</span>
+          <span>競賽規程確認：我代表本人及隊友確認已閱讀並同意《香港站正式競賽規程》及退賽／退款條款，並明白本報名表每次只可申報一個競賽項目；兼報多個項目／組別者，每項均需單獨填寫一份表格。*</span>
         </label>
         <label class="choice-card">
           <input type="checkbox" id="agreeRanking" required />

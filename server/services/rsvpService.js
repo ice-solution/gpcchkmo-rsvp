@@ -79,9 +79,8 @@ function validatePayload(body) {
   }
   // Stash resolved value for createRsvp persistence
   body.captainClub = resolvedCaptainClub;
-  if (!Object.values(REGISTRATION_TYPES).includes(body.registrationType)) {
-    errors.push('報名類型無效');
-  }
+  body.registrationType = REGISTRATION_TYPES.FIRST_OR_ONLY;
+  push(requireString(body.displayName, '隊伍／組名'));
   push(requireString(body.captainEmail, '隊長電郵'));
   if (body.captainEmail && !EMAIL_RE.test(body.captainEmail)) {
     errors.push('隊長電郵格式不正確');
@@ -123,8 +122,8 @@ function validatePayload(body) {
   if (!Array.isArray(research.hearAbout) || research.hearAbout.length === 0) {
     errors.push('請至少選擇一個得知渠道');
   }
-  if (!Array.isArray(research.interests) || research.interests.length === 0) {
-    errors.push('請至少選擇一項感興趣的 GPCC 內容');
+  if (!Array.isArray(research.interests) || research.interests.length < 1) {
+    errors.push('請至少選擇一項感興趣的 GPCC 活動或內容');
   }
 
   const agreements = body.agreements || {};

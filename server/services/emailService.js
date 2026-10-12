@@ -10,13 +10,7 @@ const {
   TEAM_STATUS_LABELS,
   PAYMENT_STATUS_LABELS,
   PACK_TIER_LABELS,
-  REGISTRATION_TYPES,
 } = require('../constants/enums');
-
-const REGISTRATION_TYPE_LABELS = {
-  [REGISTRATION_TYPES.FIRST_OR_ONLY]: '第一個／唯一參賽項目',
-  [REGISTRATION_TYPES.SECOND_ADDITIONAL]: '第二個兼報項目',
-};
 
 let transporter = null;
 
@@ -112,9 +106,8 @@ function buildSubmissionSummaryHtml({ team, captain, teammate }) {
         row('申請狀態', escapeHtml(statusLabel)),
         row('付款狀態', escapeHtml(paymentLabel)),
         row('應繳總額', escapeHtml(total)),
-        row('隊伍名稱', escapeHtml(team.displayName || '—')),
+        row('隊伍／組名', escapeHtml(team.displayName || '—')),
         row('隊長球會', escapeHtml(team.captainClub)),
-        row('報名類型', escapeHtml(labelOf(REGISTRATION_TYPE_LABELS, team.registrationType))),
         row('年齡組別', escapeHtml(labelOf(AGE_GROUP_LABELS, team.ageGroup))),
         row('競賽項目', escapeHtml(labelOf(EVENT_CATEGORY_LABELS, team.eventCategory))),
         row('首選海選場地', escapeHtml(team.preferredVenueLabel)),
@@ -152,7 +145,7 @@ function buildPaidCompletedHtml({ team, captain, teammate }) {
         row('申請狀態', escapeHtml(statusLabel)),
         row('付款狀態', escapeHtml(paymentLabel)),
         row('已收金額', escapeHtml(total)),
-        row('隊伍名稱', escapeHtml(team.displayName || '—')),
+        row('隊伍／組名', escapeHtml(team.displayName || '—')),
         row('競賽項目', escapeHtml(labelOf(EVENT_CATEGORY_LABELS, team.eventCategory))),
         row('年齡組別', escapeHtml(labelOf(AGE_GROUP_LABELS, team.ageGroup))),
         row('隊長', escapeHtml(captain ? `${captain.chineseName}／${captain.englishName}` : '—')),

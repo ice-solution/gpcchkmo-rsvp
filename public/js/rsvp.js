@@ -45,7 +45,6 @@
     'agreeScheduleTerms',
   ];
   const RADIO_NAMES = [
-    'registrationType',
     'captainGender',
     'teammateGender',
     'ageGroup',
@@ -342,8 +341,8 @@
           errors.push('請填寫球會／機構名稱');
         }
       }
-      if (!radioValue('registrationType')) errors.push('請選擇報名類型');
       if (!$('#captainEmail').value.trim()) errors.push('請填寫隊長電郵');
+      if (!$('#displayName').value.trim()) errors.push('請填寫隊伍／組名');
     }
     if (n === 2) {
       ['captainChineseName', 'captainEnglishName', 'captainDob', 'captainWhatsapp', 'captainEmergencyName', 'captainEmergencyPhone'].forEach(
@@ -372,8 +371,12 @@
     if (n === 5) {
       if (!radioValue('carnivalIntent')) errors.push('請選擇嘉年華出席意向');
       if (!radioValue('skillLevel')) errors.push('請選擇技術程度');
-      if (!checkedValues('interests').length) errors.push('請至少選擇一項感興趣內容');
-      if (!checkedValues('hearAbout').length) errors.push('請至少選擇一個得知渠道');
+      if (checkedValues('interests').length < 1) {
+        errors.push('請至少選擇一項感興趣的 GPCC 活動或內容');
+      }
+      if (checkedValues('hearAbout').length < 1) {
+        errors.push('請至少選擇一個得知渠道');
+      }
     }
     if (n === 6) {
       if (!radioValue('packTier')) errors.push('請選擇選手包加購選項');
@@ -406,7 +409,7 @@
         clubFollowup && clubFollowup.kind === 'source'
           ? $('#captainClubSource').value.trim()
           : '',
-      registrationType: radioValue('registrationType'),
+      registrationType: 'first_or_only',
       captainEmail: $('#captainEmail').value.trim(),
       displayName: $('#displayName').value.trim(),
       captain: {
@@ -676,7 +679,6 @@
 
     setupDobInputs(meta.dobBounds);
 
-    radioCards($('#registrationTypeOptions'), 'registrationType', meta.registrationTypes);
     radioCards($('#carnivalIntentOptions'), 'carnivalIntent', meta.carnivalIntent);
     radioCards($('#skillLevelOptions'), 'skillLevel', meta.skillLevels);
     checkCards($('#interestOptions'), 'interests', meta.interestTopics);
