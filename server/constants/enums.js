@@ -5,8 +5,20 @@ const REGISTRATION_TYPES = {
   SECOND_ADDITIONAL: 'second_additional',
 };
 
-/** 隊長所屬匹克球球會／機構（固定選項） */
+/** 賽事報名邀請球會（固定選項；含 P0x 代號） */
 const CAPTAIN_CLUBS = [
+  'P01 Pick and Match',
+  'P02 Lit Pickle',
+  'P03 PickleVibes',
+  'P04 PICKLE.READY',
+  'P05 My Pickle World',
+  'P06 Table meets Pickle',
+  'P07 PickleLab',
+  'P08 錦綉花園鄉村俱樂部',
+];
+
+/** Older club labels still accepted on submit / admin filters */
+const LEGACY_CAPTAIN_CLUBS = [
   'Pick&Match',
   'Bay Pickle',
   'PickleVibe',
@@ -19,7 +31,7 @@ const CAPTAIN_CLUBS = [
 ];
 
 /** Temporarily hide from RSVP dropdowns (still valid if already submitted) */
-const HIDDEN_CAPTAIN_CLUBS = ['Bay Pickle'];
+const HIDDEN_CAPTAIN_CLUBS = [];
 
 const CAPTAIN_CLUB_OTHER_VALUE = '__other__';
 
@@ -196,9 +208,9 @@ const PACK_TIERS = {
 };
 
 const PACK_TIER_LABELS = {
-  [PACK_TIERS.STANDARD]: 'Standard（不加購選手包）',
-  [PACK_TIERS.ESSENTIAL]: 'Essential【賽事標準選手包套裝】',
-  [PACK_TIERS.PREMIUM]: 'Premium【尊尚俱樂部體驗與球員自助晚宴套裝】',
+  [PACK_TIERS.STANDARD]: '標準報名（僅參賽）',
+  [PACK_TIERS.ESSENTIAL]: '基礎選手包（港幣 $200）',
+  [PACK_TIERS.PREMIUM]: '尊尚選手包（港幣 $760）',
 };
 
 const FEE = {
@@ -239,6 +251,7 @@ function getEligibleDobBounds(eventYear = EVENT_YEAR) {
 module.exports = {
   REGISTRATION_TYPES,
   CAPTAIN_CLUBS,
+  LEGACY_CAPTAIN_CLUBS,
   HIDDEN_CAPTAIN_CLUBS,
   CAPTAIN_CLUB_OTHER_VALUE,
   GENDERS,

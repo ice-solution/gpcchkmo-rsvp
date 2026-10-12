@@ -3,6 +3,8 @@ const mongoose = require('mongoose');
 const clubVenueSchema = new mongoose.Schema(
   {
     label: { type: String, required: true, trim: true },
+    /** Display code e.g. P01 */
+    code: { type: String, trim: true, default: '' },
     address: { type: String, trim: true, default: '' },
     /** Qualifier schedule note shown after address in RSVP select */
     scheduleNote: { type: String, trim: true, default: '' },
@@ -21,10 +23,11 @@ clubVenueSchema.index({ isActive: 1, sortOrder: 1 });
 
 function formatVenueOptionLabel(venue) {
   if (!venue) return '';
+  const code = venue.code ? `${venue.code} ` : '';
   const name = venue.label || venue.name || '';
   const address = venue.address || '';
   const scheduleNote = venue.scheduleNote || '';
-  let text = name;
+  let text = `${code}${name}`.trim();
   if (address) text = `${text} — ${address}`;
   if (scheduleNote) text = `${text} - ${scheduleNote}`;
   return text;

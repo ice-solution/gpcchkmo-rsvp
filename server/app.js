@@ -123,7 +123,7 @@ app.get('/rsvp', (_req, res) => {
     gatewayEnabled: gatewayOn,
   });
   res.render('rsvp', {
-    title: '海選報名 RSVP｜GPCC 香港站',
+    title: '參賽報名表｜GPCC 香港站海選賽',
     paymentGatewayEnabled: gatewayOn,
     feeBase: FEE.BASE_HKD,
     packFee: FEE.ESSENTIAL_PACK_HKD,

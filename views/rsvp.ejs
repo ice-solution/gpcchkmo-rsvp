@@ -12,10 +12,10 @@
         <div>
           <p class="text-xs font-bold uppercase tracking-[0.22em] text-brand-lime">Greater Bay Area Pickleball City Challenge</p>
           <h1 class="mt-1 font-display text-2xl font-bold leading-tight sm:text-3xl">
-            2026「凱瑞麟盃」香港站海選賽官方報名
+            2026「凱瑞麟盃」粵港澳大灣區匹克球城市挑戰賽 香港站海選賽官方報名表
           </h1>
           <p class="mt-2 max-w-xl text-sm text-sky-100">
-            填寫本表即表示隊長及隊友確認資料真實完整。每份 RSVP 只可登記一個競賽項目；海選報名費 HKD $<%= feeBase %>／隊，可選 Essential（HKD $<%= essentialPackFee %>／隊）或 Premium（HKD $<%= premiumPackFee %>／隊）套裝。
+            填寫本表單即表示隊長及隊友確認資料真實完整。每份報名表只可登記一個競賽項目；海選報名費港幣 $<%= feeBase %>／隊，另可自由加購「基礎選手包」（港幣 $<%= essentialPackFee %>／隊）或「尊尚選手包」（港幣 $<%= premiumPackFee %>／隊）。
           </p>
         </div>
       </div>
@@ -44,7 +44,7 @@
             <tr><th class="px-4 py-3 font-semibold text-brand-deep">城市決賽地點</th><td class="px-4 py-3 text-slate-700">屯門市廣場</td></tr>
             <tr class="bg-slate-50"><th class="px-4 py-3 font-semibold text-brand-deep">年齡組別</th><td class="px-4 py-3 text-slate-700">常青組 50–65 歲、壯年組 36–49 歲、公開組 18–65 歲（出生日期範圍見下方 2.1）</td></tr>
             <tr><th class="px-4 py-3 font-semibold text-brand-deep">競賽項目</th><td class="px-4 py-3 text-slate-700">男子雙打、女子雙打、混合雙打</td></tr>
-            <tr class="bg-slate-50"><th class="px-4 py-3 font-semibold text-brand-deep">海選報名費</th><td class="px-4 py-3 text-slate-700">HKD $<%= feeBase %>／隊（兩名球員，含海選參賽資格）。可選加購 Essential 選手包（HKD $<%= essentialPackFee %>／隊）或 Premium 尊尚套裝（HKD $<%= premiumPackFee %>／隊）；詳見報名表套裝選擇頁。</td></tr>
+            <tr class="bg-slate-50"><th class="px-4 py-3 font-semibold text-brand-deep">海選報名費</th><td class="px-4 py-3 text-slate-700">港幣 $<%= feeBase %>／隊，另提供「基礎選手包」港幣 $<%= essentialPackFee %> 或「尊尚選手包」港幣 $<%= premiumPackFee %> 供隊伍自由加購，詳見報名表選手包選擇頁。</td></tr>
             <tr><th class="px-4 py-3 font-semibold text-brand-deep">每人報名上限</th><td class="px-4 py-3 text-slate-700">最多兩個競賽項目；每個項目須以獨立報名另行提交</td></tr>
           </tbody>
         </table>
@@ -54,12 +54,15 @@
       <ul class="mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-slate-700">
         <li>填寫本表即表示隊長及隊友確認所提交資料真實、完整且可供核實。</li>
         <li>大會會核對參賽資格；若發現虛假資料、身份不符、冒名頂替或超出報名上限，大會有權即時取消該球員或隊伍的參賽、晉級及獲獎資格（DQ），已繳款項將按正式退賽及退款條款處理。</li>
-        <li><strong>兼報規則：</strong>每位球員最多可報名兩個競賽項目。每份 RSVP 只可登記一個項目；如欲兼報第二項，請完成本次報名後，以「第二個兼報項目」另行提交。請勿在同一 RSVP 重複提交多個項目。超過兩項的報名將不獲接納。</li>
-        <li>報名前請完整閱讀：《香港站正式競賽規程》、退賽及退款條款。<ul class="mt-2 list-disc space-y-1 pl-5">
-          <li>常青組 50 歲–65 歲（1961 年 1 月 1 日（含）以後至 1976 年 12 月 31 日（含）以前出生）</li>
-          <li>壯年組 36 歲–49 歲（1977 年 1 月 1 日（含）以後至 1990 年 12 月 31 日（含）以前出生）</li>
-          <li>公開組 18 歲–65 歲（1961 年 1 月 1 日（含）以後至 2008 年 12 月 31 日（含）以前出生）</li>
-        </ul></li>
+        <li><strong>兼報規則：</strong>每位球員最多可報名兩個競賽項目。每份報名表只可登記一個項目；如欲兼報第二項，請完成本次報名後，以「第二個兼報項目」另行提交。請勿在同一報名表重複提交多個項目。超過兩項的報名將不獲接納。</li>
+        <li>報名前請完整閱讀：<a class="font-semibold text-brand-blue underline" href="https://gpcchkmo.org/" target="_blank" rel="noopener">《香港站正式競賽規程》</a>、退賽及退款條款。</li>
+        <li>競賽組別和項目年齡分組：
+          <ul class="mt-2 list-disc space-y-1 pl-5">
+            <li>常青組 50 歲–65 歲（1961 年 1 月 1 日（含）以後至 1976 年 12 月 31 日（含）以前出生）</li>
+            <li>壯年組 36 歲–49 歲（1977 年 1 月 1 日（含）以後至 1990 年 12 月 31 日（含）以前出生）</li>
+            <li>公開組 18 歲–65 歲（1961 年 1 月 1 日（含）以後至 2008 年 12 月 31 日（含）以前出生）</li>
+          </ul>
+        </li>
         <li>本人同意主辦單位在毋須經本人事先審查的情況下，有權使用本人的肖像、姓名、聲線及個人資料作活動推廣之用。</li>
       </ul>
 
@@ -88,10 +91,11 @@
       <h2 class="font-display text-lg font-bold text-brand-deep">第 0 區：報名類型與隊伍資料</h2>
       <div class="mt-5 grid gap-4">
         <div>
-          <label class="field-label" for="captainClub">隊長所屬匹克球球會／機構 *</label>
+          <label class="field-label" for="captainClub">賽事報名邀請球會 *</label>
           <select class="field-input" id="captainClub" name="captainClub" required>
             <option value="">請選擇</option>
           </select>
+          <p class="mt-2 text-xs leading-relaxed text-slate-500">請選擇邀請您參賽之球會（如無請選其他並填上球會名稱），大會將優先安排該球會場地作為您的首輪海選賽區。</p>
           <div id="captainClubOtherWrap" class="mt-3 hidden">
             <label class="field-label" for="captainClubOther">請填寫球會／機構名稱 *</label>
             <input class="field-input" id="captainClubOther" name="captainClubOther" maxlength="120" placeholder="請輸入球會或機構名稱" />
@@ -204,6 +208,7 @@
     <section class="step-panel hidden rounded-3xl bg-white p-5 shadow-panel ring-1 ring-slate-200 sm:p-7" data-step="4">
       <h2 class="font-display text-lg font-bold text-brand-deep">第 3 區：競賽資料</h2>
       <p class="mt-2 text-xs text-slate-500">年齡組別與競賽項目會按兩位球員出生日期及性別自動篩選可選項。</p>
+      <p class="mt-2 text-xs leading-relaxed text-slate-500">備註：實際作賽日期及時間將由大會作最終確認，並會於賽前以電郵／短訊形式正式通知隊長／隊員。</p>
       <div class="mt-5 grid gap-4">
         <fieldset>
           <legend class="field-label">參賽年齡組別 *</legend>
@@ -270,23 +275,23 @@
 
     <!-- Step 6: Pack tier -->
     <section class="step-panel hidden rounded-3xl bg-white p-5 shadow-panel ring-1 ring-slate-200 sm:p-7" data-step="6">
-      <h2 class="font-display text-lg font-bold text-brand-deep">第 5 區：選手包套裝選擇</h2>
-      <p class="mt-2 text-sm text-slate-600">請選擇一個級別（必選）。海選報名費 HKD $<%= feeBase %>／隊另計。</p>
+      <h2 class="font-display text-lg font-bold text-brand-deep">第 5 區：賽事選手包加購</h2>
+      <p class="mt-2 text-sm text-slate-600">請選擇一個選項（必填）。海選報名費港幣 $<%= feeBase %>／隊另計。</p>
       <div class="mt-5 space-y-4 text-sm text-slate-700">
         <label class="choice-card !items-start">
           <input type="radio" name="packTier" value="standard" required />
           <span>
-            <strong class="block text-brand-deep">Standard</strong>
-            <span class="mt-1 block">不加購選手包。只繳交海選報名費 HKD $<%= feeBase %>／隊。</span>
+            <strong class="block text-brand-deep">標準報名（僅參賽）</strong>
+            <span class="mt-1 block">僅繳交海選報名費港幣 $<%= feeBase %>／隊，不加購賽事選手包。</span>
           </span>
         </label>
 
         <label class="choice-card !items-start">
           <input type="radio" name="packTier" value="essential" />
           <span>
-            <strong class="block text-brand-deep">Essential：【賽事標準選手包套裝】</strong>
-            <span class="mt-1 block font-semibold">專屬優惠價：HKD $<%= essentialPackFee %>／隊（一組兩份）</span>
-            <span class="mt-2 block">禮品組合：大會限定選手袋、賽事 T-Shirt、限定鑰匙扣及比賽匹克球（各 2 份）。</span>
+            <strong class="block text-brand-deep">基礎版：【賽事標準選手包】</strong>
+            <span class="mt-1 block font-semibold">專屬加購價：港幣 $<%= essentialPackFee %>／隊（一組兩份）</span>
+            <span class="mt-2 block">禮品組合：大會限定選手袋、賽事紀念 T 恤、限定鑰匙扣及比賽專用匹克球（各 2 份）。</span>
             <span class="mt-2 block">獨家權益：附贈指定合作匹克球會之專屬優惠券組合。</span>
           </span>
         </label>
@@ -294,20 +299,20 @@
         <label class="choice-card !items-start">
           <input type="radio" name="packTier" value="premium" />
           <span>
-            <strong class="block text-brand-deep">Premium：【尊尚俱樂部體驗與球員自助晚宴】</strong>
-            <span class="mt-1 block font-semibold">專屬優惠價：HKD $380／人｜HKD $<%= premiumPackFee %>／隊</span>
-            <span class="mt-2 block">專為喜愛運動休閒體驗的球員而設，體驗會所設施、球員晚宴及參與豐富大抽獎：</span>
-            <span class="mt-2 block">包含 Essential 所有賽事選手包，並額外尊享「錦綉花園鄉村俱樂部」11 月 13 日專屬安排</span>
+            <strong class="block text-brand-deep">尊尚版：【尊尚俱樂部體驗與球員晚宴】</strong>
+            <span class="mt-1 block font-semibold">專屬加購價：港幣 $<%= premiumPackFee %>／隊</span>
+            <span class="mt-2 block">專為喜愛運動休閒體驗之球員而設，尊享會所設施體驗、球員晚宴及參與豐厚大抽獎：</span>
+            <span class="mt-2 block">包含「基礎版」所有賽事選手包內容，並額外尊享「錦綉花園鄉村俱樂部」11 月 13 日專屬禮遇：</span>
             <ul class="mt-2 list-disc space-y-1.5 pl-5">
               <li><strong>14:00 – 17:00</strong>｜球友交流熱身賽</li>
               <li><strong>17:00 – 18:00</strong>｜更衣及參觀會所設施</li>
               <li><strong>18:30 – 21:00</strong>｜錦綉花園球員專屬自助晚宴</li>
             </ul>
-            <span class="mt-3 block font-semibold text-brand-deep">晚宴大抽獎（Lucky Draw）</span>
-            <span class="mt-1 block">獎品總價值超過六萬港幣：</span>
+            <span class="mt-3 block font-semibold text-brand-deep">晚宴幸運大抽獎</span>
+            <span class="mt-1 block">獎品總值超過港幣六萬元：</span>
             <ul class="mt-2 list-disc space-y-2 pl-5">
-              <li><strong>終極大獎（1 名）</strong>：錦綉花園鄉村俱樂部會籍 1 個（價值 HKD $43,800）＋ 6 個月月費禮遇（價值 HKD $1,800 × 6 = HKD $10,800），總值 HKD $54,600</li>
-              <li><strong>大獎（6 名）</strong>：錦綉花園鄉村俱樂部康體券 1 張（可供 4 人使用，價值 HKD $600）＋ 餐飲禮券 HKD $500</li>
+              <li><strong>終極大獎（1 名）</strong>：錦綉花園鄉村俱樂部會籍 1 個（價值港幣 $43,800）＋ 6 個月月費禮遇（價值港幣 $1,800 × 6 = 港幣 $10,800），總值港幣 $54,600</li>
+              <li><strong>大獎（6 名）</strong>：錦綉花園鄉村俱樂部康體券 1 張（可供 4 人使用，價值港幣 $600）＋ 餐飲禮券港幣 $500</li>
             </ul>
           </span>
         </label>
@@ -320,7 +325,7 @@
       <div class="mt-5 space-y-3 text-sm text-slate-700">
         <label class="choice-card">
           <input type="checkbox" id="agreeRules" required />
-          <span>競賽規程確認：我代表本人及隊友確認已閱讀並同意《香港站正式競賽規程》及退賽／退款條款，並明白本 RSVP 每次只可申報一個競賽項目，如報另外一個項目會重新填表 *</span>
+          <span>競賽規程確認：我代表本人及隊友確認已閱讀並同意《香港站正式競賽規程》及退賽／退款條款，並明白本報名表每次只可申報一個競賽項目，如報另外一個項目會重新填表 *</span>
         </label>
         <label class="choice-card">
           <input type="checkbox" id="agreeRanking" required />
@@ -336,7 +341,7 @@
         </label>
         <div class="rounded-2xl bg-slate-50 px-4 py-3 text-xs leading-relaxed text-slate-600 ring-1 ring-slate-200">
           <p class="font-semibold text-slate-800">個人資料收集聲明（摘要）</p>
-          <p class="mt-2">粵港澳大灣區匹克球城市挑戰賽組委會、承辦單位及秘書處（統稱「大會」）會收集您及隊友在本 RSVP 提供的姓名、出生日期、性別、聯絡資料、所屬球會／機構、緊急聯絡資料、參賽安排、付款及交易參考資料，以及您自願提供的興趣及推廣偏好資料。必填資料用於處理報名、核實資格、編排賽程、聯絡隊伍、核實付款、發放選手包及現場報到 QR Code。興趣及直接行銷同意屬選填；拒絕同意不會影響參賽資格。</p>
+          <p class="mt-2">粵港澳大灣區匹克球城市挑戰賽組委會、承辦單位及秘書處（統稱「大會」）會收集您及隊友在本報名表提供的姓名、出生日期、性別、聯絡資料、所屬球會／機構、緊急聯絡資料、參賽安排、付款及交易參考資料，以及您自願提供的興趣及推廣偏好資料。必填資料用於處理報名、核實資格、編排賽程、聯絡隊伍、核實付款、發放選手包及現場報到 QR Code。興趣及直接行銷同意屬選填；拒絕同意不會影響參賽資格。</p>
         </div>
         <label class="choice-card">
           <input type="checkbox" id="agreeMarketing" />
@@ -347,10 +352,10 @@
         <div class="rounded-2xl border border-brand-blue/20 bg-sky-50 px-4 py-4">
           <p class="font-semibold text-brand-deep">付款摘要（提交後進入待付款）</p>
           <ul class="mt-2 list-disc space-y-1 pl-5 text-sm">
-            <li>基本海選報名費：HKD $<%= feeBase %>／隊（兩名球員）</li>
-            <li id="pack-line" class="hidden">套裝加購：HKD $<span id="pack-addon-display"><%= packFee %></span></li>
-            <li>經 Wonder 網上付款會另收 <strong>平台手續費 3%</strong>：HKD $<span id="fee-surcharge-display"><%= feeSurcharge %></span></li>
-            <li>應繳總額：HKD $<span id="fee-total-display"><%= feeTotal %></span></li>
+            <li>基本海選報名費：港幣 $<%= feeBase %>／隊（兩名球員）</li>
+            <li id="pack-line" class="hidden">選手包加購：港幣 $<span id="pack-addon-display"><%= packFee %></span></li>
+            <li>經 Wonder 網上付款會另收 <strong>平台手續費 3%</strong>：港幣 $<span id="fee-surcharge-display"><%= feeSurcharge %></span></li>
+            <li>應繳總額：港幣 $<span id="fee-total-display"><%= feeTotal %></span></li>
             <li>提交後會發出「已收到報名，待付款／待核實」回條；<strong>不會</strong>稱為報名成功，亦不會附 QR Code</li>
           </ul>
         </div>
@@ -358,9 +363,9 @@
         <div class="rounded-2xl border border-brand-blue/20 bg-sky-50 px-4 py-4 text-sm leading-relaxed text-slate-700">
           <p class="font-semibold text-brand-deep">付款摘要</p>
           <ul class="mt-2 list-disc space-y-1 pl-5">
-            <li>基本費用：HKD $<%= feeBase %>／隊</li>
-            <li id="pack-line" class="hidden">套裝加購：HKD $<span id="pack-addon-display"><%= packFee %></span></li>
-            <li>應繳總額：HKD $<span id="fee-total-display"><%= feeTotal %></span></li>
+            <li>基本費用：港幣 $<%= feeBase %>／隊</li>
+            <li id="pack-line" class="hidden">選手包加購：港幣 $<span id="pack-addon-display"><%= packFee %></span></li>
+            <li>應繳總額：港幣 $<span id="fee-total-display"><%= feeTotal %></span></li>
           </ul>
           <p class="mt-3 text-xs text-slate-600">提交後會開啟獨立付款頁，以付款連結完成付款並上載收據。</p>
         </div>

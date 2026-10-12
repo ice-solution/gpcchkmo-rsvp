@@ -88,6 +88,7 @@ router.get('/meta', async (_req, res, next) => {
           address: c.address || '',
           scheduleNote: c.scheduleNote || '',
           scheduleKey: c.scheduleKey || '',
+          code: c.code || '',
           region: c.region,
           isOrganizerAssign: c.isOrganizerAssign,
         })),

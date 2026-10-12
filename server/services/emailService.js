@@ -119,7 +119,7 @@ function buildSubmissionSummaryHtml({ team, captain, teammate }) {
         row('競賽項目', escapeHtml(labelOf(EVENT_CATEGORY_LABELS, team.eventCategory))),
         row('首選海選場地', escapeHtml(team.preferredVenueLabel)),
         row('預計海選時間', escapeHtml(team.qualifierSlotLabel || '—')),
-        row('選手包套裝', escapeHtml(packLabel)),
+        row('選手包', escapeHtml(packLabel)),
       ].join('')
     )}
     ${playerRows(captain, '隊長')}

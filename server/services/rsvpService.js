@@ -15,6 +15,7 @@ const {
   GENDERS,
   FEE,
   CAPTAIN_CLUBS,
+  LEGACY_CAPTAIN_CLUBS,
   CAPTAIN_CLUB_OTHER_VALUE,
   PACK_TIERS,
 } = require('../constants/enums');
@@ -48,7 +49,7 @@ function validatePayload(body) {
     if (msg) errors.push(msg);
   };
 
-  push(requireString(body.captainClub, '隊長所屬球會／機構'));
+  push(requireString(body.captainClub, '賽事報名邀請球會'));
   let resolvedCaptainClub = String(body.captainClub || '').trim();
   if (resolvedCaptainClub === CAPTAIN_CLUB_OTHER_VALUE || resolvedCaptainClub === '其他') {
     const other = String(body.captainClubOther || '').trim();
@@ -57,8 +58,12 @@ function validatePayload(body) {
     } else {
       resolvedCaptainClub = other;
     }
-  } else if (resolvedCaptainClub && !CAPTAIN_CLUBS.includes(resolvedCaptainClub)) {
-    errors.push('隊長所屬球會／機構選項無效');
+  } else if (
+    resolvedCaptainClub &&
+    !CAPTAIN_CLUBS.includes(resolvedCaptainClub) &&
+    !LEGACY_CAPTAIN_CLUBS.includes(resolvedCaptainClub)
+  ) {
+    errors.push('賽事報名邀請球會選項無效');
   }
   // Stash resolved value for createRsvp persistence
   body.captainClub = resolvedCaptainClub;
@@ -124,7 +129,7 @@ function validatePayload(body) {
 
   const packTier = normalizePackTier(body.packTier, body.wantPlayerPack);
   if (!Object.values(PACK_TIERS).includes(packTier)) {
-    errors.push('請選擇選手包套裝級別');
+    errors.push('請選擇選手包加購選項');
   }
   body.packTier = packTier;
 

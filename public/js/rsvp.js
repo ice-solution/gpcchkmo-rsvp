@@ -2,7 +2,7 @@
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 
-  const STEP_LABELS = ['簡介', '隊伍', '隊長', '隊友', '競賽', '意向', '套裝', '條款'];
+  const STEP_LABELS = ['簡介', '隊伍', '隊長', '隊友', '競賽', '意向', '選手包', '條款'];
   let meta = null;
   let step = 0;
   let maxReached = 0;
@@ -329,7 +329,7 @@
       }
     }
     if (n === 1) {
-      if (!$('#captainClub').value.trim()) errors.push('請選擇隊長所屬球會／機構');
+      if (!$('#captainClub').value.trim()) errors.push('請選擇賽事報名邀請球會');
       if ($('#captainClub').value === '__other__' && !$('#captainClubOther').value.trim()) {
         errors.push('請填寫其他球會／機構名稱');
       }
@@ -367,7 +367,7 @@
       if (!checkedValues('hearAbout').length) errors.push('請至少選擇一個得知渠道');
     }
     if (n === 6) {
-      if (!radioValue('packTier')) errors.push('請選擇選手包套裝級別');
+      if (!radioValue('packTier')) errors.push('請選擇選手包加購選項');
     }
     if (n === 7) {
       ['agreeRules', 'agreeRanking', 'agreeTruth', 'agreePics'].forEach((id) => {
