@@ -15,6 +15,7 @@
   const TEXT_IDS = [
     'captainClub',
     'captainClubOther',
+    'captainClubSource',
     'captainEmail',
     'displayName',
     'captainChineseName',
@@ -330,8 +331,16 @@
     }
     if (n === 1) {
       if (!$('#captainClub').value.trim()) errors.push('請選擇賽事報名邀請球會');
-      if ($('#captainClub').value === '__other__' && !$('#captainClubOther').value.trim()) {
-        errors.push('請填寫其他球會／機構名稱');
+      {
+        const clubVal = $('#captainClub').value;
+        const followups = (meta && meta.captainClubFollowups) || {};
+        const fu = followups[clubVal];
+        if (
+          (clubVal === '__other__' || (fu && fu.kind === 'name' && fu.required)) &&
+          !$('#captainClubOther').value.trim()
+        ) {
+          errors.push('請填寫球會／機構名稱');
+        }
       }
       if (!radioValue('registrationType')) errors.push('請選擇報名類型');
       if (!$('#captainEmail').value.trim()) errors.push('請填寫隊長電郵');
@@ -381,13 +390,22 @@
     const venueSelect = $('#preferredVenueId');
     const venueOption = venueSelect.selectedOptions[0];
     const clubSelect = $('#captainClub').value.trim();
+    const followups = (meta && meta.captainClubFollowups) || {};
+    const clubFollowup = followups[clubSelect];
     const packTier = radioValue('packTier') || 'standard';
     return {
       introAcknowledged: $('#introAck').checked,
       packTier,
       wantPlayerPack: packTier !== 'standard',
       captainClub: clubSelect,
-      captainClubOther: clubSelect === '__other__' ? $('#captainClubOther').value.trim() : '',
+      captainClubOther:
+        clubSelect === '__other__' || (clubFollowup && clubFollowup.kind === 'name')
+          ? $('#captainClubOther').value.trim()
+          : '',
+      captainClubSource:
+        clubFollowup && clubFollowup.kind === 'source'
+          ? $('#captainClubSource').value.trim()
+          : '',
       registrationType: radioValue('registrationType'),
       captainEmail: $('#captainEmail').value.trim(),
       displayName: $('#displayName').value.trim(),
@@ -582,15 +600,46 @@
         .map((c) => `<option value="${escapeHtml(c.value)}">${escapeHtml(c.label)}</option>`)
         .join('');
 
-    function syncCaptainClubOther() {
-      const isOther = captainClubSelect.value === '__other__';
-      const wrap = $('#captainClubOtherWrap');
-      const otherInput = $('#captainClubOther');
-      wrap.classList.toggle('hidden', !isOther);
-      otherInput.required = isOther;
+    function syncCaptainClubFollowups() {
+      const value = captainClubSelect.value;
+      const followups = meta.captainClubFollowups || {};
+      const fu =
+        value === '__other__'
+          ? {
+              kind: 'name',
+              required: true,
+              label: '請填寫球會／機構名稱 *',
+              placeholder: '請輸入球會或機構名稱',
+            }
+          : followups[value];
+      const nameWrap = $('#captainClubOtherWrap');
+      const nameInput = $('#captainClubOther');
+      const nameLabel = $('#captainClubOtherLabel');
+      const sourceWrap = $('#captainClubSourceWrap');
+      const sourceInput = $('#captainClubSource');
+
+      const showName = Boolean(fu && fu.kind === 'name');
+      const showSource = Boolean(fu && fu.kind === 'source');
+
+      nameWrap?.classList.toggle('hidden', !showName);
+      sourceWrap?.classList.toggle('hidden', !showSource);
+
+      if (nameInput) {
+        nameInput.required = showName && Boolean(fu?.required);
+        if (showName) {
+          if (fu.label && nameLabel) nameLabel.textContent = fu.label;
+          if (fu.placeholder) nameInput.placeholder = fu.placeholder;
+        } else {
+          nameInput.value = '';
+        }
+      }
+      if (sourceInput) {
+        sourceInput.required = false;
+        if (!showSource) sourceInput.value = '';
+      }
     }
-    captainClubSelect.addEventListener('change', syncCaptainClubOther);
-    syncCaptainClubOther();
+    captainClubSelect.addEventListener('change', syncCaptainClubFollowups);
+    syncCaptainClubFollowups();
 
     function roundMoney(n) {
       return Math.round(Number(n) * 100) / 100;

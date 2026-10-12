@@ -15,6 +15,9 @@ const CAPTAIN_CLUBS = [
   'P06 Table meets Pickle',
   'P07 PickleLab',
   'P08 錦綉花園鄉村俱樂部',
+  'P09 企業機構',
+  'P10 其他（非指定名單內之球會）',
+  'P11 個人名義（獨立球員隊伍）',
 ];
 
 /** Older club labels still accepted on submit / admin filters */
@@ -33,7 +36,30 @@ const LEGACY_CAPTAIN_CLUBS = [
 /** Temporarily hide from RSVP dropdowns (still valid if already submitted) */
 const HIDDEN_CAPTAIN_CLUBS = [];
 
+/** @deprecated replaced by P10；仍接受舊 draft／舊提交 */
 const CAPTAIN_CLUB_OTHER_VALUE = '__other__';
+
+/** Follow-up fields when certain invite-club options are selected */
+const CAPTAIN_CLUB_FOLLOWUPS = {
+  'P09 企業機構': {
+    kind: 'name',
+    required: true,
+    label: '請填寫球會／機構名稱 *',
+    placeholder: '請輸入企業／機構名稱',
+  },
+  'P10 其他（非指定名單內之球會）': {
+    kind: 'name',
+    required: true,
+    label: '請填寫球會／機構名稱 *',
+    placeholder: '請輸入球會或機構名稱',
+  },
+  'P11 個人名義（獨立球員隊伍）': {
+    kind: 'source',
+    required: false,
+    label: '請填寫獲取比賽資料來源（選填）',
+    placeholder: '例如：社交媒體、朋友介紹等',
+  },
+};
 
 const GENDERS = {
   MALE: 'male',
@@ -254,6 +280,7 @@ module.exports = {
   LEGACY_CAPTAIN_CLUBS,
   HIDDEN_CAPTAIN_CLUBS,
   CAPTAIN_CLUB_OTHER_VALUE,
+  CAPTAIN_CLUB_FOLLOWUPS,
   GENDERS,
   AGE_GROUPS,
   AGE_GROUP_LABELS,

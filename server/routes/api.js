@@ -24,7 +24,7 @@ const {
   REGISTRATION_TYPES,
   CAPTAIN_CLUBS,
   HIDDEN_CAPTAIN_CLUBS,
-  CAPTAIN_CLUB_OTHER_VALUE,
+  CAPTAIN_CLUB_FOLLOWUPS,
   FEE,
   PACK_TIERS,
   PACK_TIER_LABELS,
@@ -65,12 +65,10 @@ router.get('/meta', async (_req, res, next) => {
           totalHkd: FEE.BASE_HKD + PACK_TIER_ADDON_HKD[value],
         })),
         maxEventsPerPlayer: FEE.MAX_EVENTS_PER_PLAYER,
-        captainClubs: [
-          ...CAPTAIN_CLUBS.filter((label) => !HIDDEN_CAPTAIN_CLUBS.includes(label)).map(
-            (label) => ({ value: label, label })
-          ),
-          { value: CAPTAIN_CLUB_OTHER_VALUE, label: '其他' },
-        ],
+        captainClubs: CAPTAIN_CLUBS.filter(
+          (label) => !HIDDEN_CAPTAIN_CLUBS.includes(label)
+        ).map((label) => ({ value: label, label })),
+        captainClubFollowups: CAPTAIN_CLUB_FOLLOWUPS,
         registrationTypes: [
           {
             value: REGISTRATION_TYPES.FIRST_OR_ONLY,

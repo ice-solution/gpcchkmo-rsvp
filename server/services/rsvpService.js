@@ -17,6 +17,7 @@ const {
   CAPTAIN_CLUBS,
   LEGACY_CAPTAIN_CLUBS,
   CAPTAIN_CLUB_OTHER_VALUE,
+  CAPTAIN_CLUB_FOLLOWUPS,
   PACK_TIERS,
 } = require('../constants/enums');
 const {
@@ -51,12 +52,23 @@ function validatePayload(body) {
 
   push(requireString(body.captainClub, '賽事報名邀請球會'));
   let resolvedCaptainClub = String(body.captainClub || '').trim();
+  const followup = CAPTAIN_CLUB_FOLLOWUPS[resolvedCaptainClub];
+  const detail = String(body.captainClubOther || body.captainClubDetail || '').trim();
+  const source = String(body.captainClubSource || '').trim();
+
   if (resolvedCaptainClub === CAPTAIN_CLUB_OTHER_VALUE || resolvedCaptainClub === '其他') {
-    const other = String(body.captainClubOther || '').trim();
-    if (!other) {
+    if (!detail) {
       errors.push('請填寫「其他」球會／機構名稱');
     } else {
-      resolvedCaptainClub = other;
+      resolvedCaptainClub = `P10 其他（非指定名單內之球會）（${detail}）`;
+    }
+  } else if (followup) {
+    if (followup.kind === 'name' && followup.required && !detail) {
+      errors.push('請填寫球會／機構名稱');
+    } else if (followup.kind === 'name' && detail) {
+      resolvedCaptainClub = `${resolvedCaptainClub}（${detail}）`;
+    } else if (followup.kind === 'source' && source) {
+      resolvedCaptainClub = `${resolvedCaptainClub}（來源：${source}）`;
     }
   } else if (
     resolvedCaptainClub &&
