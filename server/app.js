@@ -51,7 +51,7 @@ app.get(
   '/.well-known/apple-developer-merchantid-domain-association',
   (_req, res) => {
     res.set({
-      'Content-Type': 'text/plain',
+      'Content-Type': 'application/octet-stream',
       'Cache-Control': 'no-store',
     });
     res.sendFile(APPLE_PAY_DOMAIN_FILE);
