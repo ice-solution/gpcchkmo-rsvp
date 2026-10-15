@@ -15,8 +15,12 @@ const {
   QUALIFICATION_STATUS_LABELS,
   AGE_GROUP_LABELS,
   EVENT_CATEGORY_LABELS,
+  EVENT_CATEGORIES,
+  AGE_GROUPS,
+  GENDERS,
   PLAYER_ROLES,
   CAPTAIN_CLUBS,
+  PACK_TIERS,
   PACK_TIER_LABELS,
 } = require('../constants/enums');
 const {
@@ -26,7 +30,34 @@ const {
   formatDate,
   formatDateTime,
 } = require('../services/adminExport');
+const {
+  airwallexPayUrl,
+  normalizePackTier,
+  buildPaymentSummary,
+} = require('../services/paymentService');
 const { notifyPaymentCompleted } = require('../services/emailService');
+
+function getPublicBaseUrl() {
+  return String(process.env.DOMAIN || process.env.GPCCHKMO_DOMAIN || 'http://localhost:3480').replace(
+    /\/$/,
+    ''
+  );
+}
+
+function teamPaymentLinks(team) {
+  const base = getPublicBaseUrl();
+  const id = String(team._id);
+  const tier = normalizePackTier(team.packTier, team.wantPlayerPack);
+  const summary = buildPaymentSummary({ packTier: tier });
+  return {
+    proofPayPageUrl: `${base}/rsvp/pay?id=${encodeURIComponent(id)}`,
+    successPageUrl: `${base}/rsvp/success?id=${encodeURIComponent(id)}`,
+    airwallexPayUrl: airwallexPayUrl(tier),
+    packTier: tier,
+    packTierLabel: PACK_TIER_LABELS[tier] || tier,
+    feeTotal: summary.totalAmountHkd,
+  };
+}
 
 const router = express.Router();
 
@@ -247,23 +278,175 @@ router.get('/teams/:id', requireAdmin, async (req, res, next) => {
       .limit(10)
       .lean();
 
+    const paymentLinks = teamPaymentLinks(team);
     res.render('admin/team-detail', {
       title: `報名詳情｜${team.teamCode || team._id}`,
       team,
       players,
       audits,
       wonderPayments,
+      paymentLinks,
       labels: labels(),
       enums: {
         TEAM_STATUS,
         PAYMENT_STATUS,
         QUALIFICATION_STATUS,
+        AGE_GROUPS,
+        EVENT_CATEGORIES,
+        GENDERS,
+        PACK_TIERS,
       },
       flash: req.query.msg || '',
       formatDate,
       formatDateTime,
       PLAYER_ROLES,
     });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/teams/:id/edit', requireAdmin, async (req, res, next) => {
+  try {
+    const team = await Team.findById(req.params.id);
+    if (!team) return res.status(404).send('找不到此報名');
+
+    const before = team.toObject();
+    const {
+      displayName,
+      captainClub,
+      captainEmail,
+      ageGroup,
+      eventCategory,
+      preferredVenueLabel,
+      qualifierSlotLabel,
+      packTier,
+      captainId,
+      teammateId,
+      captainChineseName,
+      captainEnglishName,
+      captainGender,
+      captainDob,
+      captainWhatsapp,
+      captainEmailPlayer,
+      captainClubPlayer,
+      captainEmergencyName,
+      captainEmergencyPhone,
+      teammateChineseName,
+      teammateEnglishName,
+      teammateGender,
+      teammateDob,
+      teammateWhatsapp,
+      teammateEmail,
+      teammateClub,
+      teammateEmergencyName,
+      teammateEmergencyPhone,
+    } = req.body;
+
+    if (typeof displayName === 'string' && displayName.trim()) {
+      team.displayName = displayName.trim();
+    }
+    if (typeof captainClub === 'string' && captainClub.trim()) {
+      team.captainClub = captainClub.trim();
+    }
+    if (typeof captainEmail === 'string' && captainEmail.trim()) {
+      team.captainEmail = captainEmail.trim().toLowerCase();
+    }
+    if (ageGroup && Object.values(AGE_GROUPS).includes(ageGroup)) {
+      team.ageGroup = ageGroup;
+    }
+    if (eventCategory && Object.values(EVENT_CATEGORIES).includes(eventCategory)) {
+      team.eventCategory = eventCategory;
+    }
+    if (typeof preferredVenueLabel === 'string') {
+      team.preferredVenueLabel = preferredVenueLabel.trim();
+    }
+    if (typeof qualifierSlotLabel === 'string') {
+      team.qualifierSlotLabel = qualifierSlotLabel.trim();
+    }
+    if (packTier && Object.values(PACK_TIERS).includes(packTier)) {
+      team.packTier = packTier;
+      team.wantPlayerPack = packTier !== PACK_TIERS.STANDARD;
+    }
+
+    await team.save();
+
+    async function updatePlayer(playerId, fields) {
+      if (!playerId) return;
+      const player = await Player.findOne({ _id: playerId, teamId: team._id });
+      if (!player) return;
+      if (fields.chineseName) player.chineseName = fields.chineseName.trim();
+      if (fields.englishName) player.englishName = fields.englishName.trim();
+      if (fields.gender && Object.values(GENDERS).includes(fields.gender)) {
+        player.gender = fields.gender;
+      }
+      if (fields.dateOfBirth) {
+        const d = new Date(fields.dateOfBirth);
+        if (!Number.isNaN(d.getTime())) player.dateOfBirth = d;
+      }
+      if (fields.whatsapp) player.whatsapp = fields.whatsapp.trim();
+      if (fields.email) player.email = fields.email.trim().toLowerCase();
+      if (typeof fields.club === 'string') player.club = fields.club.trim();
+      if (fields.emergencyName || fields.emergencyPhone) {
+        player.emergencyContact = {
+          name: (fields.emergencyName || player.emergencyContact?.name || '').trim(),
+          phone: (fields.emergencyPhone || player.emergencyContact?.phone || '').trim(),
+        };
+      }
+      await player.save();
+    }
+
+    await updatePlayer(captainId, {
+      chineseName: captainChineseName,
+      englishName: captainEnglishName,
+      gender: captainGender,
+      dateOfBirth: captainDob,
+      whatsapp: captainWhatsapp,
+      email: captainEmailPlayer,
+      club: captainClubPlayer,
+      emergencyName: captainEmergencyName,
+      emergencyPhone: captainEmergencyPhone,
+    });
+    await updatePlayer(teammateId, {
+      chineseName: teammateChineseName,
+      englishName: teammateEnglishName,
+      gender: teammateGender,
+      dateOfBirth: teammateDob,
+      whatsapp: teammateWhatsapp,
+      email: teammateEmail,
+      club: teammateClub,
+      emergencyName: teammateEmergencyName,
+      emergencyPhone: teammateEmergencyPhone,
+    });
+
+    await AuditLog.create({
+      action: 'admin.team.edit',
+      entityType: 'Team',
+      entityId: team._id,
+      actor: req.session.admin.username,
+      meta: {
+        before: {
+          displayName: before.displayName,
+          captainClub: before.captainClub,
+          captainEmail: before.captainEmail,
+          ageGroup: before.ageGroup,
+          eventCategory: before.eventCategory,
+          packTier: before.packTier,
+        },
+        after: {
+          displayName: team.displayName,
+          captainClub: team.captainClub,
+          captainEmail: team.captainEmail,
+          ageGroup: team.ageGroup,
+          eventCategory: team.eventCategory,
+          packTier: team.packTier,
+        },
+      },
+    });
+
+    res.redirect(
+      `/admin/teams/${team._id}?msg=${encodeURIComponent('報名資料已儲存')}`
+    );
   } catch (err) {
     next(err);
   }

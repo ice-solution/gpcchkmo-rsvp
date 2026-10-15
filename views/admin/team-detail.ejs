@@ -1,4 +1,9 @@
 <%- include('partials/head') %>
+<%
+  var captain = (players || []).find(function(p){ return p.role === PLAYER_ROLES.CAPTAIN; }) || null;
+  var teammate = (players || []).find(function(p){ return p.role === PLAYER_ROLES.TEAMMATE; }) || null;
+  var tier = (paymentLinks && paymentLinks.packTier) || team.packTier || (team.wantPlayerPack ? 'essential' : 'standard');
+%>
 <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
   <div>
     <a href="/admin" class="text-sm text-brand-blue hover:underline">← 返回列表</a>
@@ -17,25 +22,195 @@
 <div class="grid gap-5 lg:grid-cols-3">
   <section class="space-y-4 lg:col-span-2">
     <div class="rounded-2xl bg-white p-5 shadow-panel ring-1 ring-slate-200">
-      <h2 class="font-semibold text-brand-deep">隊伍資料</h2>
-      <dl class="mt-3 grid gap-2 text-sm sm:grid-cols-2">
-        <div><dt class="text-xs text-slate-500">顯示名稱</dt><dd><%= team.displayName || '—' %></dd></div>
-        <div><dt class="text-xs text-slate-500">報名類型</dt><dd><%= labels.registrationType[team.registrationType] || team.registrationType %></dd></div>
-        <div><dt class="text-xs text-slate-500">隊長球會</dt><dd><%= team.captainClub %></dd></div>
-        <div><dt class="text-xs text-slate-500">隊長電郵</dt><dd><%= team.captainEmail %></dd></div>
-        <div><dt class="text-xs text-slate-500">年齡組別</dt><dd><%= labels.ageGroup[team.ageGroup] %></dd></div>
-        <div><dt class="text-xs text-slate-500">競賽項目</dt><dd><%= labels.eventCategory[team.eventCategory] %></dd></div>
-        <div class="sm:col-span-2"><dt class="text-xs text-slate-500">首選場地</dt><dd><%= team.preferredVenueLabel %></dd></div>
-        <div class="sm:col-span-2"><dt class="text-xs text-slate-500">預計海選時間</dt><dd><%= team.qualifierSlotLabel || '—' %></dd></div>
-        <div class="sm:col-span-2"><dt class="text-xs text-slate-500">選手包</dt><dd>
-          <% var tier = team.packTier || (team.wantPlayerPack ? 'essential' : 'standard'); %>
-          <%= labels.packTier && labels.packTier[tier] ? labels.packTier[tier] : tier %>
-        </dd></div>
-        <div class="sm:col-span-2"><dt class="text-xs text-slate-500">可參賽時段</dt><dd><%= (team.availability||[]).join('、') || '—' %></dd></div>
-        <div><dt class="text-xs text-slate-500">提交時間</dt><dd><%= formatDateTime(team.submittedAt) %></dd></div>
-        <div><dt class="text-xs text-slate-500">確認時間</dt><dd><%= formatDateTime(team.confirmedAt) || '—' %></dd></div>
-      </dl>
+      <h2 class="font-semibold text-brand-deep">付款連結（給用戶付款／上載憑證）</h2>
+      <p class="mt-1 text-xs text-slate-500">可複製傳送給隊長；付款頁可完成 Airwallex 付款並上載收據。</p>
+      <div class="mt-4 space-y-3 text-sm">
+        <div>
+          <label class="field-label">付款＋上載憑證頁</label>
+          <div class="flex flex-wrap gap-2">
+            <input class="field-input flex-1 font-mono text-xs" id="proofPayPageUrl" readonly value="<%= paymentLinks.proofPayPageUrl %>" />
+            <button type="button" class="btn-secondary" data-copy="#proofPayPageUrl">複製</button>
+            <a class="btn-primary" href="<%= paymentLinks.proofPayPageUrl %>" target="_blank" rel="noopener">開啟</a>
+          </div>
+        </div>
+        <div>
+          <label class="field-label">Airwallex 付款連結（<%= paymentLinks.packTierLabel %>｜應繳 HKD $<%= paymentLinks.feeTotal %>）</label>
+          <div class="flex flex-wrap gap-2">
+            <input class="field-input flex-1 font-mono text-xs" id="airwallexPayUrl" readonly value="<%= paymentLinks.airwallexPayUrl %>" />
+            <button type="button" class="btn-secondary" data-copy="#airwallexPayUrl">複製</button>
+            <a class="btn-primary" href="<%= paymentLinks.airwallexPayUrl %>" target="_blank" rel="noopener">開啟</a>
+          </div>
+        </div>
+        <div>
+          <label class="field-label">成功頁（申請摘要）</label>
+          <div class="flex flex-wrap gap-2">
+            <input class="field-input flex-1 font-mono text-xs" id="successPageUrl" readonly value="<%= paymentLinks.successPageUrl %>" />
+            <button type="button" class="btn-secondary" data-copy="#successPageUrl">複製</button>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <form method="post" action="/admin/teams/<%= team._id %>/edit" class="space-y-4">
+      <div class="rounded-2xl bg-white p-5 shadow-panel ring-1 ring-slate-200">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <h2 class="font-semibold text-brand-deep">編輯隊伍資料</h2>
+          <button type="submit" class="btn-primary">儲存報名資料</button>
+        </div>
+        <div class="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+          <div>
+            <label class="field-label">隊伍／組名</label>
+            <input class="field-input" name="displayName" value="<%= team.displayName || '' %>" required />
+          </div>
+          <div>
+            <label class="field-label">隊長電郵</label>
+            <input class="field-input" type="email" name="captainEmail" value="<%= team.captainEmail || '' %>" required />
+          </div>
+          <div class="sm:col-span-2">
+            <label class="field-label">賽事報名邀請球會</label>
+            <input class="field-input" name="captainClub" value="<%= team.captainClub || '' %>" required />
+          </div>
+          <div>
+            <label class="field-label">年齡組別</label>
+            <select class="field-input" name="ageGroup">
+              <% Object.keys(labels.ageGroup).forEach(function(k){ %>
+              <option value="<%= k %>" <%= team.ageGroup===k?'selected':'' %>><%= labels.ageGroup[k] %></option>
+              <% }) %>
+            </select>
+          </div>
+          <div>
+            <label class="field-label">競賽項目</label>
+            <select class="field-input" name="eventCategory">
+              <% Object.keys(labels.eventCategory).forEach(function(k){ %>
+              <option value="<%= k %>" <%= team.eventCategory===k?'selected':'' %>><%= labels.eventCategory[k] %></option>
+              <% }) %>
+            </select>
+          </div>
+          <div>
+            <label class="field-label">選手包</label>
+            <select class="field-input" name="packTier">
+              <% Object.keys(labels.packTier).forEach(function(k){ %>
+              <option value="<%= k %>" <%= tier===k?'selected':'' %>><%= labels.packTier[k] %></option>
+              <% }) %>
+            </select>
+          </div>
+          <div>
+            <label class="field-label">報名類型（參考）</label>
+            <input class="field-input" value="<%= labels.registrationType[team.registrationType] || team.registrationType || '—' %>" readonly />
+          </div>
+          <div class="sm:col-span-2">
+            <label class="field-label">首選場地</label>
+            <input class="field-input" name="preferredVenueLabel" value="<%= team.preferredVenueLabel || '' %>" />
+          </div>
+          <div class="sm:col-span-2">
+            <label class="field-label">預計海選時間</label>
+            <input class="field-input" name="qualifierSlotLabel" value="<%= team.qualifierSlotLabel || '' %>" />
+          </div>
+          <div><dt class="text-xs text-slate-500">提交時間</dt><dd><%= formatDateTime(team.submittedAt) %></dd></div>
+          <div><dt class="text-xs text-slate-500">確認時間</dt><dd><%= formatDateTime(team.confirmedAt) || '—' %></dd></div>
+        </div>
+      </div>
+
+      <% if (captain) { %>
+      <div class="rounded-2xl bg-white p-5 shadow-panel ring-1 ring-slate-200">
+        <h2 class="font-semibold text-brand-deep">編輯隊長</h2>
+        <input type="hidden" name="captainId" value="<%= captain._id %>" />
+        <div class="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+          <div>
+            <label class="field-label">中文姓名</label>
+            <input class="field-input" name="captainChineseName" value="<%= captain.chineseName || '' %>" required />
+          </div>
+          <div>
+            <label class="field-label">英文姓名</label>
+            <input class="field-input" name="captainEnglishName" value="<%= captain.englishName || '' %>" required />
+          </div>
+          <div>
+            <label class="field-label">性別</label>
+            <select class="field-input" name="captainGender">
+              <option value="male" <%= captain.gender==='male'?'selected':'' %>>男</option>
+              <option value="female" <%= captain.gender==='female'?'selected':'' %>>女</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-label">出生日期</label>
+            <input class="field-input" type="date" name="captainDob" value="<%= formatDate(captain.dateOfBirth) %>" required />
+          </div>
+          <div>
+            <label class="field-label">WhatsApp</label>
+            <input class="field-input" name="captainWhatsapp" value="<%= captain.whatsapp || '' %>" required />
+          </div>
+          <div>
+            <label class="field-label">電郵</label>
+            <input class="field-input" type="email" name="captainEmailPlayer" value="<%= captain.email || '' %>" required />
+          </div>
+          <div>
+            <label class="field-label">球會</label>
+            <input class="field-input" name="captainClubPlayer" value="<%= captain.club || '' %>" />
+          </div>
+          <div>
+            <label class="field-label">緊急聯絡人</label>
+            <input class="field-input" name="captainEmergencyName" value="<%= captain.emergencyContact && captain.emergencyContact.name || '' %>" required />
+          </div>
+          <div>
+            <label class="field-label">緊急聯絡電話</label>
+            <input class="field-input" name="captainEmergencyPhone" value="<%= captain.emergencyContact && captain.emergencyContact.phone || '' %>" required />
+          </div>
+        </div>
+      </div>
+      <% } %>
+
+      <% if (teammate) { %>
+      <div class="rounded-2xl bg-white p-5 shadow-panel ring-1 ring-slate-200">
+        <h2 class="font-semibold text-brand-deep">編輯隊友</h2>
+        <input type="hidden" name="teammateId" value="<%= teammate._id %>" />
+        <div class="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+          <div>
+            <label class="field-label">中文姓名</label>
+            <input class="field-input" name="teammateChineseName" value="<%= teammate.chineseName || '' %>" required />
+          </div>
+          <div>
+            <label class="field-label">英文姓名</label>
+            <input class="field-input" name="teammateEnglishName" value="<%= teammate.englishName || '' %>" required />
+          </div>
+          <div>
+            <label class="field-label">性別</label>
+            <select class="field-input" name="teammateGender">
+              <option value="male" <%= teammate.gender==='male'?'selected':'' %>>男</option>
+              <option value="female" <%= teammate.gender==='female'?'selected':'' %>>女</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-label">出生日期</label>
+            <input class="field-input" type="date" name="teammateDob" value="<%= formatDate(teammate.dateOfBirth) %>" required />
+          </div>
+          <div>
+            <label class="field-label">WhatsApp</label>
+            <input class="field-input" name="teammateWhatsapp" value="<%= teammate.whatsapp || '' %>" required />
+          </div>
+          <div>
+            <label class="field-label">電郵</label>
+            <input class="field-input" type="email" name="teammateEmail" value="<%= teammate.email || '' %>" required />
+          </div>
+          <div>
+            <label class="field-label">球會（如有）</label>
+            <input class="field-input" name="teammateClub" value="<%= teammate.club || '' %>" />
+          </div>
+          <div>
+            <label class="field-label">緊急聯絡人</label>
+            <input class="field-input" name="teammateEmergencyName" value="<%= teammate.emergencyContact && teammate.emergencyContact.name || '' %>" required />
+          </div>
+          <div>
+            <label class="field-label">緊急聯絡電話</label>
+            <input class="field-input" name="teammateEmergencyPhone" value="<%= teammate.emergencyContact && teammate.emergencyContact.phone || '' %>" required />
+          </div>
+        </div>
+      </div>
+      <% } %>
+
+      <div class="rounded-2xl bg-white p-5 shadow-panel ring-1 ring-slate-200">
+        <button type="submit" class="btn-primary w-full sm:w-auto">儲存報名資料</button>
+      </div>
+    </form>
 
     <div id="payment-proof" class="rounded-2xl bg-white p-5 shadow-panel ring-1 ring-slate-200">
       <h2 class="font-semibold text-brand-deep">付款憑證</h2>
@@ -60,22 +235,6 @@
       <p class="mt-3 text-sm text-slate-500">尚未上載付款憑證。</p>
       <% } %>
     </div>
-
-    <% players.forEach(function(p){ %>
-    <div class="rounded-2xl bg-white p-5 shadow-panel ring-1 ring-slate-200">
-      <h2 class="font-semibold text-brand-deep"><%= p.role === PLAYER_ROLES.CAPTAIN ? '隊長' : '隊友' %></h2>
-      <dl class="mt-3 grid gap-2 text-sm sm:grid-cols-2">
-        <div><dt class="text-xs text-slate-500">中文姓名</dt><dd><%= p.chineseName %></dd></div>
-        <div><dt class="text-xs text-slate-500">英文姓名</dt><dd><%= p.englishName %></dd></div>
-        <div><dt class="text-xs text-slate-500">性別</dt><dd><%= p.gender === 'male' ? '男' : '女' %></dd></div>
-        <div><dt class="text-xs text-slate-500">出生日期</dt><dd><%= formatDate(p.dateOfBirth) %></dd></div>
-        <div><dt class="text-xs text-slate-500">WhatsApp</dt><dd><%= p.whatsapp %></dd></div>
-        <div><dt class="text-xs text-slate-500">電郵</dt><dd><%= p.email %></dd></div>
-        <div><dt class="text-xs text-slate-500">球會</dt><dd><%= p.club || '—' %></dd></div>
-        <div><dt class="text-xs text-slate-500">緊急聯絡</dt><dd><%= p.emergencyContact.name %>／<%= p.emergencyContact.phone %></dd></div>
-      </dl>
-    </div>
-    <% }) %>
 
     <div class="rounded-2xl bg-white p-5 shadow-panel ring-1 ring-slate-200">
       <h2 class="font-semibold text-brand-deep">市場研究／條款</h2>
@@ -130,7 +289,7 @@
           <label class="field-label">內部備註</label>
           <textarea class="field-input" name="notes" rows="4"><%= team.notes || '' %></textarea>
         </div>
-        <button type="submit" class="btn-primary w-full">儲存更新</button>
+        <button type="submit" class="btn-primary w-full">儲存狀態</button>
       </div>
     </form>
 
@@ -165,4 +324,21 @@
     </div>
   </aside>
 </div>
+<script>
+  document.querySelectorAll('[data-copy]').forEach(function (btn) {
+    btn.addEventListener('click', async function () {
+      var input = document.querySelector(btn.getAttribute('data-copy'));
+      if (!input) return;
+      try {
+        await navigator.clipboard.writeText(input.value);
+        var old = btn.textContent;
+        btn.textContent = '已複製';
+        setTimeout(function () { btn.textContent = old; }, 1200);
+      } catch (err) {
+        input.select();
+        document.execCommand('copy');
+      }
+    });
+  });
+</script>
 <%- include('partials/foot') %>

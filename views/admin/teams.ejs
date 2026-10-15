@@ -130,7 +130,10 @@
             <% } %>
           </td>
           <td class="px-4 py-3 text-right">
-            <a class="text-sm font-semibold text-brand-blue hover:underline" href="/admin/teams/<%= team._id %>">詳情</a>
+            <div class="flex flex-col items-end gap-1">
+              <a class="text-sm font-semibold text-brand-blue hover:underline" href="/admin/teams/<%= team._id %>">詳情／編輯</a>
+              <a class="text-xs text-slate-500 hover:underline" href="/rsvp/pay?id=<%= encodeURIComponent(String(team._id)) %>" target="_blank" rel="noopener">付款頁</a>
+            </div>
           </td>
         </tr>
         <% }) %>
