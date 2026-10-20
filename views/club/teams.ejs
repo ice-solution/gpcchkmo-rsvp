@@ -1,0 +1,60 @@
+<%- include('partials/head') %>
+<div class="mb-6 flex flex-wrap items-end justify-between gap-4">
+  <div>
+    <h1 class="font-display text-2xl font-bold text-brand-deep"><%= club.clubCode %> 已登記隊伍</h1>
+    <p class="mt-1 text-sm text-slate-500"><%= club.clubLabel %> · 共 <%= total %> 隊（只顯示本球館報名）</p>
+  </div>
+  <div class="flex flex-wrap items-center gap-2">
+    <a href="/club/export.xlsx" class="btn-primary">匯出 XLSX</a>
+  </div>
+</div>
+
+<form method="get" action="/club" class="mb-4 flex flex-wrap gap-2">
+  <input class="field-input max-w-xs" type="search" name="q" value="<%= q || '' %>" placeholder="搜尋組名／電郵／編號" />
+  <button type="submit" class="btn-secondary">搜尋</button>
+  <% if (q) { %><a href="/club" class="btn-secondary">清除</a><% } %>
+</form>
+
+<div class="overflow-hidden rounded-2xl bg-white shadow-panel ring-1 ring-slate-200">
+  <table class="min-w-full text-left text-sm">
+    <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+      <tr>
+        <th class="px-4 py-3">提交時間</th>
+        <th class="px-4 py-3">隊伍</th>
+        <th class="px-4 py-3">組別／項目</th>
+        <th class="px-4 py-3">狀態</th>
+        <th class="px-4 py-3">付款</th>
+        <th class="px-4 py-3 text-right">操作</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-slate-100">
+      <% if (!rows.length) { %>
+      <tr><td colspan="6" class="px-4 py-8 text-center text-slate-400">暫無本球館報名紀錄</td></tr>
+      <% } %>
+      <% rows.forEach(function(row){ var team=row.team; var captain=row.captain; var teammate=row.teammate; %>
+      <tr class="hover:bg-sky-50/40">
+        <td class="whitespace-nowrap px-4 py-3 text-xs text-slate-500"><%= formatDateTime(team.submittedAt) %></td>
+        <td class="px-4 py-3">
+          <div class="font-semibold text-slate-800"><%= team.displayName || '—' %></div>
+          <div class="text-xs text-slate-500"><%= captain ? captain.chineseName : '—' %><% if (teammate) { %>／<%= teammate.chineseName %><% } %></div>
+          <div class="text-xs text-slate-400"><%= team.captainEmail %></div>
+        </td>
+        <td class="px-4 py-3 text-xs">
+          <div><%= labels.ageGroup[team.ageGroup] || team.ageGroup %></div>
+          <div class="text-slate-500"><%= labels.eventCategory[team.eventCategory] || team.eventCategory %></div>
+        </td>
+        <td class="px-4 py-3">
+          <span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700"><%= labels.teamStatus[team.status] || team.status %></span>
+        </td>
+        <td class="px-4 py-3 text-xs text-slate-600">
+          <%= labels.paymentStatus[team.payment && team.payment.status] || '—' %>
+        </td>
+        <td class="px-4 py-3 text-right">
+          <a class="text-sm font-semibold text-brand-blue hover:underline" href="/club/teams/<%= team._id %>">詳情</a>
+        </td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+<%- include('../admin/partials/foot') %>

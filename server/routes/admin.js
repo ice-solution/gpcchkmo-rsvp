@@ -25,6 +25,7 @@ const {
 } = require('../constants/enums');
 const {
   buildTeamsCsv,
+  buildTeamsXlsxBuffer,
   nextTeamCode,
   REGISTRATION_TYPE_LABELS,
   formatDate,
@@ -569,6 +570,44 @@ router.get('/export.csv', requireAdmin, async (req, res, next) => {
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.send(csv);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/export.xlsx', requireAdmin, async (req, res, next) => {
+  try {
+    const {
+      status = '',
+      payment = '',
+      qualification = '',
+      club = '',
+      q = '',
+    } = req.query;
+    const filter = buildAdminFilter({ status, payment, qualification, club, q });
+
+    const teams = await Team.find(filter).sort({ submittedAt: -1 }).lean();
+    const players = await Player.find({
+      teamId: { $in: teams.map((t) => t._id) },
+    }).lean();
+    const playersByTeamId = new Map();
+    for (const p of players) {
+      const key = String(p.teamId);
+      if (!playersByTeamId.has(key)) playersByTeamId.set(key, []);
+      playersByTeamId.get(key).push(p);
+    }
+
+    const buf = await buildTeamsXlsxBuffer(teams, playersByTeamId);
+    const filename = `gpcc-rsvp-${new Date().toISOString().slice(0, 10)}.xlsx`;
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    );
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="${filename}"; filename*=UTF-8''${encodeURIComponent(filename)}`
+    );
+    res.send(buf);
   } catch (err) {
     next(err);
   }

@@ -4,7 +4,8 @@
     <h1 class="font-display text-2xl font-bold text-brand-deep">報名列表</h1>
     <p class="mt-1 text-sm text-slate-500">共 <%= pagination.total %> 筆申請</p>
   </div>
-  <a class="btn-primary" href="/admin/export.csv<%= queryString() %>">匯出 CSV</a>
+  <a class="btn-secondary" href="/admin/export.csv<%= queryString() %>">匯出 CSV</a>
+  <a class="btn-primary" href="/admin/export.xlsx<%= queryString() %>">匯出 XLSX</a>
 </div>
 
 <% if (flash) { %>

@@ -146,8 +146,118 @@ function nextTeamCode(seq) {
   return `GPCC-HK-${n}`;
 }
 
+function teamRowsForExport(teams, playersByTeamId) {
+  const rows = [];
+  for (const team of teams) {
+    const players = playersByTeamId.get(String(team._id)) || [];
+    const captain = players.find((p) => p.role === PLAYER_ROLES.CAPTAIN) || {};
+    const teammate = players.find((p) => p.role === PLAYER_ROLES.TEAMMATE) || {};
+    rows.push({
+      applicationId: String(team._id),
+      teamCode: team.teamCode || '',
+      status: TEAM_STATUS_LABELS[team.status] || team.status,
+      paymentStatus:
+        PAYMENT_STATUS_LABELS[team.payment?.status] || team.payment?.status || '',
+      qualificationStatus:
+        QUALIFICATION_STATUS_LABELS[team.qualificationStatus] ||
+        team.qualificationStatus,
+      displayName: team.displayName || '',
+      captainClub: team.captainClub || '',
+      captainEmail: team.captainEmail || '',
+      ageGroup: AGE_GROUP_LABELS[team.ageGroup] || team.ageGroup || '',
+      eventCategory:
+        EVENT_CATEGORY_LABELS[team.eventCategory] || team.eventCategory || '',
+      preferredVenue: team.preferredVenueLabel || '',
+      qualifierSlot: team.qualifierSlotLabel || '',
+      packTier:
+        PACK_TIER_LABELS[team.packTier] ||
+        team.packTier ||
+        (team.wantPlayerPack
+          ? PACK_TIER_LABELS[PACK_TIERS.ESSENTIAL]
+          : PACK_TIER_LABELS[PACK_TIERS.STANDARD]),
+      paymentReference: team.payment?.paymentReference || '',
+      submittedAt: formatDateTime(team.submittedAt),
+      captainChineseName: captain.chineseName || '',
+      captainEnglishName: captain.englishName || '',
+      captainGender: captain.gender || '',
+      captainDob: formatDate(captain.dateOfBirth),
+      captainWhatsapp: captain.whatsapp || '',
+      captainEmergency: captain.emergencyContact
+        ? `${captain.emergencyContact.name} / ${captain.emergencyContact.phone}`
+        : '',
+      teammateChineseName: teammate.chineseName || '',
+      teammateEnglishName: teammate.englishName || '',
+      teammateGender: teammate.gender || '',
+      teammateDob: formatDate(teammate.dateOfBirth),
+      teammateWhatsapp: teammate.whatsapp || '',
+      teammateEmail: teammate.email || '',
+      teammateClub: teammate.club || '',
+      teammateEmergency: teammate.emergencyContact
+        ? `${teammate.emergencyContact.name} / ${teammate.emergencyContact.phone}`
+        : '',
+    });
+  }
+  return rows;
+}
+
+async function buildTeamsXlsxBuffer(teams, playersByTeamId) {
+  const ExcelJS = require('exceljs');
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = 'GPCC HK RSVP';
+  workbook.created = new Date();
+  const sheet = workbook.addWorksheet('報名名單');
+
+  const columns = [
+    { header: '申請編號', key: 'applicationId', width: 26 },
+    { header: '隊伍編號', key: 'teamCode', width: 14 },
+    { header: '報名狀態', key: 'status', width: 16 },
+    { header: '付款狀態', key: 'paymentStatus', width: 14 },
+    { header: '資格審核', key: 'qualificationStatus', width: 12 },
+    { header: '隊伍／組名', key: 'displayName', width: 20 },
+    { header: '邀請球會', key: 'captainClub', width: 28 },
+    { header: '隊長電郵', key: 'captainEmail', width: 28 },
+    { header: '年齡組別', key: 'ageGroup', width: 22 },
+    { header: '競賽項目', key: 'eventCategory', width: 12 },
+    { header: '首選場地', key: 'preferredVenue', width: 36 },
+    { header: '預計海選時間', key: 'qualifierSlot', width: 28 },
+    { header: '選手包', key: 'packTier', width: 28 },
+    { header: '付款參考', key: 'paymentReference', width: 16 },
+    { header: '提交時間', key: 'submittedAt', width: 20 },
+    { header: '隊長中文名', key: 'captainChineseName', width: 12 },
+    { header: '隊長英文名', key: 'captainEnglishName', width: 16 },
+    { header: '隊長性別', key: 'captainGender', width: 8 },
+    { header: '隊長出生日期', key: 'captainDob', width: 12 },
+    { header: '隊長WhatsApp', key: 'captainWhatsapp', width: 14 },
+    { header: '隊長緊急聯絡', key: 'captainEmergency', width: 22 },
+    { header: '隊友中文名', key: 'teammateChineseName', width: 12 },
+    { header: '隊友英文名', key: 'teammateEnglishName', width: 16 },
+    { header: '隊友性別', key: 'teammateGender', width: 8 },
+    { header: '隊友出生日期', key: 'teammateDob', width: 12 },
+    { header: '隊友WhatsApp', key: 'teammateWhatsapp', width: 14 },
+    { header: '隊友電郵', key: 'teammateEmail', width: 28 },
+    { header: '隊友球會', key: 'teammateClub', width: 16 },
+    { header: '隊友緊急聯絡', key: 'teammateEmergency', width: 22 },
+  ];
+  sheet.columns = columns;
+  sheet.getRow(1).font = { bold: true };
+  sheet.getRow(1).fill = {
+    type: 'pattern',
+    pattern: 'solid',
+    fgColor: { argb: 'FFE2E8F0' },
+  };
+
+  for (const row of teamRowsForExport(teams, playersByTeamId)) {
+    sheet.addRow(row);
+  }
+
+  const buf = await workbook.xlsx.writeBuffer();
+  return Buffer.from(buf);
+}
+
 module.exports = {
   buildTeamsCsv,
+  buildTeamsXlsxBuffer,
+  teamRowsForExport,
   nextTeamCode,
   REGISTRATION_TYPE_LABELS,
   formatDate,

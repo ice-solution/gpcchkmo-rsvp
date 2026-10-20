@@ -20,6 +20,34 @@ const CAPTAIN_CLUBS = [
   'P11 個人名義（獨立球員隊伍）',
 ];
 
+/** Club portal logins (P01–P10 only; P11+ admin-only) */
+const CLUB_PORTAL_ACCOUNTS = [
+  { code: 'P01', label: 'P01 Pick and Match' },
+  { code: 'P02', label: 'P02 Lit Pickle' },
+  { code: 'P03', label: 'P03 PickleVibes' },
+  { code: 'P04', label: 'P04 PICKLE.READY' },
+  { code: 'P05', label: 'P05 My Pickle World' },
+  { code: 'P06', label: 'P06 Table meets Pickle' },
+  { code: 'P07', label: 'P07 PickleLab' },
+  { code: 'P08', label: 'P08 錦綉花園鄉村俱樂部' },
+  { code: 'P09', label: 'P09 企業機構' },
+  { code: 'P10', label: 'P10 其他（非指定名單內之球會）' },
+];
+
+function captainClubBelongsToPortalCode(captainClub, code) {
+  const club = String(captainClub || '').trim();
+  const c = String(code || '').trim().toUpperCase();
+  if (!club || !c) return false;
+  return club.toUpperCase().startsWith(c);
+}
+
+function buildClubPortalFilter(code) {
+  const c = String(code || '').trim().toUpperCase();
+  if (!c) return { _id: null };
+  // Match "P01 …" / "P09 企業機構（…）"；避免 P01 誤中 P10
+  return { captainClub: { $regex: `^${c}([^0-9]|$)`, $options: 'i' } };
+}
+
 /** Older club labels still accepted on submit / admin filters */
 const LEGACY_CAPTAIN_CLUBS = [
   'Pick&Match',
@@ -281,6 +309,9 @@ module.exports = {
   HIDDEN_CAPTAIN_CLUBS,
   CAPTAIN_CLUB_OTHER_VALUE,
   CAPTAIN_CLUB_FOLLOWUPS,
+  CLUB_PORTAL_ACCOUNTS,
+  captainClubBelongsToPortalCode,
+  buildClubPortalFilter,
   GENDERS,
   AGE_GROUPS,
   AGE_GROUP_LABELS,

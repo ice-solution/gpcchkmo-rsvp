@@ -7,6 +7,7 @@
     "start": "node server/app.js",
     "dev": "node --watch server/app.js",
     "seed": "node server/scripts/seedClubs.js",
+    "seed:club-users": "node server/scripts/seedClubPortalUsers.js",
     "test:mail": "node server/scripts/testMail.js",
     "build:css": "tailwindcss -i ./src/css/input.css -o ./public/css/app.css --minify",
     "watch:css": "tailwindcss -i ./src/css/input.css -o ./public/css/app.css --watch"
@@ -20,6 +21,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "ejs": "^3.1.10",
+    "exceljs": "^4.4.0",
     "express": "^4.21.2",
     "express-rate-limit": "^7.5.0",
     "express-session": "^1.19.0",

@@ -9,9 +9,12 @@ const mongoose = require('mongoose');
 const apiRouter = require('./routes/api');
 const phaseStubsRouter = require('./routes/phaseStubs');
 const adminRouter = require('./routes/admin');
+const clubRouter = require('./routes/club');
 const gpcchkmoWonderRouter = require('./routes/gpcchkmoWonder');
 const { ensureDefaultAdmin } = require('./services/adminSeed');
+const { ensureClubPortalUsers } = require('./services/clubPortalSeed');
 const { attachAdminLocals } = require('./middleware/adminAuth');
+const { attachClubLocals } = require('./middleware/clubAuth');
 const { isWonderConfigured, PROVIDER_ID } = require('./services/wonder/gpcchkmoWonderCheckout');
 const { isPaymentGatewayEnabled } = require('./config/paymentGateway');
 const {
@@ -73,6 +76,7 @@ app.use(
   })
 );
 app.use(attachAdminLocals);
+app.use(attachClubLocals);
 
 function formatDateYmd(d) {
   if (!d) return '';
@@ -207,6 +211,7 @@ app.use('/api', phaseStubsRouter);
 /** Isolated Wonder webhook/checkout — do not mount under picklevibes-style /payments/wonder */
 app.use('/api/gpcchkmo/wonder', gpcchkmoWonderRouter);
 app.use('/admin', adminRouter);
+app.use('/club', clubRouter);
 
 app.use((err, req, res, _next) => {
   console.error(err);
@@ -230,6 +235,11 @@ async function start() {
   });
 
   await ensureDefaultAdmin();
+  const newClubUsers = await ensureClubPortalUsers();
+  if (newClubUsers.length) {
+    console.log('Created club portal logins (save these PINs):');
+    newClubUsers.forEach((u) => console.log(`  ${u.username}  ${u.password}  ${u.club}`));
+  }
 
   app.listen(PORT, () => {
     console.log(`GPCC RSVP listening on http://localhost:${PORT}/rsvp`);

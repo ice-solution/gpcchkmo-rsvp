@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/app.css" />
+  <link rel="icon" href="https://media.base44.com/images/public/6a2d14e7beef6e30c1fd3c0d/3ec7236ec_logo.png" />
+</head>
+<body class="min-h-screen">
+<main class="mx-auto max-w-7xl px-4 py-6">
+<div class="mx-auto flex min-h-[80vh] max-w-md flex-col justify-center">
+  <div class="overflow-hidden rounded-3xl bg-white shadow-panel ring-1 ring-slate-200">
+    <div class="bg-gradient-to-r from-brand-deep to-brand-blue px-6 py-5 text-white">
+      <p class="text-xs font-bold uppercase tracking-[0.2em] text-brand-lime">GPCC Club Portal</p>
+      <h1 class="mt-1 font-display text-2xl font-bold">球館登入</h1>
+      <p class="mt-1 text-sm text-sky-100">帳號為 P01–P10，密碼為 6 位數字</p>
+    </div>
+    <form method="post" action="/club/login" class="space-y-4 px-6 py-6">
+      <% if (error) { %>
+      <div class="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700 ring-1 ring-red-200"><%= error %></div>
+      <% } %>
+      <input type="hidden" name="next" value="<%= next %>" />
+      <div>
+        <label class="field-label" for="username">球館帳號</label>
+        <input class="field-input" id="username" name="username" required autocomplete="username" placeholder="例如 P01" />
+      </div>
+      <div>
+        <label class="field-label" for="password">密碼（6 位數字）</label>
+        <input class="field-input" id="password" name="password" type="password" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required autocomplete="current-password" />
+      </div>
+      <button type="submit" class="btn-primary w-full">登入</button>
+    </form>
+  </div>
+</div>
+<%- include('../admin/partials/foot') %>
