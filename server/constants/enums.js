@@ -15,12 +15,13 @@ const CAPTAIN_CLUBS = [
   'P06 Table meets Pickle',
   'P07 PickleLab',
   'P08 錦綉花園鄉村俱樂部',
+  'P12 PICKLEDISE',
   'P09 企業機構',
   'P10 其他（非指定名單內之球會）',
   'P11 個人名義（獨立球員隊伍）',
 ];
 
-/** Club portal logins (P01–P10 only; P11+ admin-only) */
+/** Club portal logins (P01–P12) */
 const CLUB_PORTAL_ACCOUNTS = [
   { code: 'P01', label: 'P01 Pick and Match' },
   { code: 'P02', label: 'P02 Lit Pickle' },
@@ -32,6 +33,8 @@ const CLUB_PORTAL_ACCOUNTS = [
   { code: 'P08', label: 'P08 錦綉花園鄉村俱樂部' },
   { code: 'P09', label: 'P09 企業機構' },
   { code: 'P10', label: 'P10 其他（非指定名單內之球會）' },
+  { code: 'P11', label: 'P11 個人名義（獨立球員隊伍）' },
+  { code: 'P12', label: 'P12 PICKLEDISE' },
 ];
 
 function captainClubBelongsToPortalCode(captainClub, code) {

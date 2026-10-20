@@ -8,7 +8,7 @@ function genPin() {
 }
 
 /**
- * Create missing P01–P10 portal users only (does not reset existing passwords).
+ * Create missing P01–P12 portal users only (does not reset existing passwords).
  * Returns newly created credentials (cleartext) for logging once.
  */
 async function ensureClubPortalUsers() {

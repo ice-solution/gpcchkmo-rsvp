@@ -89,6 +89,14 @@ const SEED = [
     region: '新界西',
     sortOrder: 80,
   },
+  {
+    label: 'PICKLEDISE',
+    code: 'P12',
+    address: '九龍九龍灣宏照道23號第一集團中心20樓全層（2個場）',
+    scheduleNote: '01/11 19:00–21:00 海選',
+    region: '九龍',
+    sortOrder: 85,
+  },
 ];
 
 function displayLabel(row) {

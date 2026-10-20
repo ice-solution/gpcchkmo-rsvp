@@ -1,5 +1,5 @@
 /**
- * Seed / reset P01–P10 club portal logins with fresh 6-digit PINs.
+ * Seed / reset P01–P12 club portal logins with fresh 6-digit PINs.
  * Prints credentials once; also writes server/scripts/.club-passwords.json (gitignored).
  *
  * Usage: node server/scripts/seedClubPortalUsers.js
@@ -59,7 +59,7 @@ async function main() {
     )
   );
 
-  console.log('\n=== Club portal logins (P01–P10) ===');
+  console.log('\n=== Club portal logins (P01–P12) ===');
   console.log('URL: /club/login\n');
   credentials.forEach((row) => {
     console.log(`${row.username}  ${row.password}  (${row.club})`);
