@@ -8,14 +8,14 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/app.css" />
-  <link rel="icon" href="https://media.base44.com/images/public/6a2d14e7beef6e30c1fd3c0d/3ec7236ec_logo.png" />
+  <link rel="icon" href="/images/gpcc-logo.png" />
 </head>
 <body class="min-h-screen">
   <% if (typeof club !== 'undefined' && club) { %>
   <header class="border-b border-slate-200 bg-white/90 backdrop-blur">
     <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3">
       <div class="flex items-center gap-3">
-        <img src="https://media.base44.com/images/public/6a2d14e7beef6e30c1fd3c0d/3ec7236ec_logo.png" alt="GPCC" class="h-9 w-9 rounded-lg object-contain" />
+        <img src="/images/gpcc-logo.png" alt="GPCC" class="h-10 w-auto max-w-[140px] rounded-lg bg-white object-contain p-1" />
         <div>
           <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-brand-blue">GPCC Club</p>
           <a href="/club" class="font-display text-sm font-bold text-brand-deep hover:underline"><%= club.clubCode %> 報名名單</a>
