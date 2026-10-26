@@ -1,9 +1,12 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
+const mongoose = require('mongoose');
 const rateLimit = require('express-rate-limit');
 const Admin = require('../models/Admin');
 const Team = require('../models/Team');
 const Player = require('../models/Player');
+const ClubVenue = require('../models/ClubVenue');
+const { formatVenueOptionLabel } = ClubVenue;
 const AuditLog = require('../models/AuditLog');
 const { requireAdmin } = require('../middleware/adminAuth');
 const {
@@ -69,7 +72,16 @@ const loginLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-function buildAdminFilter({ status, payment, qualification, ageGroup, eventCategory, club, q }) {
+function buildAdminFilter({
+  status,
+  payment,
+  qualification,
+  ageGroup,
+  eventCategory,
+  club,
+  venue,
+  q,
+}) {
   const filter = {};
   if (status) filter.status = status;
   if (payment) filter['payment.status'] = payment;
@@ -77,6 +89,14 @@ function buildAdminFilter({ status, payment, qualification, ageGroup, eventCateg
   if (ageGroup) filter.ageGroup = ageGroup;
   if (eventCategory) filter.eventCategory = eventCategory;
   if (club) filter.captainClub = club;
+  if (venue && String(venue).trim()) {
+    const v = String(venue).trim();
+    if (mongoose.isValidObjectId(v)) {
+      filter.preferredVenueId = new mongoose.Types.ObjectId(v);
+    } else {
+      filter.preferredVenueLabel = v;
+    }
+  }
   if (q && String(q).trim()) {
     const re = new RegExp(String(q).trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
     filter.$or = [
@@ -164,19 +184,21 @@ router.get('/', requireAdmin, async (req, res, next) => {
       ageGroup = '',
       eventCategory = '',
       club = '',
+      venue = '',
       q = '',
       page = '1',
     } = req.query;
 
-    const filters = { status, payment, qualification, ageGroup, eventCategory, club, q };
+    const filters = { status, payment, qualification, ageGroup, eventCategory, club, venue, q };
     const filter = buildAdminFilter(filters);
     const filterWithoutClub = buildAdminFilter({ ...filters, club: '' });
+    const filterWithoutVenue = buildAdminFilter({ ...filters, venue: '' });
 
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
     const limit = 25;
     const skip = (pageNum - 1) * limit;
 
-    const [total, teams, statusCounts, clubCountsRaw] = await Promise.all([
+    const [total, teams, statusCounts, clubCountsRaw, venueCountsRaw, venues] = await Promise.all([
       Team.countDocuments(filter),
       Team.find(filter).sort({ captainClub: 1, submittedAt: -1 }).skip(skip).limit(limit).lean(),
       Team.aggregate([{ $group: { _id: '$status', count: { $sum: 1 } } }]),
@@ -185,6 +207,18 @@ router.get('/', requireAdmin, async (req, res, next) => {
         { $group: { _id: '$captainClub', count: { $sum: 1 } } },
         { $sort: { count: -1, _id: 1 } },
       ]),
+      Team.aggregate([
+        { $match: filterWithoutVenue },
+        {
+          $group: {
+            _id: '$preferredVenueId',
+            count: { $sum: 1 },
+            label: { $first: '$preferredVenueLabel' },
+          },
+        },
+        { $sort: { count: -1 } },
+      ]),
+      ClubVenue.find({ isActive: true }).sort({ sortOrder: 1, label: 1 }).lean(),
     ]);
 
     const teamIds = teams.map((t) => t._id);
@@ -221,6 +255,33 @@ router.get('/', requireAdmin, async (req, res, next) => {
       ...extraClubs.map((name) => ({ name, count: clubCountMap.get(name) || 0 })),
     ];
 
+    const venueCountById = new Map(
+      venueCountsRaw
+        .filter((row) => row._id)
+        .map((row) => [String(row._id), { count: row.count, label: row.label || '' }])
+    );
+    const venueLabelOnly = venueCountsRaw
+      .filter((row) => !row._id && row.label)
+      .map((row) => ({
+        id: row.label,
+        name: row.label,
+        shortName: row.label,
+        count: row.count,
+      }));
+    const venueOptions = [
+      ...venues.map((v) => {
+        const id = String(v._id);
+        const counted = venueCountById.get(id);
+        return {
+          id,
+          name: formatVenueOptionLabel(v),
+          shortName: `${v.code ? `${v.code} ` : ''}${v.label}`.trim(),
+          count: counted?.count || 0,
+        };
+      }),
+      ...venueLabelOnly,
+    ].filter((opt) => opt.count > 0 || venues.some((v) => String(v._id) === opt.id));
+
     const groupedRows = [];
     for (const row of rows) {
       const name = row.team.captainClub || '未填球會';
@@ -237,6 +298,7 @@ router.get('/', requireAdmin, async (req, res, next) => {
       rows,
       groupedRows,
       clubOptions,
+      venueOptions,
       filters,
       queryString: (extra) => queryString(filters, extra),
       labels: labels(),
@@ -550,9 +612,10 @@ router.get('/export.csv', requireAdmin, async (req, res, next) => {
       payment = '',
       qualification = '',
       club = '',
+      venue = '',
       q = '',
     } = req.query;
-    const filter = buildAdminFilter({ status, payment, qualification, club, q });
+    const filter = buildAdminFilter({ status, payment, qualification, club, venue, q });
 
     const teams = await Team.find(filter).sort({ submittedAt: -1 }).lean();
     const players = await Player.find({
@@ -582,9 +645,10 @@ router.get('/export.xlsx', requireAdmin, async (req, res, next) => {
       payment = '',
       qualification = '',
       club = '',
+      venue = '',
       q = '',
     } = req.query;
-    const filter = buildAdminFilter({ status, payment, qualification, club, q });
+    const filter = buildAdminFilter({ status, payment, qualification, club, venue, q });
 
     const teams = await Team.find(filter).sort({ submittedAt: -1 }).lean();
     const players = await Player.find({

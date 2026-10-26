@@ -36,6 +36,18 @@
   </div>
 </div>
 
+<div class="mb-4">
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">首選海選場地</p>
+  <div class="flex flex-wrap gap-2">
+    <a href="/admin<%= queryString({ venue: '', page: '' }) %>" class="rounded-full px-3 py-1 text-xs font-semibold ring-1 <%= !filters.venue ? 'bg-brand-lime text-brand-deep ring-brand-deep' : 'bg-white text-slate-600 ring-slate-200' %>">全部場地</a>
+    <% (venueOptions || []).forEach(function(opt) { %>
+    <a href="/admin<%= queryString({ venue: opt.id, page: '' }) %>" title="<%= opt.name %>" class="rounded-full px-3 py-1 text-xs font-semibold ring-1 <%= filters.venue===opt.id ? 'bg-brand-lime text-brand-deep ring-brand-deep' : 'bg-white text-slate-600 ring-slate-200' %>">
+      <%= opt.shortName %> (<%= opt.count %>)
+    </a>
+    <% }) %>
+  </div>
+</div>
+
 <form method="get" action="/admin" class="mb-5 grid gap-3 rounded-2xl bg-white p-4 shadow-panel ring-1 ring-slate-200 md:grid-cols-6">
   <div class="md:col-span-2">
     <label class="field-label">搜尋</label>
@@ -47,6 +59,15 @@
       <option value="">全部</option>
       <% clubOptions.forEach(function(opt){ %>
       <option value="<%= opt.name %>" <%= filters.club===opt.name?'selected':'' %>><%= opt.name %> (<%= opt.count %>)</option>
+      <% }) %>
+    </select>
+  </div>
+  <div class="md:col-span-2">
+    <label class="field-label">首選海選場地</label>
+    <select class="field-input" name="venue">
+      <option value="">全部</option>
+      <% (venueOptions || []).forEach(function(opt){ %>
+      <option value="<%= opt.id %>" <%= filters.venue===opt.id?'selected':'' %>><%= opt.shortName %> (<%= opt.count %>)</option>
       <% }) %>
     </select>
   </div>
@@ -118,6 +139,9 @@
           <td class="px-4 py-3 text-xs">
             <div><%= labels.ageGroup[team.ageGroup] || team.ageGroup %></div>
             <div class="text-slate-500"><%= labels.eventCategory[team.eventCategory] || team.eventCategory %></div>
+            <% if (team.preferredVenueLabel) { %>
+            <div class="mt-1 max-w-[14rem] truncate text-slate-400" title="<%= team.preferredVenueLabel %>"><%= team.preferredVenueLabel %></div>
+            <% } %>
           </td>
           <td class="px-4 py-3">
             <span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700"><%= labels.teamStatus[team.status] || team.status %></span>
