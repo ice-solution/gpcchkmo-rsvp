@@ -76,9 +76,9 @@ const SEED = [
   {
     label: 'Pickle Lab',
     code: 'P07',
-    address: '香港島灣仔軒尼詩道256號軒尼詩大廈10樓及11樓',
-    scheduleNote: 'TBC',
-    region: '香港島',
+    address: '屯順街1號屯門市廣場4樓 TMTP',
+    scheduleNote: '8/11 海選',
+    region: '新界西',
     sortOrder: 70,
   },
   {
