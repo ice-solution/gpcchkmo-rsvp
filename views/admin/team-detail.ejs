@@ -249,6 +249,32 @@
   </section>
 
   <aside class="space-y-4">
+    <div class="rounded-2xl bg-white p-5 shadow-panel ring-1 ring-slate-200">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <h2 class="font-semibold text-brand-deep">發送電郵</h2>
+        <a href="/admin/email-templates" class="text-xs text-brand-blue hover:underline">編輯 HTML 範本</a>
+      </div>
+      <p class="mt-1 text-xs text-slate-500">
+        收件：隊長 <%= team.captainEmail || '—' %>
+        <% if (typeof mailConfigured !== 'undefined' && !mailConfigured) { %>
+        <span class="mt-1 block text-amber-700">尚未設定 Gmail（.env：GMAIL_USER / GMAIL_APP_PASSWORD）</span>
+        <% } %>
+      </p>
+      <div class="mt-3">
+        <label class="field-label">附加訊息（可選，插入 {{customMessage}}）</label>
+        <textarea class="field-input" id="emailCustomMessage" name="customMessage" form="email-confirmation-form" rows="2" placeholder="例如：請於指定時間到達報到處…"></textarea>
+      </div>
+      <div class="mt-3 flex flex-wrap gap-2">
+        <form id="email-confirmation-form" method="post" action="/admin/teams/<%= team._id %>/email/confirmation" class="inline" onsubmit="return confirm('確認發送「確認電郵」給隊長／隊友？');">
+          <button type="submit" class="btn-primary" <%= (typeof mailConfigured !== 'undefined' && !mailConfigured) ? 'disabled' : '' %>>發送確認電郵</button>
+        </form>
+        <form id="email-reminder-form" method="post" action="/admin/teams/<%= team._id %>/email/reminder" class="inline" onsubmit="document.getElementById('emailCustomMessageReminder').value=document.getElementById('emailCustomMessage').value; return confirm('確認發送「提醒電郵」給隊長／隊友？');">
+          <input type="hidden" id="emailCustomMessageReminder" name="customMessage" value="" />
+          <button type="submit" class="btn-secondary" <%= (typeof mailConfigured !== 'undefined' && !mailConfigured) ? 'disabled' : '' %>>發送提醒電郵</button>
+        </form>
+      </div>
+    </div>
+
     <form method="post" action="/admin/teams/<%= team._id %>/update" class="rounded-2xl bg-white p-5 shadow-panel ring-1 ring-slate-200">
       <h2 class="font-semibold text-brand-deep">更新狀態</h2>
       <div class="mt-4 space-y-3">

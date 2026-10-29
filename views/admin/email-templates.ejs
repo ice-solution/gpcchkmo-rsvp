@@ -1,0 +1,56 @@
+<%- include('partials/head') %>
+<div class="mb-6 flex flex-wrap items-end justify-between gap-3">
+  <div>
+    <a href="/admin" class="text-sm text-brand-blue hover:underline">← 返回列表</a>
+    <h1 class="mt-1 font-display text-2xl font-bold text-brand-deep">電郵範本</h1>
+    <p class="mt-1 text-sm text-slate-500">編輯確認電郵／提醒電郵的主旨與 HTML 內容。可用下方變數插入隊伍資料。</p>
+  </div>
+  <p class="text-xs <%= mailConfigured ? 'text-emerald-700' : 'text-amber-700' %>">
+    Gmail SMTP：<%= mailConfigured ? '已設定' : '未設定（請在 .env 加 GMAIL_USER / GMAIL_APP_PASSWORD）' %>
+  </p>
+</div>
+
+<% if (flash) { %>
+<div class="mb-4 rounded-xl bg-emerald-50 px-4 py-2 text-sm text-emerald-800 ring-1 ring-emerald-200"><%= flash %></div>
+<% } %>
+
+<div class="mb-5 rounded-2xl bg-white p-4 text-sm text-slate-600 shadow-panel ring-1 ring-slate-200">
+  <p class="font-semibold text-brand-deep">可用變數</p>
+  <p class="mt-1 text-xs text-slate-500">寫成 <code class="rounded bg-slate-100 px-1">{{變數名}}</code>；條件區塊可用 <code class="rounded bg-slate-100 px-1">{{#if customMessage}}…{{/if}}</code></p>
+  <p class="mt-2 font-mono text-xs leading-6 text-slate-700"><%= placeholders.map(function(p){ return '{{' + p + '}}'; }).join(' ') %></p>
+</div>
+
+<div class="grid gap-6 lg:grid-cols-2">
+  <form method="post" action="/admin/email-templates" class="rounded-2xl bg-white p-5 shadow-panel ring-1 ring-slate-200">
+    <input type="hidden" name="kind" value="confirmation" />
+    <h2 class="font-semibold text-brand-deep">確認電郵（Confirmation）</h2>
+    <div class="mt-4 space-y-3">
+      <div>
+        <label class="field-label">主旨</label>
+        <input class="field-input font-mono text-xs" name="subject" value="<%= subjects.confirmation %>" required />
+      </div>
+      <div>
+        <label class="field-label">HTML 內容</label>
+        <textarea class="field-input font-mono text-xs leading-5" name="html" rows="22" required><%= confirmationHtml %></textarea>
+      </div>
+      <button type="submit" class="btn-primary">儲存確認電郵範本</button>
+    </div>
+  </form>
+
+  <form method="post" action="/admin/email-templates" class="rounded-2xl bg-white p-5 shadow-panel ring-1 ring-slate-200">
+    <input type="hidden" name="kind" value="reminder" />
+    <h2 class="font-semibold text-brand-deep">提醒電郵（Reminder）</h2>
+    <div class="mt-4 space-y-3">
+      <div>
+        <label class="field-label">主旨</label>
+        <input class="field-input font-mono text-xs" name="subject" value="<%= subjects.reminder %>" required />
+      </div>
+      <div>
+        <label class="field-label">HTML 內容</label>
+        <textarea class="field-input font-mono text-xs leading-5" name="html" rows="22" required><%= reminderHtml %></textarea>
+      </div>
+      <button type="submit" class="btn-primary">儲存提醒電郵範本</button>
+    </div>
+  </form>
+</div>
+<%- include('partials/foot') %>

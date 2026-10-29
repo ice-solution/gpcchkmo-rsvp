@@ -39,7 +39,25 @@ const {
   normalizePackTier,
   buildPaymentSummary,
 } = require('../services/paymentService');
-const { notifyPaymentCompleted } = require('../services/emailService');
+const {
+  notifyPaymentCompleted,
+  sendConfirmationEmail,
+  sendReminderEmail,
+  previewReminderHtml,
+  isMailConfigured,
+} = require('../services/emailService');
+const {
+  readSubjects,
+  writeSubjects,
+  readTemplateHtml,
+  writeTemplateHtml,
+  listPlaceholders,
+} = require('../services/emailTemplates');
+const {
+  loadReminderSlots,
+  getReminderSlotById,
+  findTeamsForSlot,
+} = require('../services/reminderSlots');
 
 function getPublicBaseUrl() {
   return String(process.env.DOMAIN || process.env.GPCCHKMO_DOMAIN || 'http://localhost:3480').replace(
@@ -349,6 +367,7 @@ router.get('/teams/:id', requireAdmin, async (req, res, next) => {
       audits,
       wonderPayments,
       paymentLinks,
+      mailConfigured: isMailConfigured(),
       labels: labels(),
       enums: {
         TEAM_STATUS,
@@ -364,6 +383,198 @@ router.get('/teams/:id', requireAdmin, async (req, res, next) => {
       formatDateTime,
       PLAYER_ROLES,
     });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/teams/:id/email/confirmation', requireAdmin, async (req, res, next) => {
+  try {
+    const team = await Team.findById(req.params.id);
+    if (!team) return res.status(404).send('找不到此報名');
+    const customMessage = String(req.body.customMessage || '').trim();
+    const result = await sendConfirmationEmail(team, { customMessage });
+    await AuditLog.create({
+      entityType: 'Team',
+      entityId: team._id,
+      action: 'email_confirmation_sent',
+      actor: req.session?.admin?.username || 'admin',
+      meta: {
+        ok: Boolean(result.ok),
+        skipped: Boolean(result.skipped),
+        reason: result.reason || null,
+        error: result.error || null,
+        messageId: result.messageId || null,
+      },
+    });
+    const msg = result.ok
+      ? '確認電郵已發送'
+      : result.skipped
+        ? `未能發送：${result.reason === 'mail_not_configured' ? '請先在 .env 設定 GMAIL_USER / GMAIL_APP_PASSWORD' : result.reason}`
+        : `發送失敗：${result.error || '未知錯誤'}`;
+    res.redirect(`/admin/teams/${team._id}?msg=${encodeURIComponent(msg)}`);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/teams/:id/email/reminder', requireAdmin, async (req, res, next) => {
+  try {
+    const team = await Team.findById(req.params.id);
+    if (!team) return res.status(404).send('找不到此報名');
+    const customMessage = String(req.body.customMessage || '').trim();
+    const result = await sendReminderEmail(team, { customMessage });
+    await AuditLog.create({
+      entityType: 'Team',
+      entityId: team._id,
+      action: 'email_reminder_sent',
+      actor: req.session?.admin?.username || 'admin',
+      meta: {
+        ok: Boolean(result.ok),
+        skipped: Boolean(result.skipped),
+        reason: result.reason || null,
+        error: result.error || null,
+        messageId: result.messageId || null,
+      },
+    });
+    const msg = result.ok
+      ? '提醒電郵已發送'
+      : result.skipped
+        ? `未能發送：${result.reason === 'mail_not_configured' ? '請先在 .env 設定 GMAIL_USER / GMAIL_APP_PASSWORD' : result.reason}`
+        : `發送失敗：${result.error || '未知錯誤'}`;
+    res.redirect(`/admin/teams/${team._id}?msg=${encodeURIComponent(msg)}`);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/email-templates', requireAdmin, (req, res) => {
+  const subjects = readSubjects();
+  res.render('admin/email-templates', {
+    title: '電郵範本｜GPCC Admin',
+    mailConfigured: isMailConfigured(),
+    subjects,
+    confirmationHtml: readTemplateHtml('confirmation'),
+    reminderHtml: readTemplateHtml('reminder'),
+    placeholders: listPlaceholders(),
+    flash: req.query.msg || '',
+  });
+});
+
+router.post('/email-templates', requireAdmin, (req, res, next) => {
+  try {
+    const kind = String(req.body.kind || '').trim();
+    if (kind !== 'confirmation' && kind !== 'reminder') {
+      return res.redirect(
+        `/admin/email-templates?msg=${encodeURIComponent('未知範本類型')}`
+      );
+    }
+    writeTemplateHtml(kind, req.body.html || '');
+    const subjects = readSubjects();
+    subjects[kind] = String(req.body.subject || subjects[kind] || '').trim() || subjects[kind];
+    writeSubjects(subjects);
+    const label = kind === 'confirmation' ? '確認電郵' : '提醒電郵';
+    res.redirect(
+      `/admin/email-templates?msg=${encodeURIComponent(`${label}範本已儲存`)}`
+    );
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/email-reminder-batch', requireAdmin, async (req, res, next) => {
+  try {
+    const slots = loadReminderSlots();
+    const slotId = String(req.query.slot || '').trim();
+    const slot = slotId ? getReminderSlotById(slotId) : null;
+    let matched = [];
+    let preview = null;
+    if (slot) {
+      const teams = await Team.find({
+        preferredVenueLabel: { $exists: true, $ne: '' },
+      })
+        .sort({ submittedAt: -1 })
+        .lean();
+      matched = findTeamsForSlot(teams, slot);
+      preview = previewReminderHtml(slot);
+    }
+    res.render('admin/email-reminder-batch', {
+      title: '批次提醒電郵｜GPCC Admin',
+      mailConfigured: isMailConfigured(),
+      slots,
+      selectedSlotId: slotId,
+      slot,
+      matched,
+      preview,
+      flash: req.query.msg || '',
+      labels: labels(),
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/email-reminder-batch', requireAdmin, async (req, res, next) => {
+  try {
+    const slotId = String(req.body.slot || '').trim();
+    const slot = getReminderSlotById(slotId);
+    if (!slot) {
+      return res.redirect(
+        `/admin/email-reminder-batch?msg=${encodeURIComponent('請選擇海選時段')}`
+      );
+    }
+    if (!isMailConfigured()) {
+      return res.redirect(
+        `/admin/email-reminder-batch?slot=${encodeURIComponent(slotId)}&msg=${encodeURIComponent('請先設定 GMAIL_USER / GMAIL_APP_PASSWORD')}`
+      );
+    }
+
+    const selectedIds = [].concat(req.body.teamIds || []).map(String).filter(Boolean);
+    const teams = await Team.find({
+      preferredVenueLabel: { $exists: true, $ne: '' },
+    }).lean();
+    let matched = findTeamsForSlot(teams, slot);
+    if (selectedIds.length) {
+      matched = matched.filter((t) => selectedIds.includes(String(t._id)));
+    }
+
+    let sent = 0;
+    let failed = 0;
+    const errors = [];
+    for (const teamDoc of matched) {
+      const team = await Team.findById(teamDoc._id);
+      if (!team) continue;
+      const result = await sendReminderEmail(team, { slot });
+      await AuditLog.create({
+        entityType: 'Team',
+        entityId: team._id,
+        action: 'email_reminder_batch_sent',
+        actor: req.session?.admin?.username || 'admin',
+        meta: {
+          slotId: slot.id,
+          slotLabel: slot.slotLabel,
+          ok: Boolean(result.ok),
+          skipped: Boolean(result.skipped),
+          reason: result.reason || null,
+          error: result.error || null,
+          messageId: result.messageId || null,
+        },
+      });
+      if (result.ok) sent += 1;
+      else {
+        failed += 1;
+        errors.push(`${team.captainEmail || team._id}: ${result.error || result.reason}`);
+      }
+      // gentle pace for Gmail
+      await new Promise((r) => setTimeout(r, 400));
+    }
+
+    const msg = `已發送 ${sent} 封提醒電郵${failed ? `；失敗 ${failed}` : ''}${
+      errors.length ? `（${errors.slice(0, 3).join('；')}）` : ''
+    }`;
+    res.redirect(
+      `/admin/email-reminder-batch?slot=${encodeURIComponent(slotId)}&msg=${encodeURIComponent(msg)}`
+    );
   } catch (err) {
     next(err);
   }

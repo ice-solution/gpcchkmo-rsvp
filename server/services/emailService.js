@@ -10,7 +10,14 @@ const {
   TEAM_STATUS_LABELS,
   PAYMENT_STATUS_LABELS,
   PACK_TIER_LABELS,
+  PLAYER_ROLES,
 } = require('../constants/enums');
+const {
+  readSubjects,
+  readTemplateHtml,
+  renderTemplate,
+} = require('./emailTemplates');
+const { slotVars } = require('./reminderSlots');
 
 let transporter = null;
 
@@ -228,40 +235,176 @@ async function sendPaymentCompletedEmail({ team, captain, teammate }) {
  * Load captain/teammate and send paid-completed notice.
  * Safe to await; never throws.
  */
+/**
+ * When payment status becomes 已付款 (paid): send confirmation HTML template.
+ * Safe to await; never throws.
+ */
 async function notifyPaymentCompleted(team) {
   if (!team) return { ok: false, skipped: true, reason: 'no_team' };
   try {
-    const Player = require('../models/Player');
-    const { PLAYER_ROLES } = require('../constants/enums');
-    const players = await Player.find({ teamId: team._id }).lean();
-    const captain = players.find((p) => p.role === PLAYER_ROLES.CAPTAIN);
-    const teammate = players.find((p) => p.role === PLAYER_ROLES.TEAMMATE);
-    return await sendPaymentCompletedEmail({ team, captain, teammate });
+    return await sendConfirmationEmail(team);
   } catch (err) {
     console.error('[email] notifyPaymentCompleted failed', err.message);
     return { ok: false, error: err.message };
   }
 }
 
-/** @deprecated phase stubs — keep exports for phaseStubs routes */
-async function sendStage1Confirmation() {
-  throw new Error('Phase 5: stage-1 confirmation email not implemented');
+function labelOfSafe(map, value) {
+  return map[value] || value || '—';
+}
+
+function buildTemplateVars({ team, captain, teammate, customMessage = '', slot = null }) {
+  const total =
+    team.payment?.totalAmountHkd != null ? `HKD $${team.payment.totalAmountHkd}` : '—';
+  return {
+    applicationId: String(team._id),
+    teamCode: team.teamCode || '（待分配）',
+    displayName: team.displayName || '—',
+    captainName: captain?.chineseName || '—',
+    captainEnglishName: captain?.englishName || '—',
+    captainEmail: captain?.email || team.captainEmail || '—',
+    teammateName: teammate?.chineseName || '—',
+    teammateEnglishName: teammate?.englishName || '—',
+    teammateEmail: teammate?.email || '—',
+    captainClub: team.captainClub || '—',
+    ageGroup: labelOfSafe(AGE_GROUP_LABELS, team.ageGroup),
+    eventCategory: labelOfSafe(EVENT_CATEGORY_LABELS, team.eventCategory),
+    preferredVenue: team.preferredVenueLabel || '—',
+    qualifierSlot: team.qualifierSlotLabel || '—',
+    packTier: labelOfSafe(PACK_TIER_LABELS, team.packTier),
+    status: labelOfSafe(TEAM_STATUS_LABELS, team.status),
+    paymentStatus: labelOfSafe(PAYMENT_STATUS_LABELS, team.payment?.status),
+    paymentTotal: total,
+    customMessage: String(customMessage || '').trim(),
+    year: String(new Date().getFullYear()),
+    ...slotVars(slot),
+  };
+}
+
+async function loadTeamPlayers(teamId) {
+  const Player = require('../models/Player');
+  const players = await Player.find({ teamId }).lean();
+  return {
+    captain: players.find((p) => p.role === PLAYER_ROLES.CAPTAIN) || null,
+    teammate: players.find((p) => p.role === PLAYER_ROLES.TEAMMATE) || null,
+  };
+}
+
+async function sendTemplatedTeamEmail({ kind, team, customMessage = '', slot = null }) {
+  if (!team) return { ok: false, skipped: true, reason: 'no_team' };
+  if (!isMailConfigured()) {
+    return { ok: false, skipped: true, reason: 'mail_not_configured' };
+  }
+
+  const { captain, teammate } = await loadTeamPlayers(team._id);
+  const vars = buildTemplateVars({ team, captain, teammate, customMessage, slot });
+  const subjects = readSubjects();
+  const subjectTemplate = subjects[kind] || DEFAULT_SUBJECT_FALLBACK[kind] || 'GPCC 通知';
+  const subject = renderTemplate(subjectTemplate, vars).replace(/\s+/g, ' ').trim();
+  const htmlSource = readTemplateHtml(kind);
+  const html = renderTemplate(htmlSource, vars);
+
+  return sendMail({
+    to: team.captainEmail || captain?.email,
+    cc: teammate?.email,
+    subject,
+    html,
+  });
+}
+
+const DEFAULT_SUBJECT_FALLBACK = {
+  confirmation:
+    '【確認通知】感謝您報名參加粵港澳大灣區匹克球城市挑戰賽（香港站）海選賽',
+  reminder:
+    '【賽前提醒】粵港澳大灣區匹克球城市挑戰賽（香港站）海選賽明日舉行——賽事須知',
+};
+
+/** Confirmation email (editable HTML template) */
+async function sendConfirmationEmail(team, { customMessage = '' } = {}) {
+  return sendTemplatedTeamEmail({ kind: 'confirmation', team, customMessage });
+}
+
+/** Reminder email (editable HTML template; pass slot for venue/time fill-ins) */
+async function sendReminderEmail(team, { customMessage = '', slot = null } = {}) {
+  let resolvedSlot = slot;
+  if (!resolvedSlot && team) {
+    const { loadReminderSlots, teamMatchesSlot } = require('./reminderSlots');
+    resolvedSlot = loadReminderSlots().find((s) => teamMatchesSlot(team, s)) || null;
+  }
+  return sendTemplatedTeamEmail({
+    kind: 'reminder',
+    team,
+    customMessage,
+    slot: resolvedSlot,
+  });
+}
+
+/**
+ * Preview reminder HTML for a slot (no send).
+ */
+function previewReminderHtml(slot, { customMessage = '' } = {}) {
+  const fakeTeam = {
+    _id: 'preview',
+    teamCode: 'GPCC-HK-0000',
+    displayName: '（預覽隊伍）',
+    captainEmail: 'preview@example.com',
+    captainClub: '—',
+    preferredVenueLabel: slot?.venueAddress || '',
+    qualifierSlotLabel: slot?.slotLabel || '',
+    ageGroup: '',
+    eventCategory: '',
+    packTier: '',
+    status: '',
+    payment: {},
+  };
+  const vars = buildTemplateVars({
+    team: fakeTeam,
+    captain: { chineseName: '隊長', englishName: 'Captain', email: 'preview@example.com' },
+    teammate: { chineseName: '隊友', englishName: 'Teammate', email: '' },
+    customMessage,
+    slot,
+  });
+  const subjects = readSubjects();
+  const subject = renderTemplate(subjects.reminder || DEFAULT_SUBJECT_FALLBACK.reminder, vars)
+    .replace(/\s+/g, ' ')
+    .trim();
+  const html = renderTemplate(readTemplateHtml('reminder'), vars);
+  return { subject, html, vars };
+}
+
+/** @deprecated aliases for phaseStubs */
+async function sendStage1Confirmation({ teamId } = {}) {
+  const Team = require('../models/Team');
+  const team = await Team.findById(teamId);
+  if (!team) throw new Error('Team not found');
+  const result = await sendConfirmationEmail(team);
+  if (!result.ok) throw new Error(result.error || result.reason || 'send failed');
+  return result;
 }
 
 async function sendStage2Schedule() {
-  throw new Error('Phase 5: stage-2 schedule email not implemented');
+  throw new Error('Schedule email not implemented — use confirmation/reminder templates');
 }
 
-async function sendStage3Reminder() {
-  throw new Error('Phase 5: stage-3 reminder email not implemented');
+async function sendStage3Reminder({ teamId } = {}) {
+  const Team = require('../models/Team');
+  const team = await Team.findById(teamId);
+  if (!team) throw new Error('Team not found');
+  const result = await sendReminderEmail(team);
+  if (!result.ok) throw new Error(result.error || result.reason || 'send failed');
+  return result;
 }
 
 module.exports = {
   sendSubmissionReceipt,
   sendPaymentCompletedEmail,
   notifyPaymentCompleted,
+  sendConfirmationEmail,
+  sendReminderEmail,
+  previewReminderHtml,
   sendStage1Confirmation,
   sendStage2Schedule,
   sendStage3Reminder,
   isMailConfigured,
+  buildTemplateVars,
 };

@@ -23,6 +23,8 @@
       </div>
       <div class="flex items-center gap-3 text-sm text-slate-600">
         <span><%= admin.displayName || admin.username %></span>
+        <a href="/admin/email-templates" class="text-brand-blue hover:underline">電郵範本</a>
+        <a href="/admin/email-reminder-batch" class="text-brand-blue hover:underline">批次提醒</a>
         <a href="/rsvp" class="text-brand-blue hover:underline" target="_blank">公開表單</a>
         <form method="post" action="/admin/logout" class="inline">
           <button type="submit" class="btn-secondary !px-3 !py-1.5 text-xs">登出</button>
