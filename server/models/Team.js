@@ -7,6 +7,7 @@ const {
   PAYMENT_STATUS,
   QUALIFICATION_STATUS,
   PACK_TIERS,
+  FORM_CHANNELS,
   FEE,
 } = require('../constants/enums');
 
@@ -19,6 +20,8 @@ const agreementsSchema = new mongoose.Schema(
     marketing: { type: Boolean, default: false },
     /** 賽程管理與特別說明 */
     scheduleTerms: { type: Boolean, default: false },
+    /** CPC600：確認曾參與海選但未能勝出／晉級（選海選球員優惠時） */
+    qualifierPromoEligible: { type: Boolean, default: false },
   },
   { _id: false }
 );
@@ -63,6 +66,13 @@ const teamSchema = new mongoose.Schema(
     displayName: { type: String, required: true, trim: true },
     captainClub: { type: String, required: true, trim: true },
     captainEmail: { type: String, required: true, trim: true, lowercase: true },
+    /** Public form channel: rsvp | cpc600 */
+    formChannel: {
+      type: String,
+      enum: Object.values(FORM_CHANNELS),
+      default: FORM_CHANNELS.RSVP,
+      index: true,
+    },
     registrationType: {
       type: String,
       enum: Object.values(REGISTRATION_TYPES),

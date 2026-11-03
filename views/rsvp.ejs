@@ -1,4 +1,5 @@
 <%- include('partials/head') %>
+<% var isCpc600 = typeof isCpc600 !== 'undefined' ? isCpc600 : false; %>
 <main class="mx-auto max-w-3xl px-4 py-8 sm:py-12">
   <header class="mb-8 overflow-hidden rounded-3xl bg-white shadow-panel ring-1 ring-slate-200">
     <div class="relative bg-gradient-to-br from-brand-deep via-brand-blue to-sky-600 px-6 py-8 text-white sm:px-8">
@@ -14,10 +15,14 @@
         />
         <div>
           <h1 class="font-display text-2xl font-bold leading-tight sm:text-3xl">
+            <% if (isCpc600) { %>
+            2026「凱瑞麟盃」粵港澳大灣區匹克球城市挑戰賽 香港站 CPC600 官方報名表
+            <% } else { %>
             2026「凱瑞麟盃」粵港澳大灣區匹克球城市挑戰賽 香港站海選賽官方報名表
+            <% } %>
           </h1>
           <p class="mt-2 max-w-xl text-sm text-sky-100">
-            填寫本表單即表示隊長及隊友確認資料真實完整。每份報名表只可登記一個競賽項目；海選報名費港幣 $<%= feeBase %>／隊，另可自由加購「基礎選手包」（港幣 $<%= essentialPackFee %>／隊）或「尊尚選手包」（港幣 $<%= premiumPackFee %>／隊）。
+            填寫本表單即表示隊長及隊友確認資料真實完整。每份報名表只可登記一個競賽項目；海選報名費港幣 $<%= feeBase %>／隊，另可自由加購「基礎選手包」（港幣 $<%= essentialPackFee %>／隊）或「尊尚選手包」（港幣 $<%= premiumPackFee %>／隊）<% if (isCpc600) { %>，合資格者可選「海選球員優惠」（港幣 $<%= typeof qualifierPromoFee !== 'undefined' ? qualifierPromoFee : 250 %>／隊）<% } %>。
           </p>
         </div>
       </div>
@@ -97,7 +102,11 @@
           <select class="field-input" id="captainClub" name="captainClub" required>
             <option value="">請選擇</option>
           </select>
+          <% if (isCpc600) { %>
+          <p class="mt-2 text-xs leading-relaxed text-slate-500">請選擇邀請您參賽之球會（如無請選其他並填上球會名稱），大會將以該球會作為您的推薦球會。</p>
+          <% } else { %>
           <p class="mt-2 text-xs leading-relaxed text-slate-500">請選擇邀請您參賽之球會（如無請選其他並填上球會名稱），大會將優先安排該球會場地作為您的首輪海選賽區。</p>
+          <% } %>
           <div id="captainClubOtherWrap" class="mt-3 hidden">
             <label class="field-label" for="captainClubOther" id="captainClubOtherLabel">請填寫球會／機構名稱 *</label>
             <input class="field-input" id="captainClubOther" name="captainClubOther" maxlength="120" placeholder="請輸入球會或機構名稱" />
@@ -148,6 +157,13 @@
           <label class="field-label" for="captainWhatsapp">隊長 WhatsApp 流動電話 *</label>
           <input class="field-input" id="captainWhatsapp" type="tel" required placeholder="+852..." />
         </div>
+        <% if (isCpc600) { %>
+        <div>
+          <label class="field-label" for="captainHkid">隊長香港身份證號碼 *</label>
+          <input class="field-input" id="captainHkid" required placeholder="A123456(7)" maxlength="12" autocomplete="off" />
+          <p class="mt-1 text-xs text-slate-500">格式：Xnnnnnn(n)，例如 A123456(7)</p>
+        </div>
+        <% } %>
         <div>
           <label class="field-label" for="captainEmergencyName">緊急聯絡人姓名 *</label>
           <input class="field-input" id="captainEmergencyName" required />
@@ -187,6 +203,13 @@
           <label class="field-label" for="teammateWhatsapp">隊友 WhatsApp 流動電話 *</label>
           <input class="field-input" id="teammateWhatsapp" type="tel" required />
         </div>
+        <% if (isCpc600) { %>
+        <div>
+          <label class="field-label" for="teammateHkid">隊友香港身份證號碼 *</label>
+          <input class="field-input" id="teammateHkid" required placeholder="A123456(7)" maxlength="12" autocomplete="off" />
+          <p class="mt-1 text-xs text-slate-500">格式：Xnnnnnn(n)，例如 A123456(7)</p>
+        </div>
+        <% } %>
         <div>
           <label class="field-label" for="teammateEmail">隊友電郵地址 *</label>
           <input class="field-input" id="teammateEmail" type="email" required />
@@ -223,7 +246,7 @@
           <p id="eventCategoryHint" class="field-error hidden"></p>
         </fieldset>
         <div>
-          <label class="field-label" for="preferredVenueId">首選海選地區／合作球會／球館 *</label>
+          <label class="field-label" for="preferredVenueId"><%= isCpc600 ? '推薦球會 *' : '首選海選地區／合作球會／球館 *' %></label>
           <select class="field-input" id="preferredVenueId" required></select>
         </div>
         <div id="qualifierSlotPanel" class="hidden rounded-2xl bg-sky-50 px-4 py-3 ring-1 ring-sky-200">
@@ -318,6 +341,21 @@
             </ul>
           </span>
         </label>
+
+        <% if (isCpc600) { %>
+        <label class="choice-card !items-start">
+          <input type="radio" name="packTier" value="qualifier_promo" />
+          <span>
+            <strong class="block text-brand-deep">海選球員優惠</strong>
+            <span class="mt-1 block font-semibold">優惠價：港幣 $<%= typeof qualifierPromoFee !== 'undefined' ? qualifierPromoFee : 250 %>／隊</span>
+            <span class="mt-2 block">適用於曾參與海選賽但並未能勝出／晉級的球隊。</span>
+            <label class="mt-3 flex items-start gap-2 text-sm text-slate-700">
+              <input type="checkbox" id="agreeQualifierPromo" class="mt-0.5" />
+              <span>本人確認本隊曾參與 GPCC 香港站海選賽，但並未能勝出／晉級，符合本優惠條件。*</span>
+            </label>
+          </span>
+        </label>
+        <% } %>
       </div>
     </section>
 
@@ -384,5 +422,15 @@
     </div>
   </form>
 </main>
+<script>
+  window.GPCC_FORM = {
+    formChannel: <%= JSON.stringify(typeof formChannel !== 'undefined' ? formChannel : 'rsvp') %>,
+    isCpc600: <%= isCpc600 ? 'true' : 'false' %>,
+    requireHkid: <%= (typeof requireHkid !== 'undefined' && requireHkid) ? 'true' : 'false' %>,
+    successBase: <%= JSON.stringify(isCpc600 ? '/cpc600/success' : '/rsvp/success') %>,
+    payBase: <%= JSON.stringify(isCpc600 ? '/cpc600/pay' : '/rsvp/pay') %>,
+    draftKey: <%= JSON.stringify(isCpc600 ? 'gpcchkmo.cpc600.draft.v1' : 'gpcchkmo.rsvp.draft.v2') %>
+  };
+</script>
 <script src="/js/rsvp.js" defer></script>
 <%- include('partials/foot') %>

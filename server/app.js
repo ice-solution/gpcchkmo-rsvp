@@ -139,25 +139,39 @@ const receiptLabels = {
   eventCategory: EVENT_CATEGORY_LABELS,
 };
 
-app.get('/', (_req, res) => res.redirect('/rsvp'));
-app.get('/rsvp', (_req, res) => {
+function renderRsvpForm(res, { formChannel = 'rsvp', title } = {}) {
   const gatewayOn = isPaymentGatewayEnabled();
   const fee = buildPaymentSummary({
     packTier: PACK_TIERS.STANDARD,
     gatewayEnabled: gatewayOn,
   });
+  const isCpc600 = formChannel === 'cpc600';
   res.render('rsvp', {
-    title: '參賽報名表｜GPCC 香港站海選賽',
+    title:
+      title ||
+      (isCpc600
+        ? '參賽報名表｜GPCC CPC600'
+        : '參賽報名表｜GPCC 香港站海選賽'),
+    formChannel,
+    isCpc600,
+    requireHkid: isCpc600,
     paymentGatewayEnabled: gatewayOn,
     feeBase: FEE.BASE_HKD,
     packFee: FEE.ESSENTIAL_PACK_HKD,
     essentialPackFee: FEE.ESSENTIAL_PACK_HKD,
     premiumPackFee: FEE.PREMIUM_PACK_HKD,
+    qualifierPromoFee: FEE.QUALIFIER_PROMO_TOTAL_HKD,
     feeSurcharge: fee.feeAmountHkd,
     feeTotal: fee.totalAmountHkd,
   });
-});
-app.get('/rsvp/success', async (req, res) => {
+}
+
+app.get('/', (_req, res) => res.redirect('/rsvp'));
+app.get('/rsvp', (_req, res) => renderRsvpForm(res, { formChannel: 'rsvp' }));
+app.get('/cpc600', (_req, res) =>
+  renderRsvpForm(res, { formChannel: 'cpc600', title: '參賽報名表｜GPCC CPC600' })
+);
+async function renderSuccessPage(req, res, { titlePrefix = '已收到報名申請｜GPCC 香港站' } = {}) {
   const applicationId = req.query.id || '';
   let paymentState = req.query.payment || '';
   const gatewayOn = isPaymentGatewayEnabled();
@@ -168,7 +182,7 @@ app.get('/rsvp/success', async (req, res) => {
     gatewayEnabled: gatewayOn,
   });
   res.render('success', {
-    title: '已收到報名申請｜GPCC 香港站',
+    title: titlePrefix,
     paymentState,
     wonderConfigured: gatewayOn && isWonderConfigured(),
     paymentGatewayEnabled: gatewayOn,
@@ -177,19 +191,21 @@ app.get('/rsvp/success', async (req, res) => {
     packFee: fee.playerPackHkd,
     essentialPackFee: FEE.ESSENTIAL_PACK_HKD,
     premiumPackFee: FEE.PREMIUM_PACK_HKD,
+    qualifierPromoFee: FEE.QUALIFIER_PROMO_TOTAL_HKD,
     feeSurcharge: fee.feeAmountHkd,
     feeTotal: fee.totalAmountHkd,
     labels: receiptLabels,
     formatDate: formatDateYmd,
     ...ctx,
   });
-});
-app.get('/rsvp/pay', async (req, res) => {
+}
+
+async function renderPayPage(req, res, { successPath = '/rsvp/success' } = {}) {
   const applicationId = req.query.id || '';
   const gatewayOn = isPaymentGatewayEnabled();
   if (gatewayOn) {
     const q = applicationId ? `?id=${encodeURIComponent(String(applicationId))}` : '';
-    return res.redirect(`/rsvp/success${q}`);
+    return res.redirect(`${successPath}${q}`);
   }
   const ctx = await loadReceiptContext(applicationId);
   const fee = buildPaymentSummary({ packTier: ctx.packTier, gatewayEnabled: false });
@@ -199,12 +215,20 @@ app.get('/rsvp/pay', async (req, res) => {
     packFee: fee.playerPackHkd,
     essentialPackFee: FEE.ESSENTIAL_PACK_HKD,
     premiumPackFee: FEE.PREMIUM_PACK_HKD,
+    qualifierPromoFee: FEE.QUALIFIER_PROMO_TOTAL_HKD,
     feeSurcharge: fee.feeAmountHkd,
     feeTotal: fee.totalAmountHkd,
     airwallexPayUrl: fee.airwallexPayUrl,
     ...ctx,
   });
-});
+}
+
+app.get('/rsvp/success', (req, res) => renderSuccessPage(req, res));
+app.get('/cpc600/success', (req, res) =>
+  renderSuccessPage(req, res, { titlePrefix: '已收到報名申請｜GPCC CPC600' })
+);
+app.get('/rsvp/pay', (req, res) => renderPayPage(req, res, { successPath: '/rsvp/success' }));
+app.get('/cpc600/pay', (req, res) => renderPayPage(req, res, { successPath: '/cpc600/success' }));
 
 app.use('/api', apiRouter);
 app.use('/api', phaseStubsRouter);
@@ -243,6 +267,7 @@ async function start() {
 
   app.listen(PORT, () => {
     console.log(`GPCC RSVP listening on http://localhost:${PORT}/rsvp`);
+    console.log(`CPC600 form: http://localhost:${PORT}/cpc600`);
     console.log(`Admin panel: http://localhost:${PORT}/admin`);
     console.log(
       `Wonder (${PROVIDER_ID}): ${

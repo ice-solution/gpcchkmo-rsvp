@@ -262,12 +262,20 @@ const PACK_TIERS = {
   STANDARD: 'standard',
   ESSENTIAL: 'essential',
   PREMIUM: 'premium',
+  /** CPC600：曾參與海選但未能勝出／晉級之優惠價（總額） */
+  QUALIFIER_PROMO: 'qualifier_promo',
 };
 
 const PACK_TIER_LABELS = {
   [PACK_TIERS.STANDARD]: '標準報名（僅參賽）',
   [PACK_TIERS.ESSENTIAL]: '基礎選手包（港幣 $200）',
   [PACK_TIERS.PREMIUM]: '尊尚選手包（港幣 $760）',
+  [PACK_TIERS.QUALIFIER_PROMO]: '海選球員優惠（港幣 $250）',
+};
+
+const FORM_CHANNELS = {
+  RSVP: 'rsvp',
+  CPC600: 'cpc600',
 };
 
 const FEE = {
@@ -275,6 +283,8 @@ const FEE = {
   PLAYER_PACK_HKD: 200, // Essential（向後兼容）
   ESSENTIAL_PACK_HKD: 200,
   PREMIUM_PACK_HKD: 760,
+  /** CPC600 海選球員優惠應繳總額（含報名，不加購選手包） */
+  QUALIFIER_PROMO_TOTAL_HKD: 250,
   PLATFORM_FEE_RATE: 0.03,
   CURRENCY: 'HKD',
   MAX_EVENTS_PER_PLAYER: 2,
@@ -284,7 +294,23 @@ const PACK_TIER_ADDON_HKD = {
   [PACK_TIERS.STANDARD]: 0,
   [PACK_TIERS.ESSENTIAL]: FEE.ESSENTIAL_PACK_HKD,
   [PACK_TIERS.PREMIUM]: FEE.PREMIUM_PACK_HKD,
+  // Display helper: discount relative to BASE (total is QUALIFIER_PROMO_TOTAL_HKD)
+  [PACK_TIERS.QUALIFIER_PROMO]: FEE.QUALIFIER_PROMO_TOTAL_HKD - FEE.BASE_HKD,
 };
+
+/** HKID format: A123456(7) — one letter + 6 digits + check digit */
+const HKID_RE = /^[A-Za-z]\d{6}\([0-9Aa]\)$/;
+
+function normalizeHkid(value) {
+  const raw = String(value || '').trim().toUpperCase().replace(/\s+/g, '');
+  const m = raw.match(/^([A-Z])(\d{6})\(?([0-9A])\)?$/);
+  if (!m) return raw;
+  return `${m[1]}${m[2]}(${m[3]})`;
+}
+
+function isValidHkid(value) {
+  return HKID_RE.test(normalizeHkid(value));
+}
 
 /** Reference year for age-group eligibility (event year) */
 const EVENT_YEAR = 2026;
@@ -338,6 +364,10 @@ module.exports = {
   PACK_TIERS,
   PACK_TIER_LABELS,
   PACK_TIER_ADDON_HKD,
+  FORM_CHANNELS,
+  HKID_RE,
+  normalizeHkid,
+  isValidHkid,
   FEE,
   EVENT_YEAR,
   getEligibleDobBounds,

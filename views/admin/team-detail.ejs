@@ -9,6 +9,9 @@
     <a href="/admin" class="text-sm text-brand-blue hover:underline">← 返回列表</a>
     <h1 class="mt-1 font-display text-2xl font-bold text-brand-deep">報名詳情</h1>
     <p class="mt-1 font-mono text-xs text-slate-500"><%= team._id %></p>
+    <% if (team.formChannel === 'cpc600') { %>
+    <p class="mt-1"><span class="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-900">CPC600</span></p>
+    <% } %>
   </div>
   <% if (team.teamCode) { %>
   <div class="rounded-xl bg-brand-lime/40 px-4 py-2 font-mono text-sm font-bold text-brand-deep"><%= team.teamCode %></div>
@@ -140,6 +143,10 @@
             <input class="field-input" name="captainWhatsapp" value="<%= captain.whatsapp || '' %>" required />
           </div>
           <div>
+            <label class="field-label">香港身份證</label>
+            <input class="field-input" name="captainHkid" value="<%= captain.hkid || '' %>" placeholder="A123456(7)" />
+          </div>
+          <div>
             <label class="field-label">電郵</label>
             <input class="field-input" type="email" name="captainEmailPlayer" value="<%= captain.email || '' %>" required />
           </div>
@@ -186,6 +193,10 @@
           <div>
             <label class="field-label">WhatsApp</label>
             <input class="field-input" name="teammateWhatsapp" value="<%= teammate.whatsapp || '' %>" required />
+          </div>
+          <div>
+            <label class="field-label">香港身份證</label>
+            <input class="field-input" name="teammateHkid" value="<%= teammate.hkid || '' %>" placeholder="A123456(7)" />
           </div>
           <div>
             <label class="field-label">電郵</label>

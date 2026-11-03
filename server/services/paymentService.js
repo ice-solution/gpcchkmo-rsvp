@@ -18,6 +18,10 @@ const AIRWALLEX_PAY_URLS = {
   [PACK_TIERS.STANDARD]: 'https://pay.airwallex.com/sghmy57gxoo5',
   [PACK_TIERS.ESSENTIAL]: 'https://pay.airwallex.com/sghmy50i94e0',
   [PACK_TIERS.PREMIUM]: 'https://pay.airwallex.com/sghmzgsmo27i',
+  // TODO: replace with dedicated Airwallex link for CPC600 海選球員優惠 when available
+  [PACK_TIERS.QUALIFIER_PROMO]:
+    process.env.AIRWALLEX_PAY_URL_QUALIFIER_PROMO ||
+    'https://pay.airwallex.com/sghmy57gxoo5',
 };
 
 function normalizePackTier(packTier, wantPlayerPack) {
@@ -39,6 +43,7 @@ function roundMoney(n) {
 }
 
 function packAddonHkd(packTier = PACK_TIERS.STANDARD) {
+  if (packTier === PACK_TIERS.QUALIFIER_PROMO) return 0;
   return Number(PACK_TIER_ADDON_HKD[packTier] || 0);
 }
 
@@ -47,6 +52,9 @@ function registrationSubtotal(packTierOrWantPack = PACK_TIERS.STANDARD) {
     typeof packTierOrWantPack === 'boolean'
       ? normalizePackTier(null, packTierOrWantPack)
       : normalizePackTier(packTierOrWantPack);
+  if (tier === PACK_TIERS.QUALIFIER_PROMO) {
+    return roundMoney(FEE.QUALIFIER_PROMO_TOTAL_HKD);
+  }
   return roundMoney(FEE.BASE_HKD + packAddonHkd(tier));
 }
 
@@ -80,24 +88,34 @@ function buildPaymentSummary({
       };
   const feePct = FEE.PLATFORM_FEE_RATE * 100;
   const packLabel = PACK_TIER_LABELS[tier] || tier;
+  const entryShown =
+    tier === PACK_TIERS.QUALIFIER_PROMO
+      ? FEE.QUALIFIER_PROMO_TOTAL_HKD
+      : FEE.BASE_HKD;
   const packBitOn =
-    pack > 0
-      ? `報名費 HKD $${FEE.BASE_HKD} ＋ ${packLabel} HKD $${pack} ＋ 手續費 HKD $${amounts.feeAmountHkd}，應繳總額 HKD $${amounts.totalAmountHkd}。`
-      : `海選報名費 HKD $${FEE.BASE_HKD} ＋ 手續費 HKD $${amounts.feeAmountHkd}，應繳總額 HKD $${amounts.totalAmountHkd}。`;
+    tier === PACK_TIERS.QUALIFIER_PROMO
+      ? `${packLabel} HKD $${entryShown} ＋ 手續費 HKD $${amounts.feeAmountHkd}，應繳總額 HKD $${amounts.totalAmountHkd}。`
+      : pack > 0
+        ? `報名費 HKD $${FEE.BASE_HKD} ＋ ${packLabel} HKD $${pack} ＋ 手續費 HKD $${amounts.feeAmountHkd}，應繳總額 HKD $${amounts.totalAmountHkd}。`
+        : `海選報名費 HKD $${FEE.BASE_HKD} ＋ 手續費 HKD $${amounts.feeAmountHkd}，應繳總額 HKD $${amounts.totalAmountHkd}。`;
   const packBitOff =
-    pack > 0
-      ? `報名費 HKD $${FEE.BASE_HKD} ＋ ${packLabel} HKD $${pack}，應繳總額 HKD $${amounts.totalAmountHkd}。`
-      : `海選報名費 HKD $${FEE.BASE_HKD}／隊。`;
+    tier === PACK_TIERS.QUALIFIER_PROMO
+      ? `${packLabel}：應繳總額 HKD $${amounts.totalAmountHkd}／隊。`
+      : pack > 0
+        ? `報名費 HKD $${FEE.BASE_HKD} ＋ ${packLabel} HKD $${pack}，應繳總額 HKD $${amounts.totalAmountHkd}。`
+        : `海選報名費 HKD $${FEE.BASE_HKD}／隊。`;
   return {
     ...amounts,
-    entryFeeHkd: FEE.BASE_HKD,
+    entryFeeHkd: entryShown,
     playerPackHkd: pack,
     playerPackPriceHkd: FEE.ESSENTIAL_PACK_HKD,
     essentialPackHkd: FEE.ESSENTIAL_PACK_HKD,
     premiumPackHkd: FEE.PREMIUM_PACK_HKD,
+    qualifierPromoTotalHkd: FEE.QUALIFIER_PROMO_TOTAL_HKD,
     packTier: tier,
     packTierLabel: packLabel,
-    wantPlayerPack: tier !== PACK_TIERS.STANDARD,
+    wantPlayerPack:
+      tier !== PACK_TIERS.STANDARD && tier !== PACK_TIERS.QUALIFIER_PROMO,
     currency: FEE.CURRENCY,
     paymentGatewayEnabled: Boolean(gatewayEnabled),
     providerHint: gatewayEnabled ? 'wonder_gpcchkmo' : 'airwallex',

@@ -602,6 +602,7 @@ router.post('/teams/:id/edit', requireAdmin, async (req, res, next) => {
       captainGender,
       captainDob,
       captainWhatsapp,
+      captainHkid,
       captainEmailPlayer,
       captainClubPlayer,
       captainEmergencyName,
@@ -611,6 +612,7 @@ router.post('/teams/:id/edit', requireAdmin, async (req, res, next) => {
       teammateGender,
       teammateDob,
       teammateWhatsapp,
+      teammateHkid,
       teammateEmail,
       teammateClub,
       teammateEmergencyName,
@@ -640,7 +642,8 @@ router.post('/teams/:id/edit', requireAdmin, async (req, res, next) => {
     }
     if (packTier && Object.values(PACK_TIERS).includes(packTier)) {
       team.packTier = packTier;
-      team.wantPlayerPack = packTier !== PACK_TIERS.STANDARD;
+      team.wantPlayerPack =
+        packTier !== PACK_TIERS.STANDARD && packTier !== PACK_TIERS.QUALIFIER_PROMO;
     }
 
     await team.save();
@@ -659,6 +662,11 @@ router.post('/teams/:id/edit', requireAdmin, async (req, res, next) => {
         if (!Number.isNaN(d.getTime())) player.dateOfBirth = d;
       }
       if (fields.whatsapp) player.whatsapp = fields.whatsapp.trim();
+      if (typeof fields.hkid === 'string') {
+        player.hkid = String(fields.hkid || '')
+          .trim()
+          .toUpperCase();
+      }
       if (fields.email) player.email = fields.email.trim().toLowerCase();
       if (typeof fields.club === 'string') player.club = fields.club.trim();
       if (fields.emergencyName || fields.emergencyPhone) {
@@ -676,6 +684,7 @@ router.post('/teams/:id/edit', requireAdmin, async (req, res, next) => {
       gender: captainGender,
       dateOfBirth: captainDob,
       whatsapp: captainWhatsapp,
+      hkid: captainHkid,
       email: captainEmailPlayer,
       club: captainClubPlayer,
       emergencyName: captainEmergencyName,
@@ -687,6 +696,7 @@ router.post('/teams/:id/edit', requireAdmin, async (req, res, next) => {
       gender: teammateGender,
       dateOfBirth: teammateDob,
       whatsapp: teammateWhatsapp,
+      hkid: teammateHkid,
       email: teammateEmail,
       club: teammateClub,
       emergencyName: teammateEmergencyName,

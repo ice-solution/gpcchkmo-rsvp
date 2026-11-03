@@ -2,13 +2,22 @@
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 
+  const FORM = window.GPCC_FORM || {
+    formChannel: 'rsvp',
+    isCpc600: false,
+    requireHkid: false,
+    successBase: '/rsvp/success',
+    payBase: '/rsvp/pay',
+    draftKey: 'gpcchkmo.rsvp.draft.v2',
+  };
+
   const STEP_LABELS = ['簡介', '隊伍', '隊長', '隊友', '競賽', '意向', '選手包', '條款'];
   let meta = null;
   let step = 0;
   let maxReached = 0;
   const total = 8;
 
-  const DRAFT_KEY = 'gpcchkmo.rsvp.draft.v2';
+  const DRAFT_KEY = FORM.draftKey || 'gpcchkmo.rsvp.draft.v2';
   let saveTimer = null;
   let restoring = false;
 
@@ -22,12 +31,14 @@
     'captainEnglishName',
     'captainDob',
     'captainWhatsapp',
+    'captainHkid',
     'captainEmergencyName',
     'captainEmergencyPhone',
     'teammateChineseName',
     'teammateEnglishName',
     'teammateDob',
     'teammateWhatsapp',
+    'teammateHkid',
     'teammateEmail',
     'teammateClub',
     'teammateEmergencyName',
@@ -43,7 +54,19 @@
     'agreePics',
     'agreeMarketing',
     'agreeScheduleTerms',
+    'agreeQualifierPromo',
   ];
+
+  function normalizeHkidInput(value) {
+    const raw = String(value || '').trim().toUpperCase().replace(/\s+/g, '');
+    const m = raw.match(/^([A-Z])(\d{6})\(?([0-9A])\)?$/);
+    if (!m) return raw;
+    return `${m[1]}${m[2]}(${m[3]})`;
+  }
+
+  function isValidHkid(value) {
+    return /^[A-Z]\d{6}\([0-9A]\)$/.test(normalizeHkidInput(value));
+  }
   const RADIO_NAMES = [
     'captainGender',
     'teammateGender',
@@ -351,6 +374,12 @@
         }
       );
       if (!radioValue('captainGender')) errors.push('請選擇隊長性別');
+      if (FORM.requireHkid) {
+        const hkidEl = $('#captainHkid');
+        if (!hkidEl || !isValidHkid(hkidEl.value)) {
+          errors.push('請填寫正確的隊長香港身份證號碼（例：A123456(7)）');
+        }
+      }
     }
     if (n === 3) {
       ['teammateChineseName', 'teammateEnglishName', 'teammateDob', 'teammateWhatsapp', 'teammateEmail', 'teammateEmergencyName', 'teammateEmergencyPhone'].forEach(
@@ -359,11 +388,19 @@
         }
       );
       if (!radioValue('teammateGender')) errors.push('請選擇隊友性別');
+      if (FORM.requireHkid) {
+        const hkidEl = $('#teammateHkid');
+        if (!hkidEl || !isValidHkid(hkidEl.value)) {
+          errors.push('請填寫正確的隊友香港身份證號碼（例：A123456(7)）');
+        }
+      }
     }
     if (n === 4) {
       if (!radioValue('ageGroup')) errors.push('請選擇年齡組別');
       if (!radioValue('eventCategory')) errors.push('請選擇競賽項目');
-      if (!$('#preferredVenueId').value) errors.push('請選擇首選海選地區／球館');
+      if (!$('#preferredVenueId').value) {
+        errors.push(FORM.isCpc600 ? '請選擇推薦球會' : '請選擇首選海選地區／球館');
+      }
       if (!$('#agreeScheduleTerms').checked) {
         errors.push('請閱讀並同意《賽程管理與特別說明》');
       }
@@ -380,6 +417,12 @@
     }
     if (n === 6) {
       if (!radioValue('packTier')) errors.push('請選擇選手包加購選項');
+      if (radioValue('packTier') === 'qualifier_promo') {
+        const ack = $('#agreeQualifierPromo');
+        if (!ack || !ack.checked) {
+          errors.push('請確認曾參與海選賽但未能勝出／晉級，以選用海選球員優惠');
+        }
+      }
     }
     if (n === 7) {
       ['agreeRules', 'agreeRanking', 'agreeTruth', 'agreePics'].forEach((id) => {
@@ -397,9 +440,10 @@
     const clubFollowup = followups[clubSelect];
     const packTier = radioValue('packTier') || 'standard';
     return {
+      formChannel: FORM.formChannel || 'rsvp',
       introAcknowledged: $('#introAck').checked,
       packTier,
-      wantPlayerPack: packTier !== 'standard',
+      wantPlayerPack: packTier !== 'standard' && packTier !== 'qualifier_promo',
       captainClub: clubSelect,
       captainClubOther:
         clubSelect === '__other__' || (clubFollowup && clubFollowup.kind === 'name')
@@ -418,6 +462,9 @@
         gender: radioValue('captainGender'),
         dateOfBirth: $('#captainDob').value,
         whatsapp: $('#captainWhatsapp').value.trim(),
+        hkid: FORM.requireHkid
+          ? normalizeHkidInput($('#captainHkid')?.value || '')
+          : '',
         emergencyContact: {
           name: $('#captainEmergencyName').value.trim(),
           phone: $('#captainEmergencyPhone').value.trim(),
@@ -429,6 +476,9 @@
         gender: radioValue('teammateGender'),
         dateOfBirth: $('#teammateDob').value,
         whatsapp: $('#teammateWhatsapp').value.trim(),
+        hkid: FORM.requireHkid
+          ? normalizeHkidInput($('#teammateHkid')?.value || '')
+          : '',
         email: $('#teammateEmail').value.trim(),
         club: $('#teammateClub').value.trim(),
         emergencyContact: {
@@ -457,6 +507,7 @@
         pics: $('#agreePics').checked,
         marketing: $('#agreeMarketing').checked,
         scheduleTerms: $('#agreeScheduleTerms').checked,
+        qualifierPromoEligible: Boolean($('#agreeQualifierPromo')?.checked),
       },
     };
   }
@@ -651,16 +702,27 @@
       const tier = radioValue('packTier') || 'standard';
       const tierMeta = (meta.packTiers || []).find((t) => t.value === tier);
       const entry = Number(meta.fee.entryFeeHkd || meta.fee.baseAmountHkd || 680);
-      const pack = tierMeta
-        ? Number(tierMeta.addonHkd || 0)
-        : tier === 'premium'
-          ? Number(meta.fee.premiumPackHkd || 760)
-          : tier === 'essential'
-            ? Number(meta.fee.essentialPackHkd || meta.fee.playerPackPriceHkd || 200)
-            : 0;
+      let pack = 0;
+      let subtotal;
+      if (tier === 'qualifier_promo') {
+        subtotal = roundMoney(
+          tierMeta?.totalHkd != null
+            ? Number(tierMeta.totalHkd)
+            : Number(meta.fee.qualifierPromoTotalHkd || 250)
+        );
+        pack = 0;
+      } else {
+        pack = tierMeta
+          ? Number(tierMeta.addonHkd || 0)
+          : tier === 'premium'
+            ? Number(meta.fee.premiumPackHkd || 760)
+            : tier === 'essential'
+              ? Number(meta.fee.essentialPackHkd || meta.fee.playerPackPriceHkd || 200)
+              : 0;
+        subtotal = roundMoney(entry + pack);
+      }
       const rateRaw = meta.fee && meta.fee.feeRate;
       const rate = Number.isFinite(Number(rateRaw)) ? Number(rateRaw) : 0;
-      const subtotal = roundMoney(entry + pack);
       const surcharge = roundMoney(subtotal * rate);
       const total = roundMoney(subtotal + surcharge);
       $$('#pack-line').forEach((el) => el.classList.toggle('hidden', pack <= 0));
@@ -779,7 +841,8 @@
         const id = json.data.applicationId;
         const gatewayOn = Boolean(meta && meta.paymentGatewayEnabled);
         clearDraft();
-        window.location.href = `/rsvp/success?id=${encodeURIComponent(id)}${
+        const successBase = FORM.successBase || '/rsvp/success';
+        window.location.href = `${successBase}?id=${encodeURIComponent(id)}${
           gatewayOn ? '&pay=1' : ''
         }`;
       } catch (err) {

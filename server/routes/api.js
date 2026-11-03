@@ -58,12 +58,16 @@ router.get('/meta', async (_req, res, next) => {
       data: {
         paymentGatewayEnabled: isPaymentGatewayEnabled(),
         fee: buildPaymentSummary({ packTier: PACK_TIERS.STANDARD }),
-        packTiers: Object.values(PACK_TIERS).map((value) => ({
-          value,
-          label: PACK_TIER_LABELS[value],
-          addonHkd: PACK_TIER_ADDON_HKD[value],
-          totalHkd: FEE.BASE_HKD + PACK_TIER_ADDON_HKD[value],
-        })),
+        packTiers: Object.values(PACK_TIERS).map((value) => {
+          const summary = buildPaymentSummary({ packTier: value });
+          return {
+            value,
+            label: PACK_TIER_LABELS[value],
+            addonHkd:
+              value === PACK_TIERS.QUALIFIER_PROMO ? 0 : PACK_TIER_ADDON_HKD[value],
+            totalHkd: summary.totalAmountHkd,
+          };
+        }),
         maxEventsPerPlayer: FEE.MAX_EVENTS_PER_PLAYER,
         captainClubs: CAPTAIN_CLUBS.filter(
           (label) => !HIDDEN_CAPTAIN_CLUBS.includes(label)

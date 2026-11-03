@@ -19,6 +19,9 @@ const {
   CAPTAIN_CLUB_OTHER_VALUE,
   CAPTAIN_CLUB_FOLLOWUPS,
   PACK_TIERS,
+  FORM_CHANNELS,
+  normalizeHkid,
+  isValidHkid,
 } = require('../constants/enums');
 const {
   validateAgeGroupSelection,
@@ -114,7 +117,30 @@ function validatePayload(body) {
 
   if (!Object.values(AGE_GROUPS).includes(body.ageGroup)) errors.push('年齡組別無效');
   if (!Object.values(EVENT_CATEGORIES).includes(body.eventCategory)) errors.push('競賽項目無效');
-  push(requireString(body.preferredVenueLabel || body.preferredVenueId, '首選海選地區／球館'));
+
+  const formChannel =
+    body.formChannel === FORM_CHANNELS.CPC600
+      ? FORM_CHANNELS.CPC600
+      : FORM_CHANNELS.RSVP;
+  body.formChannel = formChannel;
+  const venueFieldLabel =
+    formChannel === FORM_CHANNELS.CPC600 ? '推薦球會' : '首選海選地區／球館';
+  push(requireString(body.preferredVenueLabel || body.preferredVenueId, venueFieldLabel));
+
+  if (formChannel === FORM_CHANNELS.CPC600) {
+    const capHkid = normalizeHkid(captain.hkid);
+    const tmHkid = normalizeHkid(teammate.hkid);
+    if (!isValidHkid(capHkid)) {
+      errors.push('隊長香港身份證號碼格式不正確（例：A123456(7)）');
+    } else {
+      captain.hkid = capHkid;
+    }
+    if (!isValidHkid(tmHkid)) {
+      errors.push('隊友香港身份證號碼格式不正確（例：A123456(7)）');
+    } else {
+      teammate.hkid = tmHkid;
+    }
+  }
 
   const research = body.research || {};
   push(requireString(research.carnivalIntent, '嘉年華出席意向'));
@@ -141,6 +167,15 @@ function validatePayload(body) {
   const packTier = normalizePackTier(body.packTier, body.wantPlayerPack);
   if (!Object.values(PACK_TIERS).includes(packTier)) {
     errors.push('請選擇選手包加購選項');
+  }
+  if (
+    packTier === PACK_TIERS.QUALIFIER_PROMO &&
+    formChannel !== FORM_CHANNELS.CPC600
+  ) {
+    errors.push('海選球員優惠僅適用於 CPC600 報名表');
+  }
+  if (packTier === PACK_TIERS.QUALIFIER_PROMO && agreements.qualifierPromoEligible !== true) {
+    errors.push('請確認曾參與海選賽但未能勝出／晉級，以選用海選球員優惠');
   }
   body.packTier = packTier;
 
@@ -195,7 +230,11 @@ async function createRsvp(body) {
     }
   }
   if (!preferredVenueLabel) {
-    return { ok: false, status: 400, errors: ['首選海選地區／球館無效'] };
+    const venueErr =
+      body.formChannel === FORM_CHANNELS.CPC600
+        ? '推薦球會無效'
+        : '首選海選地區／球館無效';
+    return { ok: false, status: 400, errors: [venueErr] };
   }
 
   const slotInfo = resolveQualifierSlot({
@@ -217,6 +256,7 @@ async function createRsvp(body) {
     displayName: (body.displayName || '').trim(),
     captainClub: body.captainClub.trim(),
     captainEmail,
+    formChannel: body.formChannel || FORM_CHANNELS.RSVP,
     registrationType: body.registrationType,
     ageGroup: body.ageGroup,
     eventCategory: body.eventCategory,
@@ -225,7 +265,8 @@ async function createRsvp(body) {
     qualifierSlotLabel,
     availability: Array.isArray(body.availability) ? body.availability : [],
     packTier,
-    wantPlayerPack: packTier !== PACK_TIERS.STANDARD,
+    wantPlayerPack:
+      packTier !== PACK_TIERS.STANDARD && packTier !== PACK_TIERS.QUALIFIER_PROMO,
     research: {
       carnivalIntent: body.research.carnivalIntent,
       spectatorCount: body.research.spectatorCount || '',
@@ -245,6 +286,9 @@ async function createRsvp(body) {
       pics: true,
       marketing: body.agreements.marketing === true,
       scheduleTerms: true,
+      qualifierPromoEligible:
+        packTier === PACK_TIERS.QUALIFIER_PROMO &&
+        body.agreements?.qualifierPromoEligible === true,
     },
     introAcknowledged: true,
     introAcknowledgedAt: new Date(),
@@ -284,6 +328,7 @@ async function createRsvp(body) {
         dateOfBirth: new Date(body.captain.dateOfBirth),
         whatsapp: body.captain.whatsapp.trim(),
         email: captainEmail,
+        hkid: normalizeHkid(body.captain.hkid || ''),
         club: body.captainClub.trim(),
         emergencyContact: {
           name: body.captain.emergencyContact.name.trim(),
@@ -299,6 +344,7 @@ async function createRsvp(body) {
         dateOfBirth: new Date(body.teammate.dateOfBirth),
         whatsapp: body.teammate.whatsapp.trim(),
         email: body.teammate.email.trim().toLowerCase(),
+        hkid: normalizeHkid(body.teammate.hkid || ''),
         club: (body.teammate.club || '').trim(),
         emergencyContact: {
           name: body.teammate.emergencyContact.name.trim(),
