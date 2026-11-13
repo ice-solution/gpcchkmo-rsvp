@@ -2,14 +2,19 @@
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 
-  const FORM = window.GPCC_FORM || {
-    formChannel: 'rsvp',
-    isCpc600: false,
-    requireHkid: false,
-    successBase: '/rsvp/success',
-    payBase: '/rsvp/pay',
-    draftKey: 'gpcchkmo.rsvp.draft.v2',
-  };
+  const FORM = Object.assign(
+    {
+      formChannel: 'rsvp',
+      isCpc600: false,
+      requireHkid: false,
+      successBase: '/rsvp/success',
+      payBase: '/rsvp/pay',
+      draftKey: 'gpcchkmo.rsvp.draft.v2',
+    },
+    window.GPCC_FORM || {}
+  );
+  FORM.isCpc600 =
+    FORM.isCpc600 === true || FORM.formChannel === 'cpc600';
 
   const STEP_LABELS = ['簡介', '隊伍', '隊長', '隊友', '競賽', '意向', '選手包', '條款'];
   let meta = null;
@@ -32,6 +37,7 @@
     'captainDob',
     'captainWhatsapp',
     'captainHkid',
+    'captainPassport',
     'captainEmergencyName',
     'captainEmergencyPhone',
     'teammateChineseName',
@@ -39,6 +45,7 @@
     'teammateDob',
     'teammateWhatsapp',
     'teammateHkid',
+    'teammatePassport',
     'teammateEmail',
     'teammateClub',
     'teammateEmergencyName',
@@ -66,6 +73,46 @@
 
   function isValidHkid(value) {
     return /^[A-Z]\d{6}\([0-9A]\)$/.test(normalizeHkidInput(value));
+  }
+
+  function normalizePassportInput(value) {
+    return String(value || '')
+      .trim()
+      .toUpperCase()
+      .replace(/\s+/g, '');
+  }
+
+  function isValidPassport(value) {
+    return normalizePassportInput(value).length >= 5;
+  }
+
+  function validateIdDocs(role, hkidId, passportId) {
+    const hkidRaw = $(`#${hkidId}`)?.value || '';
+    const passportRaw = $(`#${passportId}`)?.value || '';
+    const hasHkid = Boolean(String(hkidRaw).trim());
+    const hasPassport = Boolean(String(passportRaw).trim());
+    const club = ($('#captainClub')?.value || '').trim();
+    const isMainland = club.startsWith('P13');
+
+    if (isMainland) {
+      if (!hasPassport || !isValidPassport(passportRaw)) {
+        return [`請填寫正確的${role}護照號碼（內地選手必填）`];
+      }
+      if (hasHkid && !isValidHkid(hkidRaw)) {
+        return [`請填寫正確的${role}香港身份證號碼（例：A123456(7)）`];
+      }
+      return [];
+    }
+    if (!hasHkid && !hasPassport) {
+      return [`請填寫${role}香港身份證或護照號碼`];
+    }
+    if (hasHkid && !isValidHkid(hkidRaw)) {
+      return [`請填寫正確的${role}香港身份證號碼（例：A123456(7)）`];
+    }
+    if (hasPassport && !isValidPassport(passportRaw)) {
+      return [`請填寫正確的${role}護照號碼`];
+    }
+    return [];
   }
   const RADIO_NAMES = [
     'captainGender',
@@ -374,11 +421,8 @@
         }
       );
       if (!radioValue('captainGender')) errors.push('請選擇隊長性別');
-      if (FORM.requireHkid) {
-        const hkidEl = $('#captainHkid');
-        if (!hkidEl || !isValidHkid(hkidEl.value)) {
-          errors.push('請填寫正確的隊長香港身份證號碼（例：A123456(7)）');
-        }
+      if (FORM.isCpc600) {
+        errors.push(...validateIdDocs('隊長', 'captainHkid', 'captainPassport'));
       }
     }
     if (n === 3) {
@@ -388,21 +432,23 @@
         }
       );
       if (!radioValue('teammateGender')) errors.push('請選擇隊友性別');
-      if (FORM.requireHkid) {
-        const hkidEl = $('#teammateHkid');
-        if (!hkidEl || !isValidHkid(hkidEl.value)) {
-          errors.push('請填寫正確的隊友香港身份證號碼（例：A123456(7)）');
-        }
+      if (FORM.isCpc600) {
+        errors.push(...validateIdDocs('隊友', 'teammateHkid', 'teammatePassport'));
       }
     }
     if (n === 4) {
       if (!radioValue('ageGroup')) errors.push('請選擇年齡組別');
       if (!radioValue('eventCategory')) errors.push('請選擇競賽項目');
-      if (!$('#preferredVenueId').value) {
-        errors.push(FORM.isCpc600 ? '請選擇推薦球會' : '請選擇首選海選地區／球館');
-      }
-      if (!$('#agreeScheduleTerms').checked) {
-        errors.push('請閱讀並同意《賽程管理與特別說明》');
+      // CPC-600 無海選場地／賽程條款；只在舊 RSVP 有 select 時才驗證
+      const venueEl = $('#preferredVenueId');
+      const needsLegacyVenue = Boolean(venueEl && venueEl.tagName === 'SELECT');
+      if (needsLegacyVenue) {
+        if (!venueEl.value) {
+          errors.push('請選擇首選海選地區／球館');
+        }
+        if (!$('#agreeScheduleTerms')?.checked) {
+          errors.push('請閱讀並同意《賽程管理與特別說明》');
+        }
       }
     }
     if (n === 5) {
@@ -434,13 +480,18 @@
 
   function buildPayload() {
     const venueSelect = $('#preferredVenueId');
-    const venueOption = venueSelect.selectedOptions[0];
+    const venueOption =
+      venueSelect && venueSelect.tagName === 'SELECT' ? venueSelect.selectedOptions[0] : null;
     const clubSelect = $('#captainClub').value.trim();
     const followups = (meta && meta.captainClubFollowups) || {};
     const clubFollowup = followups[clubSelect];
     const packTier = radioValue('packTier') || 'standard';
     return {
-      formChannel: FORM.formChannel || 'rsvp',
+      formChannel: FORM.isCpc600
+        ? 'cpc600'
+        : FORM.formChannel === 'rsvp'
+          ? 'rsvp'
+          : 'cpc600',
       introAcknowledged: $('#introAck').checked,
       packTier,
       wantPlayerPack: packTier !== 'standard' && packTier !== 'qualifier_promo',
@@ -462,8 +513,11 @@
         gender: radioValue('captainGender'),
         dateOfBirth: $('#captainDob').value,
         whatsapp: $('#captainWhatsapp').value.trim(),
-        hkid: FORM.requireHkid
+        hkid: FORM.isCpc600
           ? normalizeHkidInput($('#captainHkid')?.value || '')
+          : '',
+        passportNumber: FORM.isCpc600
+          ? normalizePassportInput($('#captainPassport')?.value || '')
           : '',
         emergencyContact: {
           name: $('#captainEmergencyName').value.trim(),
@@ -476,8 +530,11 @@
         gender: radioValue('teammateGender'),
         dateOfBirth: $('#teammateDob').value,
         whatsapp: $('#teammateWhatsapp').value.trim(),
-        hkid: FORM.requireHkid
+        hkid: FORM.isCpc600
           ? normalizeHkidInput($('#teammateHkid')?.value || '')
+          : '',
+        passportNumber: FORM.isCpc600
+          ? normalizePassportInput($('#teammatePassport')?.value || '')
           : '',
         email: $('#teammateEmail').value.trim(),
         club: $('#teammateClub').value.trim(),
@@ -488,9 +545,15 @@
       },
       ageGroup: radioValue('ageGroup'),
       eventCategory: radioValue('eventCategory'),
-      preferredVenueId: venueSelect.value,
-      preferredVenueLabel: venueOption ? venueOption.textContent : '',
-      qualifierSlotLabel: ($('#qualifierSlotText')?.textContent || '').trim(),
+      preferredVenueId: FORM.isCpc600 ? '' : venueSelect?.value || '',
+      preferredVenueLabel: FORM.isCpc600
+        ? ''
+        : venueOption
+          ? venueOption.textContent
+          : '',
+      qualifierSlotLabel: FORM.isCpc600
+        ? ''
+        : ($('#qualifierSlotText')?.textContent || '').trim(),
       availability: [],
       research: {
         carnivalIntent: radioValue('carnivalIntent'),
@@ -506,7 +569,7 @@
         truthfulness: $('#agreeTruth').checked,
         pics: $('#agreePics').checked,
         marketing: $('#agreeMarketing').checked,
-        scheduleTerms: $('#agreeScheduleTerms').checked,
+        scheduleTerms: FORM.isCpc600 ? true : Boolean($('#agreeScheduleTerms')?.checked),
         qualifierPromoEligible: Boolean($('#agreeQualifierPromo')?.checked),
       },
     };
@@ -592,6 +655,7 @@
   }
 
   function syncQualifierAndScheduleTerms() {
+    if (FORM.isCpc600) return;
     const venue = selectedVenueMeta();
     const termsPanel = $('#scheduleTermsPanel');
     const termsBody = $('#scheduleTermsBody');
@@ -748,15 +812,17 @@
     checkCards($('#contactPrefOptions'), 'contactPrefs', meta.contactPrefs);
 
     const venue = $('#preferredVenueId');
-    venue.innerHTML =
-      '<option value="">請選擇</option>' +
-      meta.venues
-        .map((v) => {
-          const text = v.label || v.name || '';
-          return `<option value="${v.id}" data-schedule-key="${escapeHtml(v.scheduleKey || '')}">${escapeHtml(text)}</option>`;
-        })
-        .join('');
-    venue.addEventListener('change', syncQualifierAndScheduleTerms);
+    if (venue && venue.tagName === 'SELECT') {
+      venue.innerHTML =
+        '<option value="">請選擇</option>' +
+        meta.venues
+          .map((v) => {
+            const text = v.label || v.name || '';
+            return `<option value="${v.id}" data-schedule-key="${escapeHtml(v.scheduleKey || '')}">${escapeHtml(text)}</option>`;
+          })
+          .join('');
+      venue.addEventListener('change', syncQualifierAndScheduleTerms);
+    }
 
     const spectators = $('#spectatorCount');
     spectators.innerHTML =

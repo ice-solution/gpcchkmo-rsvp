@@ -9,9 +9,13 @@
     <a href="/admin" class="text-sm text-brand-blue hover:underline">← 返回列表</a>
     <h1 class="mt-1 font-display text-2xl font-bold text-brand-deep">報名詳情</h1>
     <p class="mt-1 font-mono text-xs text-slate-500"><%= team._id %></p>
-    <% if (team.formChannel === 'cpc600') { %>
-    <p class="mt-1"><span class="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-900">CPC600</span></p>
-    <% } %>
+    <p class="mt-1">
+      <% if (team.formChannel === 'cpc600') { %>
+      <span class="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-900">CPC-600 正賽</span>
+      <% } else { %>
+      <span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700">海選 RSVP（舊）</span>
+      <% } %>
+    </p>
   </div>
   <% if (team.teamCode) { %>
   <div class="rounded-xl bg-brand-lime/40 px-4 py-2 font-mono text-sm font-bold text-brand-deep"><%= team.teamCode %></div>
@@ -102,13 +106,15 @@
             <input class="field-input" value="<%= labels.registrationType[team.registrationType] || team.registrationType || '—' %>" readonly />
           </div>
           <div class="sm:col-span-2">
-            <label class="field-label">首選場地</label>
+            <label class="field-label"><%= team.formChannel === 'cpc600' ? '正賽地點' : '首選場地' %></label>
             <input class="field-input" name="preferredVenueLabel" value="<%= team.preferredVenueLabel || '' %>" />
           </div>
+          <% if (team.formChannel !== 'cpc600') { %>
           <div class="sm:col-span-2">
             <label class="field-label">預計海選時間</label>
             <input class="field-input" name="qualifierSlotLabel" value="<%= team.qualifierSlotLabel || '' %>" />
           </div>
+          <% } %>
           <div><dt class="text-xs text-slate-500">提交時間</dt><dd><%= formatDateTime(team.submittedAt) %></dd></div>
           <div><dt class="text-xs text-slate-500">確認時間</dt><dd><%= formatDateTime(team.confirmedAt) || '—' %></dd></div>
         </div>
@@ -145,6 +151,10 @@
           <div>
             <label class="field-label">香港身份證</label>
             <input class="field-input" name="captainHkid" value="<%= captain.hkid || '' %>" placeholder="A123456(7)" />
+          </div>
+          <div>
+            <label class="field-label">護照號碼</label>
+            <input class="field-input" name="captainPassport" value="<%= captain.passportNumber || '' %>" placeholder="護照號碼" />
           </div>
           <div>
             <label class="field-label">電郵</label>
@@ -197,6 +207,10 @@
           <div>
             <label class="field-label">香港身份證</label>
             <input class="field-input" name="teammateHkid" value="<%= teammate.hkid || '' %>" placeholder="A123456(7)" />
+          </div>
+          <div>
+            <label class="field-label">護照號碼</label>
+            <input class="field-input" name="teammatePassport" value="<%= teammate.passportNumber || '' %>" placeholder="護照號碼" />
           </div>
           <div>
             <label class="field-label">電郵</label>

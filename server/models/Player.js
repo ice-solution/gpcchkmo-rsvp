@@ -23,8 +23,10 @@ const playerSchema = new mongoose.Schema(
     dateOfBirth: { type: Date, required: true },
     whatsapp: { type: String, required: true, trim: true },
     email: { type: String, required: true, trim: true, lowercase: true },
-    /** Hong Kong ID e.g. A123456(7); required for CPC600 */
+    /** Hong Kong ID e.g. A123456(7); required for CPC600 (non-mainland) */
     hkid: { type: String, trim: true, uppercase: true, default: '' },
+    /** Passport number; CPC600 mainland / non-HKID players */
+    passportNumber: { type: String, trim: true, uppercase: true, default: '' },
     club: { type: String, trim: true, default: '' },
     emergencyContact: { type: emergencyContactSchema, required: true },
 

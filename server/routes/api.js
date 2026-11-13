@@ -158,7 +158,9 @@ router.get('/meta/eligibility', (req, res) => {
 
 router.post('/rsvp', rsvpLimiter, async (req, res, next) => {
   try {
-    const result = await createRsvp(req.body || {});
+    // Public form is CPC-600 only; never treat website submissions as legacy RSVP.
+    const body = { ...(req.body || {}), formChannel: 'cpc600' };
+    const result = await createRsvp(body);
     if (!result.ok) {
       return res.status(result.status).json({
         ok: false,

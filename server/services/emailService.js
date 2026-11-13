@@ -117,7 +117,10 @@ function buildSubmissionSummaryHtml({ team, captain, teammate }) {
         row('隊長球會', escapeHtml(team.captainClub)),
         row('年齡組別', escapeHtml(labelOf(AGE_GROUP_LABELS, team.ageGroup))),
         row('競賽項目', escapeHtml(labelOf(EVENT_CATEGORY_LABELS, team.eventCategory))),
-        row('首選海選場地', escapeHtml(team.preferredVenueLabel)),
+        row(
+          team.formChannel === 'cpc600' ? '正賽地點' : '首選海選場地',
+          escapeHtml(team.preferredVenueLabel)
+        ),
         row('預計海選時間', escapeHtml(team.qualifierSlotLabel || '—')),
         row('選手包', escapeHtml(packLabel)),
       ].join('')

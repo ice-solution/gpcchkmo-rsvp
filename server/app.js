@@ -167,7 +167,10 @@ function renderRsvpForm(res, { formChannel = 'rsvp', title } = {}) {
 }
 
 app.get('/', (_req, res) => res.redirect('/rsvp'));
-app.get('/rsvp', (_req, res) => renderRsvpForm(res, { formChannel: 'rsvp' }));
+/** Legacy /rsvp URL now serves CPC-600 form (old qualifier apps remain formChannel=rsvp in DB) */
+app.get('/rsvp', (_req, res) =>
+  renderRsvpForm(res, { formChannel: 'cpc600', title: '參賽報名表｜GPCC CPC600' })
+);
 app.get('/cpc600', (_req, res) =>
   renderRsvpForm(res, { formChannel: 'cpc600', title: '參賽報名表｜GPCC CPC600' })
 );

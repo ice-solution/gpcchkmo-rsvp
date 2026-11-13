@@ -8,6 +8,8 @@ const {
   REGISTRATION_TYPES,
   PACK_TIER_LABELS,
   PACK_TIERS,
+  FORM_CHANNELS,
+  FORM_CHANNEL_LABELS,
 } = require('../constants/enums');
 
 const REGISTRATION_TYPE_LABELS = {
@@ -39,6 +41,7 @@ function buildTeamsCsv(teams, playersByTeamId) {
   const headers = [
     'applicationId',
     'teamCode',
+    'formChannel',
     'status',
     'paymentStatus',
     'qualificationStatus',
@@ -64,12 +67,16 @@ function buildTeamsCsv(teams, playersByTeamId) {
     'captainGender',
     'captainDob',
     'captainWhatsapp',
+    'captainHkid',
+    'captainPassport',
     'captainEmergency',
     'teammateChineseName',
     'teammateEnglishName',
     'teammateGender',
     'teammateDob',
     'teammateWhatsapp',
+    'teammateHkid',
+    'teammatePassport',
     'teammateEmail',
     'teammateClub',
     'teammateEmergency',
@@ -85,9 +92,11 @@ function buildTeamsCsv(teams, playersByTeamId) {
     const players = playersByTeamId.get(String(team._id)) || [];
     const captain = players.find((p) => p.role === PLAYER_ROLES.CAPTAIN) || {};
     const teammate = players.find((p) => p.role === PLAYER_ROLES.TEAMMATE) || {};
+    const channel = team.formChannel || FORM_CHANNELS.RSVP;
     const row = [
       team._id,
       team.teamCode || '',
+      FORM_CHANNEL_LABELS[channel] || channel,
       TEAM_STATUS_LABELS[team.status] || team.status,
       PAYMENT_STATUS_LABELS[team.payment?.status] || team.payment?.status || '',
       QUALIFICATION_STATUS_LABELS[team.qualificationStatus] || team.qualificationStatus,
@@ -115,6 +124,8 @@ function buildTeamsCsv(teams, playersByTeamId) {
       captain.gender || '',
       formatDate(captain.dateOfBirth),
       captain.whatsapp || '',
+      captain.hkid || '',
+      captain.passportNumber || '',
       captain.emergencyContact
         ? `${captain.emergencyContact.name} / ${captain.emergencyContact.phone}`
         : '',
@@ -123,6 +134,8 @@ function buildTeamsCsv(teams, playersByTeamId) {
       teammate.gender || '',
       formatDate(teammate.dateOfBirth),
       teammate.whatsapp || '',
+      teammate.hkid || '',
+      teammate.passportNumber || '',
       teammate.email || '',
       teammate.club || '',
       teammate.emergencyContact
@@ -152,9 +165,11 @@ function teamRowsForExport(teams, playersByTeamId) {
     const players = playersByTeamId.get(String(team._id)) || [];
     const captain = players.find((p) => p.role === PLAYER_ROLES.CAPTAIN) || {};
     const teammate = players.find((p) => p.role === PLAYER_ROLES.TEAMMATE) || {};
+    const channel = team.formChannel || FORM_CHANNELS.RSVP;
     rows.push({
       applicationId: String(team._id),
       teamCode: team.teamCode || '',
+      formChannel: FORM_CHANNEL_LABELS[channel] || channel,
       status: TEAM_STATUS_LABELS[team.status] || team.status,
       paymentStatus:
         PAYMENT_STATUS_LABELS[team.payment?.status] || team.payment?.status || '',
@@ -182,6 +197,8 @@ function teamRowsForExport(teams, playersByTeamId) {
       captainGender: captain.gender || '',
       captainDob: formatDate(captain.dateOfBirth),
       captainWhatsapp: captain.whatsapp || '',
+      captainHkid: captain.hkid || '',
+      captainPassport: captain.passportNumber || '',
       captainEmergency: captain.emergencyContact
         ? `${captain.emergencyContact.name} / ${captain.emergencyContact.phone}`
         : '',
@@ -190,6 +207,8 @@ function teamRowsForExport(teams, playersByTeamId) {
       teammateGender: teammate.gender || '',
       teammateDob: formatDate(teammate.dateOfBirth),
       teammateWhatsapp: teammate.whatsapp || '',
+      teammateHkid: teammate.hkid || '',
+      teammatePassport: teammate.passportNumber || '',
       teammateEmail: teammate.email || '',
       teammateClub: teammate.club || '',
       teammateEmergency: teammate.emergencyContact
@@ -210,6 +229,7 @@ async function buildTeamsXlsxBuffer(teams, playersByTeamId) {
   const columns = [
     { header: '申請編號', key: 'applicationId', width: 26 },
     { header: '隊伍編號', key: 'teamCode', width: 14 },
+    { header: '報名渠道', key: 'formChannel', width: 16 },
     { header: '報名狀態', key: 'status', width: 16 },
     { header: '付款狀態', key: 'paymentStatus', width: 14 },
     { header: '資格審核', key: 'qualificationStatus', width: 12 },
@@ -228,12 +248,16 @@ async function buildTeamsXlsxBuffer(teams, playersByTeamId) {
     { header: '隊長性別', key: 'captainGender', width: 8 },
     { header: '隊長出生日期', key: 'captainDob', width: 12 },
     { header: '隊長WhatsApp', key: 'captainWhatsapp', width: 14 },
+    { header: '隊長身份證', key: 'captainHkid', width: 14 },
+    { header: '隊長護照', key: 'captainPassport', width: 14 },
     { header: '隊長緊急聯絡', key: 'captainEmergency', width: 22 },
     { header: '隊友中文名', key: 'teammateChineseName', width: 12 },
     { header: '隊友英文名', key: 'teammateEnglishName', width: 16 },
     { header: '隊友性別', key: 'teammateGender', width: 8 },
     { header: '隊友出生日期', key: 'teammateDob', width: 12 },
     { header: '隊友WhatsApp', key: 'teammateWhatsapp', width: 14 },
+    { header: '隊友身份證', key: 'teammateHkid', width: 14 },
+    { header: '隊友護照', key: 'teammatePassport', width: 14 },
     { header: '隊友電郵', key: 'teammateEmail', width: 28 },
     { header: '隊友球會', key: 'teammateClub', width: 16 },
     { header: '隊友緊急聯絡', key: 'teammateEmergency', width: 22 },

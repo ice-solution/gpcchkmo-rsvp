@@ -20,6 +20,7 @@ const {
   CAPTAIN_CLUB_FOLLOWUPS,
   PACK_TIERS,
   FORM_CHANNELS,
+  CPC600_DEFAULT_VENUE_LABEL,
   normalizeHkid,
   isValidHkid,
 } = require('../constants/enums');
@@ -118,28 +119,53 @@ function validatePayload(body) {
   if (!Object.values(AGE_GROUPS).includes(body.ageGroup)) errors.push('年齡組別無效');
   if (!Object.values(EVENT_CATEGORIES).includes(body.eventCategory)) errors.push('競賽項目無效');
 
-  const formChannel =
-    body.formChannel === FORM_CHANNELS.CPC600
-      ? FORM_CHANNELS.CPC600
-      : FORM_CHANNELS.RSVP;
+  // Public submissions are always CPC-600 (legacy RSVP records remain in admin only).
+  const formChannel = FORM_CHANNELS.CPC600;
   body.formChannel = formChannel;
-  const venueFieldLabel =
-    formChannel === FORM_CHANNELS.CPC600 ? '推薦球會' : '首選海選地區／球館';
-  push(requireString(body.preferredVenueLabel || body.preferredVenueId, venueFieldLabel));
+  const isMainlandClub = String(body.captainClub || '').startsWith('P13');
 
   if (formChannel === FORM_CHANNELS.CPC600) {
-    const capHkid = normalizeHkid(captain.hkid);
-    const tmHkid = normalizeHkid(teammate.hkid);
-    if (!isValidHkid(capHkid)) {
-      errors.push('隊長香港身份證號碼格式不正確（例：A123456(7)）');
-    } else {
-      captain.hkid = capHkid;
+    body.preferredVenueLabel =
+      String(body.preferredVenueLabel || '').trim() || CPC600_DEFAULT_VENUE_LABEL;
+    body.preferredVenueId = null;
+
+    const normalizePassport = (v) =>
+      String(v || '')
+        .trim()
+        .toUpperCase()
+        .replace(/\s+/g, '');
+
+    captain.passportNumber = normalizePassport(captain.passportNumber);
+    teammate.passportNumber = normalizePassport(teammate.passportNumber);
+    captain.hkid = captain.hkid ? normalizeHkid(captain.hkid) : '';
+    teammate.hkid = teammate.hkid ? normalizeHkid(teammate.hkid) : '';
+
+    function validateIdDocs(roleLabel, person) {
+      const hasHkid = Boolean(person.hkid);
+      const hasPassport = Boolean(person.passportNumber);
+      if (isMainlandClub) {
+        if (!hasPassport) {
+          errors.push(`${roleLabel}請填寫護照號碼（內地選手必填）`);
+        }
+      } else if (!hasHkid && !hasPassport) {
+        errors.push(`${roleLabel}請填寫香港身份證或護照號碼`);
+      }
+      if (hasHkid && !isValidHkid(person.hkid)) {
+        errors.push(`${roleLabel}香港身份證號碼格式不正確（例：A123456(7)）`);
+      }
+      if (hasPassport && person.passportNumber.length < 5) {
+        errors.push(`${roleLabel}護照號碼格式不正確`);
+      }
     }
-    if (!isValidHkid(tmHkid)) {
-      errors.push('隊友香港身份證號碼格式不正確（例：A123456(7)）');
-    } else {
-      teammate.hkid = tmHkid;
-    }
+    validateIdDocs('隊長', captain);
+    validateIdDocs('隊友', teammate);
+  } else {
+    push(
+      requireString(
+        body.preferredVenueLabel || body.preferredVenueId,
+        '首選海選地區／球館'
+      )
+    );
   }
 
   const research = body.research || {};
@@ -156,8 +182,11 @@ function validatePayload(body) {
   ['rules', 'ranking', 'truthfulness', 'pics'].forEach((key) => {
     if (agreements[key] !== true) errors.push('請確認所有必填聲明及條款');
   });
-  if (agreements.scheduleTerms !== true) {
+  if (formChannel !== FORM_CHANNELS.CPC600 && agreements.scheduleTerms !== true) {
     errors.push('請閱讀並同意《賽程管理與特別說明》');
+  }
+  if (formChannel === FORM_CHANNELS.CPC600) {
+    agreements.scheduleTerms = true;
   }
 
   if (body.introAcknowledged !== true) {
@@ -221,7 +250,10 @@ async function createRsvp(body) {
   let preferredVenueLabel = (body.preferredVenueLabel || '').trim();
   let preferredVenueId = null;
   let preferredVenueDoc = null;
-  if (body.preferredVenueId && mongoose.isValidObjectId(body.preferredVenueId)) {
+  if (body.formChannel === FORM_CHANNELS.CPC600) {
+    preferredVenueLabel = preferredVenueLabel || CPC600_DEFAULT_VENUE_LABEL;
+    preferredVenueId = null;
+  } else if (body.preferredVenueId && mongoose.isValidObjectId(body.preferredVenueId)) {
     const venue = await ClubVenue.findById(body.preferredVenueId);
     if (venue && venue.isActive !== false && !venue.isOrganizerAssign) {
       preferredVenueId = venue._id;
@@ -230,20 +262,22 @@ async function createRsvp(body) {
     }
   }
   if (!preferredVenueLabel) {
-    const venueErr =
-      body.formChannel === FORM_CHANNELS.CPC600
-        ? '推薦球會無效'
-        : '首選海選地區／球館無效';
-    return { ok: false, status: 400, errors: [venueErr] };
+    return { ok: false, status: 400, errors: ['首選海選地區／球館無效'] };
   }
 
-  const slotInfo = resolveQualifierSlot({
-    scheduleKey: preferredVenueDoc?.scheduleKey,
-    venueLabel: preferredVenueDoc?.label || preferredVenueLabel,
-    ageGroup: body.ageGroup,
-    eventCategory: body.eventCategory,
-  });
-  const qualifierSlotLabel = slotInfo?.text || '';
+  const slotInfo =
+    body.formChannel === FORM_CHANNELS.CPC600
+      ? null
+      : resolveQualifierSlot({
+          scheduleKey: preferredVenueDoc?.scheduleKey,
+          venueLabel: preferredVenueDoc?.label || preferredVenueLabel,
+          ageGroup: body.ageGroup,
+          eventCategory: body.eventCategory,
+        });
+  const qualifierSlotLabel =
+    body.formChannel === FORM_CHANNELS.CPC600
+      ? '2026 年 12 月 12–13 日｜屯門市廣場 tmtplaza 4樓'
+      : slotInfo?.text || '';
 
   const packTier = normalizePackTier(body.packTier, body.wantPlayerPack);
   const paymentSummary = buildPaymentSummary({ packTier });
@@ -329,6 +363,9 @@ async function createRsvp(body) {
         whatsapp: body.captain.whatsapp.trim(),
         email: captainEmail,
         hkid: normalizeHkid(body.captain.hkid || ''),
+        passportNumber: String(body.captain.passportNumber || '')
+          .trim()
+          .toUpperCase(),
         club: body.captainClub.trim(),
         emergencyContact: {
           name: body.captain.emergencyContact.name.trim(),
@@ -345,6 +382,9 @@ async function createRsvp(body) {
         whatsapp: body.teammate.whatsapp.trim(),
         email: body.teammate.email.trim().toLowerCase(),
         hkid: normalizeHkid(body.teammate.hkid || ''),
+        passportNumber: String(body.teammate.passportNumber || '')
+          .trim()
+          .toUpperCase(),
         club: (body.teammate.club || '').trim(),
         emergencyContact: {
           name: body.teammate.emergencyContact.name.trim(),

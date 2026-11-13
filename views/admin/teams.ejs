@@ -13,6 +13,19 @@
 <% } %>
 
 <div class="mb-3">
+  <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">報名渠道（新舊申請）</p>
+  <div class="flex flex-wrap gap-2">
+    <a href="/admin<%= queryString({ channel: '', page: '' }) %>" class="rounded-full px-3 py-1 text-xs font-semibold ring-1 <%= !filters.channel ? 'bg-brand-lime text-brand-deep ring-brand-deep' : 'bg-white text-slate-600 ring-slate-200' %>">全部渠道</a>
+    <a href="/admin<%= queryString({ channel: 'cpc600', page: '' }) %>" class="rounded-full px-3 py-1 text-xs font-semibold ring-1 <%= filters.channel==='cpc600' ? 'bg-amber-200 text-amber-950 ring-amber-700' : 'bg-white text-slate-600 ring-slate-200' %>">
+      CPC-600 正賽 (<%= (channelCounts && channelCounts.cpc600) || 0 %>)
+    </a>
+    <a href="/admin<%= queryString({ channel: 'rsvp', page: '' }) %>" class="rounded-full px-3 py-1 text-xs font-semibold ring-1 <%= filters.channel==='rsvp' ? 'bg-slate-200 text-slate-900 ring-slate-500' : 'bg-white text-slate-600 ring-slate-200' %>">
+      海選 RSVP 舊表 (<%= (channelCounts && channelCounts.rsvp) || 0 %>)
+    </a>
+  </div>
+</div>
+
+<div class="mb-3">
   <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">報名狀態</p>
   <div class="flex flex-wrap gap-2">
     <% Object.keys(counts).forEach(function(key) { %>
@@ -52,6 +65,14 @@
   <div class="md:col-span-2">
     <label class="field-label">搜尋</label>
     <input class="field-input" name="q" value="<%= filters.q %>" placeholder="電郵／球會／隊名／隊伍編號" />
+  </div>
+  <div>
+    <label class="field-label">報名渠道</label>
+    <select class="field-input" name="channel">
+      <option value="">全部</option>
+      <option value="cpc600" <%= filters.channel==='cpc600'?'selected':'' %>>CPC-600 正賽</option>
+      <option value="rsvp" <%= filters.channel==='rsvp'?'selected':'' %>>海選 RSVP（舊）</option>
+    </select>
   </div>
   <div>
     <label class="field-label">隊長球會</label>
@@ -131,7 +152,14 @@
         <tr class="hover:bg-sky-50/40">
           <td class="whitespace-nowrap px-4 py-3 text-xs text-slate-500"><%= formatDateTime(team.submittedAt) %></td>
           <td class="px-4 py-3">
-            <div class="font-semibold text-slate-800"><%= team.displayName || ((captain&&captain.chineseName)||'') + (teammate?' / '+(teammate.chineseName||''):'') || '—' %></div>
+            <div class="flex flex-wrap items-center gap-1.5">
+              <div class="font-semibold text-slate-800"><%= team.displayName || ((captain&&captain.chineseName)||'') + (teammate?' / '+(teammate.chineseName||''):'') || '—' %></div>
+              <% if (team.formChannel === 'cpc600') { %>
+              <span class="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-900">CPC600</span>
+              <% } else { %>
+              <span class="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">RSVP</span>
+              <% } %>
+            </div>
             <div class="text-xs text-slate-500"><%= captain ? captain.chineseName : '—' %> · <%= team.captainEmail %></div>
             <div class="text-xs text-slate-400"><%= team.captainClub %><% var tier = team.packTier || (team.wantPlayerPack ? 'essential' : 'standard'); if (tier !== 'standard') { %> · <%= labels.packTier && labels.packTier[tier] ? labels.packTier[tier] : tier %><% } %></div>
             <% if (team.teamCode) { %><div class="mt-0.5 font-mono text-xs text-brand-blue"><%= team.teamCode %></div><% } %>
@@ -157,7 +185,7 @@
           <td class="px-4 py-3 text-right">
             <div class="flex flex-col items-end gap-1">
               <a class="text-sm font-semibold text-brand-blue hover:underline" href="/admin/teams/<%= team._id %>">詳情／編輯</a>
-              <a class="text-xs text-slate-500 hover:underline" href="/rsvp/pay?id=<%= encodeURIComponent(String(team._id)) %>" target="_blank" rel="noopener">付款頁</a>
+              <a class="text-xs text-slate-500 hover:underline" href="<%= team.formChannel === 'cpc600' ? '/cpc600' : '/rsvp' %>/pay?id=<%= encodeURIComponent(String(team._id)) %>" target="_blank" rel="noopener">付款頁</a>
             </div>
           </td>
         </tr>

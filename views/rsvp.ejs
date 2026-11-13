@@ -22,7 +22,11 @@
             <% } %>
           </h1>
           <p class="mt-2 max-w-xl text-sm text-sky-100">
-            填寫本表單即表示隊長及隊友確認資料真實完整。每份報名表只可登記一個競賽項目；海選報名費港幣 $<%= feeBase %>／隊，另可自由加購「基礎選手包」（港幣 $<%= essentialPackFee %>／隊）或「尊尚選手包」（港幣 $<%= premiumPackFee %>／隊）<% if (isCpc600) { %>，合資格者可選「海選球員優惠」（港幣 $<%= typeof qualifierPromoFee !== 'undefined' ? qualifierPromoFee : 250 %>／隊）<% } %>。
+            <% if (isCpc600) { %>
+            填寫本表單即表示隊長及隊友確認資料真實完整。每份報名表只可登記一個競賽項目。憑晉級資格者正賽報名全免；CPC 外卡隊伍需付港幣 $<%= feeBase %> 參賽。另可自由加購「基礎選手包」（港幣 $<%= essentialPackFee %>／隊）或「尊尚選手包」（港幣 $<%= premiumPackFee %>／隊）；合資格者可選「海選球員優惠」（港幣 $<%= typeof qualifierPromoFee !== 'undefined' ? qualifierPromoFee : 250 %>／隊）。
+            <% } else { %>
+            填寫本表單即表示隊長及隊友確認資料真實完整。每份報名表只可登記一個競賽項目；海選報名費港幣 $<%= feeBase %>／隊，另可自由加購「基礎選手包」（港幣 $<%= essentialPackFee %>／隊）或「尊尚選手包」（港幣 $<%= premiumPackFee %>／隊）。
+            <% } %>
           </p>
         </div>
       </div>
@@ -36,15 +40,33 @@
     <!-- Step 0: Intro -->
     <section class="step-panel rounded-3xl bg-white p-5 shadow-panel ring-1 ring-slate-200 sm:p-7" data-step="0">
       <h2 class="font-display text-lg font-bold text-brand-deep">一、活動簡介</h2>
+      <% if (isCpc600) { %>
+      <div class="mt-4 space-y-3 text-sm leading-relaxed text-slate-700">
+        <p>感謝各界對中信銀行(國際)呈獻：2026「凱瑞麟盃」粵港澳大灣區匹克球城市挑戰賽 香港賽區 (CPC-600) 的熱烈支持！大會一直致力在最理想的環境下，為大眾提供結合「Pickleball 運動」與「娛樂」的優質體驗。</p>
+        <p>是次香港站正賽正式榮獲中國網球協會（CTA）批准，升格為國家級「CPC-600」高級別分站賽事。為此，大會期望確保每位選手均能在絕對安全、乾爽且公平的場地中發揮最佳水準；同時，我們亦十分重視公眾及嘉賓的參與體驗，希望大家能盡情享受戶外嘉年華的歡樂氣氛。</p>
+        <p>本次賽事由中國網球協會、廣東省粵港澳合作促進會、廣東省社會體育和訓練競賽中心、廣東省網球協會指導，廣東省粵港澳合作促進會文化傳播委員會、南方都市報社和廣州文化集團共同主辦，廣州亞特蘭斯體育有限公司承辦，泉州凱瑞麟體育用品有限公司總冠名，香港賽區賽事由香港網球總會、澳門網球總會、盈動體育會及 MEMO PLUS PR &amp; CONSULTANTS 等單位聯合策動，期望與大眾攜手推動「全民匹克球」。</p>
+        <p>所有晉級及獲頒大會外卡的優秀隊伍，將於 12 月 12 至 13 日假屯門市廣場角逐國家級榮譽及官方積分；勝出隊伍更有機會按大會正式安排代表香港參與大灣區賽事交流，為香港增光！</p>
+      </div>
+      <% } else { %>
       <div class="mt-4 space-y-3 text-sm leading-relaxed text-slate-700">
         <p>2026「凱瑞麟盃」粵港澳大灣區匹克球城市挑戰賽（GPCC）香港站海選賽正式啟動！GPCC是橫跨大灣區八個城市並設總決賽的「體育＋文旅＋娛樂」三融合匹克球盛事。本次賽事由中國網球協會、廣東省粵港澳合作促進會、廣東省社會體育和訓練競賽中心、廣東省網球協會指導，廣東省粵港澳合作促進會文化傳播委員會、南方都市報社和廣州文化集團共同主辦，廣州亞特蘭斯體育有限公司承辦，泉州凱瑞麟體育用品有限公司總冠名，香港賽區賽事由香港網球總會、澳門網球總會、盈動體育會及 MEMO PLUS PR &amp; CONSULTANTS 等單位聯合策動，期望與大眾攜手推動「全民匹克球」。</p>
         <p>GPCC 不只是一項競賽，更是屬於所有匹克球愛好者的城市嘉年華。海選優勝隊伍將晉級香港站城市決賽；香港站優勝隊伍可按大會正式安排代表香港參與大灣區賽事交流，為香港增光。</p>
       </div>
+      <% } %>
 
       <h2 class="mt-8 font-display text-lg font-bold text-brand-deep">二、賽事資訊一覽</h2>
       <div class="mt-4 overflow-hidden rounded-2xl ring-1 ring-slate-200">
         <table class="w-full text-left text-sm">
           <tbody class="divide-y divide-slate-100">
+            <% if (isCpc600) { %>
+            <tr class="bg-slate-50"><th class="w-36 px-4 py-3 font-semibold text-brand-deep sm:w-44">賽事名稱</th><td class="px-4 py-3 text-slate-700">中信銀行(國際)呈獻：2026「凱瑞麟盃」粵港澳大灣區匹克球城市挑戰賽 香港賽區 (CPC-600)</td></tr>
+            <tr><th class="px-4 py-3 font-semibold text-brand-deep">正賽日期</th><td class="px-4 py-3 text-slate-700">2026 年 12 月 12 日至 13 日（因天氣因素順延之全新賽期）</td></tr>
+            <tr class="bg-slate-50"><th class="px-4 py-3 font-semibold text-brand-deep">正賽地點</th><td class="px-4 py-3 text-slate-700">屯門市廣場 tmtplaza 4樓</td></tr>
+            <tr><th class="px-4 py-3 font-semibold text-brand-deep">年齡組別</th><td class="px-4 py-3 text-slate-700">常青組 50–65 歲、壯年組 36–49 歲、公開組 18–65 歲</td></tr>
+            <tr class="bg-slate-50"><th class="px-4 py-3 font-semibold text-brand-deep">競賽項目</th><td class="px-4 py-3 text-slate-700">男子雙打、女子雙打、混合雙打</td></tr>
+            <tr><th class="px-4 py-3 font-semibold text-brand-deep">正賽參賽資格</th><td class="px-4 py-3 text-slate-700">GPCC 海選晉級隊伍 及 CPC 外卡隊伍</td></tr>
+            <tr class="bg-slate-50"><th class="px-4 py-3 font-semibold text-brand-deep">正賽報名費</th><td class="px-4 py-3 text-slate-700">憑晉級資格者全免；CPC 外卡隊伍需付港幣 $<%= feeBase %> 參賽</td></tr>
+            <% } else { %>
             <tr class="bg-slate-50"><th class="w-36 px-4 py-3 font-semibold text-brand-deep sm:w-44">海選日期</th><td class="px-4 py-3 text-slate-700">2026 年 10 月初至 11 月 10 日</td></tr>
             <tr><th class="px-4 py-3 font-semibold text-brand-deep">海選地點</th><td class="px-4 py-3 text-slate-700">多間球館進行海選比賽；個別隊伍的日期、時間及場地以確認電郵為準</td></tr>
             <tr class="bg-slate-50"><th class="px-4 py-3 font-semibold text-brand-deep">香港站城市決賽及嘉年華</th><td class="px-4 py-3 text-slate-700">2026 年 11 月 14–15 日</td></tr>
@@ -53,10 +75,74 @@
             <tr><th class="px-4 py-3 font-semibold text-brand-deep">競賽項目</th><td class="px-4 py-3 text-slate-700">男子雙打、女子雙打、混合雙打</td></tr>
             <tr class="bg-slate-50"><th class="px-4 py-3 font-semibold text-brand-deep">海選報名費</th><td class="px-4 py-3 text-slate-700">港幣 $<%= feeBase %>／隊，另提供「基礎選手包」港幣 $<%= essentialPackFee %> 或「尊尚選手包」港幣 $<%= premiumPackFee %> 供隊伍自由加購，詳見報名表選手包選擇頁。</td></tr>
             <tr><th class="px-4 py-3 font-semibold text-brand-deep">每人報名上限</th><td class="px-4 py-3 text-slate-700">最多兩個競賽項目；每個項目須以獨立報名另行提交</td></tr>
+            <% } %>
           </tbody>
         </table>
       </div>
 
+      <% if (isCpc600) { %>
+      <h3 class="mt-8 text-base font-bold text-brand-deep">參賽前請注意（重要 CPC-600 註冊事項）</h3>
+      <ul class="mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-slate-700">
+        <li><strong>【CPC-600 官方積分註冊】：</strong>本次總決賽成績將計入中國網球協會全國匹克球運動員官方排名系統。填寫本表時，必須提供與身份證明文件完全相符的真實「中文全名」及相關證件號碼，以便大會辦理官方 CPC 積分實名註冊手續。</li>
+        <li>填寫本表即表示隊長及隊友確認所提交資料真實、完整且可供核實。</li>
+        <li>大會會核對參賽資格；若發現虛假資料、身份不符、冒名頂替或超出報名上限，大會有權即時取消該球員或隊伍的參賽、晉級及獲獎資格（DQ），已繳款項將按正式退賽及退款條款處理。</li>
+        <li><strong>兼報規則：</strong>每位球員最多可報名兩個競賽項目。每份報名表只可登記一個項目；如欲兼報第二項，請完成本次報名後另行提交。</li>
+        <li>競賽組別：常青組 50–65 歲｜壯年組 36–49 歲｜公開組 18–65 歲（出生日期範圍見下方）</li>
+        <li class="list-none pl-0">
+          <ul class="mt-1 list-disc space-y-1 pl-5">
+            <li>常青組 50 歲–65 歲（1961 年 1 月 1 日（含）以後至 1976 年 12 月 31 日（含）以前出生）</li>
+            <li>壯年組 36 歲–49 歲（1977 年 1 月 1 日（含）以後至 1990 年 12 月 31 日（含）以前出生）</li>
+            <li>公開組 18 歲–65 歲（1961 年 1 月 1 日（含）以後至 2008 年 12 月 31 日（含）以前出生）</li>
+          </ul>
+        </li>
+      </ul>
+
+      <h3 class="mt-6 text-base font-bold text-brand-deep">賽事規則及賽制詳情</h3>
+      <div class="mt-3 space-y-4 text-sm leading-relaxed text-slate-700">
+        <div>
+          <p class="font-semibold text-brand-deep">（一）競賽規則</p>
+          <p class="mt-1">比賽嚴格採用中國網球協會頒布的最新《中國匹克球運動競賽規則》。</p>
+        </div>
+        <div>
+          <p class="font-semibold text-brand-deep">（二）比賽方法及賽制架構</p>
+          <p class="mt-2 font-medium">賽程階段劃分：</p>
+          <ul class="mt-1 list-disc space-y-1 pl-5">
+            <li><strong>第一階段（小組循環賽）：</strong>採取小組單循環制，每小組成績最佳之前兩名隊伍出線。</li>
+            <li><strong>第二階段（淘汰賽）：</strong>透過現場抽籤落位，進行交叉淘汰賽以決出最終名次。比賽編排不考慮同單位迴避原則。</li>
+          </ul>
+          <p class="mt-3 font-medium">計分方式（發球得分制）：</p>
+          <ul class="mt-1 list-disc space-y-1 pl-5">
+            <li><strong>小組循環賽：</strong>一局決勝負，先得 11 分者勝。若比分達到 10:10 平手時，須淨勝 2 分方可獲勝，最高 13 分封頂。</li>
+            <li><strong>第二階段淘汰賽：</strong>一局決勝負，先得 15 分者勝。若比分達到 14:14 平手時，須淨勝 2 分方可獲勝，最高 17 分封頂。</li>
+            <li><strong>冠亞軍決賽：</strong>採用三局兩勝制，每局先得 11 分者勝，每局皆為 11 分封頂。</li>
+          </ul>
+          <p class="mt-3 font-medium">暫停及休息規則：</p>
+          <ul class="mt-1 list-disc space-y-1 pl-5">
+            <li><strong>一局決勝制賽事：</strong>每位運動員（或每隊）全場擁有 1 次標準暫停機會。</li>
+            <li><strong>三局兩勝制賽事：</strong>每位運動員（或每隊）於每局擁有 2 次標準暫停機會。</li>
+          </ul>
+        </div>
+        <div>
+          <p class="font-semibold text-brand-deep">（三）小組循環賽名次決定機制</p>
+          <p class="mt-1">小組名次將按各隊獲勝次數決定。如遇隊伍獲勝次數相同，將依以下順序釐清排名：</p>
+          <ul class="mt-1 list-disc space-y-1 pl-5">
+            <li><strong>兩隊同分：</strong>以該兩隊相互間之對賽勝負決定名次。</li>
+            <li><strong>三隊或以上同分：</strong>首先，按在同一小組中所有比賽之淨勝分（總得分減總失分）決定，分數多者名次列前。若當中出現兩隊淨勝分相同，則以該兩隊間之對賽勝負決定排名。若仍有三隊或以上之淨勝分完全相同，則以抽籤方式決定名次。</li>
+          </ul>
+        </div>
+        <div>
+          <p class="font-semibold text-brand-deep">（四）第二階段淘汰賽抽籤規則</p>
+          <ul class="mt-1 list-disc space-y-1 pl-5">
+            <li>同一小組出線之第一名與第二名隊伍，將被區分至上、下半區落位。</li>
+            <li><strong>抽籤程序：</strong>第一階段小組賽結束後，將即時進行第二階段之現場抽籤。抽籤過程由裁判長主持，並隨機邀請不少於 2 名參賽運動員或組委會工作人員共同見證及參與。</li>
+          </ul>
+        </div>
+        <div>
+          <p class="font-semibold text-brand-deep">（五）賽事特殊情況處理</p>
+          <p class="mt-1">為確保比賽順利進行，如遇天氣或其他特殊情況，經大會組委會同意後，比賽監督及裁判長有絕對權力更改賽制、調整場地、暫停或延後比賽。</p>
+        </div>
+      </div>
+      <% } else { %>
       <h3 class="mt-8 text-base font-bold text-brand-deep">2.1 參賽前請注意</h3>
       <ul class="mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-slate-700">
         <li>填寫本表即表示隊長及隊友確認所提交資料真實、完整且可供核實。</li>
@@ -79,6 +165,7 @@
         <li>小組循環賽先按勝負場數排序；如有兩隊或以上勝負場數相同，大會將以該小組賽事的總得失分決定最終名次。</li>
         <li>得分與失分均會影響晉級資格，參賽者不可只以對賽勝負推算排名。若按總得失分後仍未能分出名次，將依《香港站正式競賽規程》處理。</li>
       </ul>
+      <% } %>
 
       <div class="mt-8 rounded-2xl bg-slate-50 px-4 py-4 text-sm leading-relaxed text-slate-700 ring-1 ring-slate-200">
         <p class="font-semibold text-brand-deep">參加者聲明：</p>
@@ -159,9 +246,14 @@
         </div>
         <% if (isCpc600) { %>
         <div>
-          <label class="field-label" for="captainHkid">隊長香港身份證號碼 *</label>
-          <input class="field-input" id="captainHkid" required placeholder="A123456(7)" maxlength="12" autocomplete="off" />
-          <p class="mt-1 text-xs text-slate-500">格式：Xnnnnnn(n)，例如 A123456(7)</p>
+          <label class="field-label" for="captainHkid">隊長香港身份證號碼</label>
+          <input class="field-input" id="captainHkid" placeholder="A123456(7)" maxlength="12" autocomplete="off" />
+          <p class="mt-1 text-xs text-slate-500">格式：Xnnnnnn(n)。香港身份證持有人請填寫；內地選手可改填護照。</p>
+        </div>
+        <div>
+          <label class="field-label" for="captainPassport">隊長護照號碼</label>
+          <input class="field-input" id="captainPassport" placeholder="護照號碼" maxlength="20" autocomplete="off" />
+          <p class="mt-1 text-xs text-slate-500">內地選手（P13）必填；須與中文全名及證件完全相符，供 CPC 官方積分註冊。</p>
         </div>
         <% } %>
         <div>
@@ -205,9 +297,14 @@
         </div>
         <% if (isCpc600) { %>
         <div>
-          <label class="field-label" for="teammateHkid">隊友香港身份證號碼 *</label>
-          <input class="field-input" id="teammateHkid" required placeholder="A123456(7)" maxlength="12" autocomplete="off" />
-          <p class="mt-1 text-xs text-slate-500">格式：Xnnnnnn(n)，例如 A123456(7)</p>
+          <label class="field-label" for="teammateHkid">隊友香港身份證號碼</label>
+          <input class="field-input" id="teammateHkid" placeholder="A123456(7)" maxlength="12" autocomplete="off" />
+          <p class="mt-1 text-xs text-slate-500">格式：Xnnnnnn(n)。香港身份證持有人請填寫；內地選手可改填護照。</p>
+        </div>
+        <div>
+          <label class="field-label" for="teammatePassport">隊友護照號碼</label>
+          <input class="field-input" id="teammatePassport" placeholder="護照號碼" maxlength="20" autocomplete="off" />
+          <p class="mt-1 text-xs text-slate-500">內地選手（P13）必填；須與中文全名及證件完全相符，供 CPC 官方積分註冊。</p>
         </div>
         <% } %>
         <div>
@@ -245,8 +342,9 @@
           <div class="grid gap-2" id="eventCategoryOptions"></div>
           <p id="eventCategoryHint" class="field-error hidden"></p>
         </fieldset>
+        <% if (!isCpc600) { %>
         <div>
-          <label class="field-label" for="preferredVenueId"><%= isCpc600 ? '推薦球會 *' : '首選海選地區／合作球會／球館 *' %></label>
+          <label class="field-label" for="preferredVenueId">首選海選地區／合作球會／球館 *</label>
           <select class="field-input" id="preferredVenueId" required></select>
         </div>
         <div id="qualifierSlotPanel" class="hidden rounded-2xl bg-sky-50 px-4 py-3 ring-1 ring-sky-200">
@@ -262,6 +360,13 @@
             <span>本人已閱讀並同意以上《賽程管理與特別說明》 *</span>
           </label>
         </div>
+        <% } else { %>
+        <input type="hidden" id="preferredVenueId" value="" />
+        <div class="rounded-2xl bg-sky-50 px-4 py-3 text-sm text-slate-700 ring-1 ring-sky-200">
+          <p class="font-semibold text-brand-deep">正賽地點</p>
+          <p class="mt-1">屯門市廣場 tmtplaza 4樓｜2026 年 12 月 12–13 日</p>
+        </div>
+        <% } %>
       </div>
     </section>
 
@@ -424,13 +529,13 @@
 </main>
 <script>
   window.GPCC_FORM = {
-    formChannel: <%= JSON.stringify(typeof formChannel !== 'undefined' ? formChannel : 'rsvp') %>,
+    formChannel: <%- JSON.stringify(typeof formChannel !== 'undefined' ? formChannel : 'cpc600') %>,
     isCpc600: <%= isCpc600 ? 'true' : 'false' %>,
     requireHkid: <%= (typeof requireHkid !== 'undefined' && requireHkid) ? 'true' : 'false' %>,
-    successBase: <%= JSON.stringify(isCpc600 ? '/cpc600/success' : '/rsvp/success') %>,
-    payBase: <%= JSON.stringify(isCpc600 ? '/cpc600/pay' : '/rsvp/pay') %>,
-    draftKey: <%= JSON.stringify(isCpc600 ? 'gpcchkmo.cpc600.draft.v1' : 'gpcchkmo.rsvp.draft.v2') %>
+    successBase: <%- JSON.stringify(isCpc600 ? '/cpc600/success' : '/rsvp/success') %>,
+    payBase: <%- JSON.stringify(isCpc600 ? '/cpc600/pay' : '/rsvp/pay') %>,
+    draftKey: <%- JSON.stringify(isCpc600 ? 'gpcchkmo.cpc600.draft.v1' : 'gpcchkmo.rsvp.draft.v2') %>
   };
 </script>
-<script src="/js/rsvp.js" defer></script>
+<script src="/js/rsvp.js?v=20261113cpc4" defer></script>
 <%- include('partials/foot') %>

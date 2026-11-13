@@ -15,13 +15,14 @@ const CAPTAIN_CLUBS = [
   'P06 Table meets Pickle',
   'P07 PickleLab',
   'P08 錦綉花園鄉村俱樂部',
-  'P12 PICKLEDISE',
   'P09 企業機構',
   'P10 其他（非指定名單內之球會）',
   'P11 個人名義（獨立球員隊伍）',
+  'P12 PICKLEDISE',
+  'P13 內地選手',
 ];
 
-/** Club portal logins (P01–P12) */
+/** Club portal logins (P01–P13) */
 const CLUB_PORTAL_ACCOUNTS = [
   { code: 'P01', label: 'P01 Pick and Match' },
   { code: 'P02', label: 'P02 Lit Pickle' },
@@ -35,6 +36,7 @@ const CLUB_PORTAL_ACCOUNTS = [
   { code: 'P10', label: 'P10 其他（非指定名單內之球會）' },
   { code: 'P11', label: 'P11 個人名義（獨立球員隊伍）' },
   { code: 'P12', label: 'P12 PICKLEDISE' },
+  { code: 'P13', label: 'P13 內地選手' },
 ];
 
 function captainClubBelongsToPortalCode(captainClub, code) {
@@ -90,7 +92,16 @@ const CAPTAIN_CLUB_FOLLOWUPS = {
     label: '請填寫獲取比賽資料來源（選填）',
     placeholder: '例如：社交媒體、朋友介紹等',
   },
+  'P13 內地選手': {
+    kind: 'source',
+    required: false,
+    label: '請填寫所屬省市／球會（選填）',
+    placeholder: '例如：廣東省／廣州某某球會',
+  },
 };
+
+/** Default venue label when CPC600 hides preferred-venue select */
+const CPC600_DEFAULT_VENUE_LABEL = 'CPC-600 正賽｜屯門市廣場 tmtplaza 4樓';
 
 const GENDERS = {
   MALE: 'male',
@@ -154,8 +165,7 @@ const SKILL_LEVELS = [
 ];
 
 const INTEREST_TOPICS = [
-  { value: 'finals_carnival', label: '11月14-15日決賽日城市嘉年華及體驗區' },
-  { value: 'player_dinner_fairway', label: '11月13日球員晚宴／見面會／聚會（錦綉花園俱樂部）' },
+  { value: 'finals_carnival', label: '12月12-13日決賽日城市嘉年華及體驗區' },
   { value: 'gba_finals_guangzhou', label: '大灣區匹克球城市總決賽（於廣州舉辦 - 約11月尾至12月）' },
   { value: 'pro_photo_video', label: '參賽者比賽專業攝影／攝錄團隊' },
   { value: 'club_experience_hk_mo', label: '球會匹克球體驗日（港澳）' },
@@ -278,6 +288,11 @@ const FORM_CHANNELS = {
   CPC600: 'cpc600',
 };
 
+const FORM_CHANNEL_LABELS = {
+  [FORM_CHANNELS.RSVP]: '海選 RSVP（舊）',
+  [FORM_CHANNELS.CPC600]: 'CPC-600 正賽',
+};
+
 const FEE = {
   BASE_HKD: 680,
   PLAYER_PACK_HKD: 200, // Essential（向後兼容）
@@ -365,6 +380,8 @@ module.exports = {
   PACK_TIER_LABELS,
   PACK_TIER_ADDON_HKD,
   FORM_CHANNELS,
+  FORM_CHANNEL_LABELS,
+  CPC600_DEFAULT_VENUE_LABEL,
   HKID_RE,
   normalizeHkid,
   isValidHkid,

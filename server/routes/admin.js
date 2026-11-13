@@ -25,6 +25,8 @@ const {
   CAPTAIN_CLUBS,
   PACK_TIERS,
   PACK_TIER_LABELS,
+  FORM_CHANNELS,
+  FORM_CHANNEL_LABELS,
 } = require('../constants/enums');
 const {
   buildTeamsCsv,
@@ -71,9 +73,11 @@ function teamPaymentLinks(team) {
   const id = String(team._id);
   const tier = normalizePackTier(team.packTier, team.wantPlayerPack);
   const summary = buildPaymentSummary({ packTier: tier });
+  const pathBase =
+    team.formChannel === FORM_CHANNELS.CPC600 ? '/cpc600' : '/rsvp';
   return {
-    proofPayPageUrl: `${base}/rsvp/pay?id=${encodeURIComponent(id)}`,
-    successPageUrl: `${base}/rsvp/success?id=${encodeURIComponent(id)}`,
+    proofPayPageUrl: `${base}${pathBase}/pay?id=${encodeURIComponent(id)}`,
+    successPageUrl: `${base}${pathBase}/success?id=${encodeURIComponent(id)}`,
     airwallexPayUrl: airwallexPayUrl(tier),
     packTier: tier,
     packTierLabel: PACK_TIER_LABELS[tier] || tier,
@@ -98,6 +102,7 @@ function buildAdminFilter({
   eventCategory,
   club,
   venue,
+  channel,
   q,
 }) {
   const filter = {};
@@ -107,6 +112,24 @@ function buildAdminFilter({
   if (ageGroup) filter.ageGroup = ageGroup;
   if (eventCategory) filter.eventCategory = eventCategory;
   if (club) filter.captainClub = club;
+  if (channel && Object.values(FORM_CHANNELS).includes(channel)) {
+    if (channel === FORM_CHANNELS.RSVP) {
+      // Legacy rows may omit formChannel (defaulted to rsvp on schema)
+      filter.$and = [
+        ...(filter.$and || []),
+        {
+          $or: [
+            { formChannel: FORM_CHANNELS.RSVP },
+            { formChannel: { $exists: false } },
+            { formChannel: null },
+            { formChannel: '' },
+          ],
+        },
+      ];
+    } else {
+      filter.formChannel = channel;
+    }
+  }
   if (venue && String(venue).trim()) {
     const v = String(venue).trim();
     if (mongoose.isValidObjectId(v)) {
@@ -147,6 +170,7 @@ function labels() {
     eventCategory: EVENT_CATEGORY_LABELS,
     registrationType: REGISTRATION_TYPE_LABELS,
     packTier: PACK_TIER_LABELS,
+    formChannel: FORM_CHANNEL_LABELS,
   };
 }
 
@@ -203,20 +227,33 @@ router.get('/', requireAdmin, async (req, res, next) => {
       eventCategory = '',
       club = '',
       venue = '',
+      channel = '',
       q = '',
       page = '1',
     } = req.query;
 
-    const filters = { status, payment, qualification, ageGroup, eventCategory, club, venue, q };
+    const filters = {
+      status,
+      payment,
+      qualification,
+      ageGroup,
+      eventCategory,
+      club,
+      venue,
+      channel,
+      q,
+    };
     const filter = buildAdminFilter(filters);
     const filterWithoutClub = buildAdminFilter({ ...filters, club: '' });
     const filterWithoutVenue = buildAdminFilter({ ...filters, venue: '' });
+    const filterWithoutChannel = buildAdminFilter({ ...filters, channel: '' });
 
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
     const limit = 25;
     const skip = (pageNum - 1) * limit;
 
-    const [total, teams, statusCounts, clubCountsRaw, venueCountsRaw, venues] = await Promise.all([
+    const [total, teams, statusCounts, clubCountsRaw, venueCountsRaw, channelCountsRaw, venues] =
+      await Promise.all([
       Team.countDocuments(filter),
       Team.find(filter).sort({ captainClub: 1, submittedAt: -1 }).skip(skip).limit(limit).lean(),
       Team.aggregate([{ $group: { _id: '$status', count: { $sum: 1 } } }]),
@@ -235,6 +272,17 @@ router.get('/', requireAdmin, async (req, res, next) => {
           },
         },
         { $sort: { count: -1 } },
+      ]),
+      Team.aggregate([
+        { $match: filterWithoutChannel },
+        {
+          $group: {
+            _id: {
+              $ifNull: ['$formChannel', FORM_CHANNELS.RSVP],
+            },
+            count: { $sum: 1 },
+          },
+        },
       ]),
       ClubVenue.find({ isActive: true }).sort({ sortOrder: 1, label: 1 }).lean(),
     ]);
@@ -300,6 +348,16 @@ router.get('/', requireAdmin, async (req, res, next) => {
       ...venueLabelOnly,
     ].filter((opt) => opt.count > 0 || venues.some((v) => String(v._id) === opt.id));
 
+    const channelCounts = Object.fromEntries(
+      Object.values(FORM_CHANNELS).map((c) => [c, 0])
+    );
+    for (const row of channelCountsRaw) {
+      const key = row._id || FORM_CHANNELS.RSVP;
+      if (Object.prototype.hasOwnProperty.call(channelCounts, key)) {
+        channelCounts[key] = row.count;
+      }
+    }
+
     const groupedRows = [];
     for (const row of rows) {
       const name = row.team.captainClub || '未填球會';
@@ -317,6 +375,7 @@ router.get('/', requireAdmin, async (req, res, next) => {
       groupedRows,
       clubOptions,
       venueOptions,
+      channelCounts,
       filters,
       queryString: (extra) => queryString(filters, extra),
       labels: labels(),
@@ -324,6 +383,7 @@ router.get('/', requireAdmin, async (req, res, next) => {
         TEAM_STATUS,
         PAYMENT_STATUS,
         QUALIFICATION_STATUS,
+        FORM_CHANNELS,
       },
       counts,
       pagination: {
@@ -603,6 +663,7 @@ router.post('/teams/:id/edit', requireAdmin, async (req, res, next) => {
       captainDob,
       captainWhatsapp,
       captainHkid,
+      captainPassport,
       captainEmailPlayer,
       captainClubPlayer,
       captainEmergencyName,
@@ -613,6 +674,7 @@ router.post('/teams/:id/edit', requireAdmin, async (req, res, next) => {
       teammateDob,
       teammateWhatsapp,
       teammateHkid,
+      teammatePassport,
       teammateEmail,
       teammateClub,
       teammateEmergencyName,
@@ -667,6 +729,12 @@ router.post('/teams/:id/edit', requireAdmin, async (req, res, next) => {
           .trim()
           .toUpperCase();
       }
+      if (typeof fields.passportNumber === 'string') {
+        player.passportNumber = String(fields.passportNumber || '')
+          .trim()
+          .toUpperCase()
+          .replace(/\s+/g, '');
+      }
       if (fields.email) player.email = fields.email.trim().toLowerCase();
       if (typeof fields.club === 'string') player.club = fields.club.trim();
       if (fields.emergencyName || fields.emergencyPhone) {
@@ -685,6 +753,7 @@ router.post('/teams/:id/edit', requireAdmin, async (req, res, next) => {
       dateOfBirth: captainDob,
       whatsapp: captainWhatsapp,
       hkid: captainHkid,
+      passportNumber: captainPassport,
       email: captainEmailPlayer,
       club: captainClubPlayer,
       emergencyName: captainEmergencyName,
@@ -697,6 +766,7 @@ router.post('/teams/:id/edit', requireAdmin, async (req, res, next) => {
       dateOfBirth: teammateDob,
       whatsapp: teammateWhatsapp,
       hkid: teammateHkid,
+      passportNumber: teammatePassport,
       email: teammateEmail,
       club: teammateClub,
       emergencyName: teammateEmergencyName,
@@ -834,9 +904,18 @@ router.get('/export.csv', requireAdmin, async (req, res, next) => {
       qualification = '',
       club = '',
       venue = '',
+      channel = '',
       q = '',
     } = req.query;
-    const filter = buildAdminFilter({ status, payment, qualification, club, venue, q });
+    const filter = buildAdminFilter({
+      status,
+      payment,
+      qualification,
+      club,
+      venue,
+      channel,
+      q,
+    });
 
     const teams = await Team.find(filter).sort({ submittedAt: -1 }).lean();
     const players = await Player.find({
@@ -867,9 +946,18 @@ router.get('/export.xlsx', requireAdmin, async (req, res, next) => {
       qualification = '',
       club = '',
       venue = '',
+      channel = '',
       q = '',
     } = req.query;
-    const filter = buildAdminFilter({ status, payment, qualification, club, venue, q });
+    const filter = buildAdminFilter({
+      status,
+      payment,
+      qualification,
+      club,
+      venue,
+      channel,
+      q,
+    });
 
     const teams = await Team.find(filter).sort({ submittedAt: -1 }).lean();
     const players = await Player.find({
